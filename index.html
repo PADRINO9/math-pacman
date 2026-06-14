@@ -7,7 +7,7 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>פאקמן מתמטי</title>
-  <link rel="stylesheet" href="styles.css?v=20260614-2">
+  <link rel="stylesheet" href="styles.css?v=20260614-4">
 </head>
 <body>
   <main class="game-shell" aria-label="פאקמן מתמטי">
@@ -18,7 +18,7 @@
         <div class="hud-group hud-group-main">
           <div class="metric">
             <span class="metric-label">תשובות</span>
-            <strong><span id="correct-answers">0</span><span class="metric-muted">/100</span></strong>
+            <strong><span id="correct-answers">0</span><span id="target-correct" class="metric-muted">/100</span></strong>
           </div>
           <div class="metric">
             <span class="metric-label">ניקוד</span>
@@ -31,6 +31,11 @@
           <div class="metric metric-lives">
             <span class="metric-label">חיים</span>
             <strong id="lives" aria-label="3 חיים">♥♥♥</strong>
+          </div>
+          <div id="mission-card" class="metric metric-mission">
+            <span class="metric-label">משימה</span>
+            <strong id="mission-title">ענה נכון על 10 שאלות</strong>
+            <span id="mission-progress" class="mission-progress">0/10</span>
           </div>
         </div>
 
@@ -68,6 +73,23 @@
             <label for="player-name-input">שם השחקן</label>
             <input id="player-name-input" type="text" maxlength="18" required>
             <p id="name-error" class="form-note" aria-live="assertive"></p>
+            <fieldset class="difficulty-field">
+              <legend>רמת קושי</legend>
+              <div class="difficulty-options" role="radiogroup" aria-label="רמת קושי">
+                <label>
+                  <input type="radio" name="difficulty" value="easy">
+                  <span>קל</span>
+                </label>
+                <label>
+                  <input type="radio" name="difficulty" value="normal" checked>
+                  <span>רגיל</span>
+                </label>
+                <label>
+                  <input type="radio" name="difficulty" value="hard">
+                  <span>קשה</span>
+                </label>
+              </div>
+            </fieldset>
             <button id="start-button" class="primary-button" type="submit">התחל משחק</button>
           </form>
         </div>
@@ -96,6 +118,6 @@
     </section>
   </main>
 
-  <script src="game.js?v=20260614-2"></script>
+  <script src="game.js?v=20260614-4"></script>
 </body>
 </html>

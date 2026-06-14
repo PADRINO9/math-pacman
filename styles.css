@@ -71,6 +71,10 @@ button {
     inset 0 0 70px rgba(10, 55, 96, 0.35);
 }
 
+.stage-hit {
+  animation: stageHit 460ms ease;
+}
+
 #game-canvas {
   position: absolute;
   inset: 0;
@@ -138,6 +142,36 @@ button {
   letter-spacing: 0;
 }
 
+.metric-mission {
+  min-width: min(230px, 100%);
+  flex: 1 1 210px;
+}
+
+.metric-mission strong {
+  overflow: hidden;
+  color: var(--gold);
+  font-size: clamp(13px, 1.7vw, 17px);
+  line-height: 1.18;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mission-progress {
+  display: block;
+  margin-top: 5px;
+  color: var(--line-hot);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.metric-pulse {
+  animation: metricPulse 440ms ease;
+}
+
+.life-hit {
+  animation: lifeHit 520ms ease;
+}
+
 .progress-wrap {
   height: 12px;
   margin-top: 8px;
@@ -145,6 +179,10 @@ button {
   border: 1px solid rgba(255, 255, 255, 0.16);
   background: rgba(0, 0, 0, 0.45);
   box-shadow: 0 0 26px rgba(104, 231, 255, 0.18);
+}
+
+.progress-pulse {
+  animation: progressPulse 520ms ease;
 }
 
 #progress-fill {
@@ -377,6 +415,58 @@ button {
   font-size: 13px;
 }
 
+.difficulty-field {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.difficulty-field legend {
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.2;
+}
+
+.difficulty-options {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.difficulty-options label {
+  min-width: 0;
+}
+
+.difficulty-options input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.difficulty-options span {
+  display: grid;
+  min-height: 42px;
+  place-items: center;
+  border: 1px solid rgba(104, 231, 255, 0.28);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--ink);
+  cursor: pointer;
+}
+
+.difficulty-options input:checked + span {
+  border-color: rgba(255, 216, 74, 0.82);
+  background: rgba(255, 216, 74, 0.13);
+  color: var(--gold);
+  box-shadow: inset 0 0 18px rgba(255, 216, 74, 0.08);
+}
+
+.difficulty-options input:focus-visible + span {
+  outline: 2px solid rgba(104, 231, 255, 0.72);
+  outline-offset: 2px;
+}
+
 .winner-trophy {
   font-size: clamp(56px, 10vw, 94px);
   line-height: 1;
@@ -481,6 +571,15 @@ button {
     font-size: 15px;
   }
 
+  .metric-mission {
+    flex-basis: 100%;
+    order: 2;
+  }
+
+  .metric-mission strong {
+    font-size: 13px;
+  }
+
   .progress-wrap {
     grid-column: 1 / -1;
     grid-row: 2;
@@ -501,15 +600,75 @@ button {
     width: min(280px, calc(100% - 24px));
   }
 
+  .difficulty-options span {
+    min-height: 38px;
+    font-size: 14px;
+  }
+
   #answer-form {
     grid-template-columns: 1fr;
   }
 
   .touch-pad {
+    display: grid;
     right: 10px;
     bottom: 10px;
     transform: scale(0.86);
     transform-origin: bottom right;
+  }
+}
+
+@keyframes metricPulse {
+  0% {
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: inset 0 0 18px rgba(104, 231, 255, 0.08);
+  }
+  45% {
+    border-color: rgba(103, 240, 139, 0.9);
+    box-shadow:
+      0 0 0 3px rgba(103, 240, 139, 0.18),
+      inset 0 0 22px rgba(103, 240, 139, 0.2);
+  }
+  100% {
+    border-color: rgba(255, 255, 255, 0.12);
+    box-shadow: inset 0 0 18px rgba(104, 231, 255, 0.08);
+  }
+}
+
+@keyframes progressPulse {
+  0% {
+    box-shadow: 0 0 26px rgba(104, 231, 255, 0.18);
+  }
+  50% {
+    box-shadow:
+      0 0 0 3px rgba(255, 216, 74, 0.18),
+      0 0 34px rgba(255, 216, 74, 0.42);
+  }
+  100% {
+    box-shadow: 0 0 26px rgba(104, 231, 255, 0.18);
+  }
+}
+
+@keyframes lifeHit {
+  0%,
+  100% {
+    border-color: rgba(255, 255, 255, 0.12);
+  }
+  45% {
+    border-color: rgba(255, 76, 95, 0.95);
+    box-shadow:
+      0 0 0 3px rgba(255, 76, 95, 0.2),
+      inset 0 0 24px rgba(255, 76, 95, 0.18);
+  }
+}
+
+@keyframes stageHit {
+  0%,
+  100% {
+    filter: none;
+  }
+  45% {
+    filter: drop-shadow(0 0 22px rgba(255, 76, 95, 0.48));
   }
 }
 

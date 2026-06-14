@@ -6,13 +6,58 @@
   const TILE = 24;
   const COLS = WIDTH / TILE;
   const ROWS = HEIGHT / TILE;
-  const TARGET_CORRECT = 100;
-  const INITIAL_LIVES = 3;
-  const MIN_GHOSTS = 10;
-  const BEST_SCORE_KEY = "mathPacmanBest";
-  const SOUND_KEY = "mathPacmanSound";
   const PLAYER_START = { x: 2, y: 2 };
   const CENTER_CELL = { x: Math.floor(COLS / 2), y: Math.floor(ROWS / 2) };
+
+  const CONFIG = {
+    targetCorrect: 100,
+    initialLives: 3,
+    minGhosts: 10,
+    missionBonus: 420,
+    adaptiveQuestionChance: 0.3,
+    recentQuestionMemory: 3,
+    questionFeedbackDelay: {
+      correct: 420,
+      wrong: 900
+    },
+    storageKeys: {
+      bestScore: "mathPacmanBest",
+      sound: "mathPacmanSound",
+      difficulty: "mathPacmanDifficulty",
+      factStats: "mathPacmanFactStats"
+    },
+    difficulty: {
+      easy: {
+        label: "קל",
+        ghostCount: 8,
+        ghostSpeedMultiplier: 0.9,
+        questionTierStep: 24,
+        questionMaxOffset: -1
+      },
+      normal: {
+        label: "רגיל",
+        ghostCount: 10,
+        ghostSpeedMultiplier: 1,
+        questionTierStep: 20,
+        questionMaxOffset: 0
+      },
+      hard: {
+        label: "קשה",
+        ghostCount: 11,
+        ghostSpeedMultiplier: 1.1,
+        questionTierStep: 16,
+        questionMaxOffset: 1
+      }
+    },
+    missions: [
+      { type: "correct", target: 10, label: "ענה נכון על 10 שאלות" },
+      { type: "combo", target: 5, label: "צבור רצף של 5" },
+      { type: "score", target: 200, label: "אסוף 200 נקודות" },
+      { type: "safeCorrect", target: 3, label: "ענה נכון על 3 שאלות בלי לאבד חיים" },
+      { type: "ghosts", target: 5, label: "נצח 5 רוחות" }
+    ],
+    positiveFeedback: ["נכון!", "מעולה!", "יפה מאוד!"]
+  };
 
   const DIRS = {
     none: { x: 0, y: 0 },
@@ -80,15 +125,21 @@
 
   const els = {
     correct: document.getElementById("correct-answers"),
+    targetCorrect: document.getElementById("target-correct"),
     score: document.getElementById("score"),
     combo: document.getElementById("combo"),
     lives: document.getElementById("lives"),
     progress: document.getElementById("progress-fill"),
+    progressWrap: document.querySelector(".progress-wrap"),
+    missionCard: document.getElementById("mission-card"),
+    missionTitle: document.getElementById("mission-title"),
+    missionProgress: document.getElementById("mission-progress"),
     pause: document.getElementById("pause-button"),
     sound: document.getElementById("sound-button"),
     startScreen: document.getElementById("start-screen"),
     playerForm: document.getElementById("player-form"),
     playerNameInput: document.getElementById("player-name-input"),
+    difficultyInputs: Array.from(document.querySelectorAll("input[name='difficulty']")),
     nameError: document.getElementById("name-error"),
     startButton: document.getElementById("start-button"),
     bestScore: document.getElementById("best-score"),
@@ -105,6 +156,7 @@
     questionTitle: document.getElementById("question-title"),
     answerForm: document.getElementById("answer-form"),
     answerInput: document.getElementById("answer-input"),
+    submitAnswer: document.getElementById("submit-answer"),
     questionFeedback: document.getElementById("question-feedback")
   };
 
@@ -127,6 +179,33 @@
     }
   };
 
+  function normalizeDifficulty(value) {
+    return Object.prototype.hasOwnProperty.call(CONFIG.difficulty, value) ? value : "normal";
+  }
+
+  function getDifficultySettings() {
+    return CONFIG.difficulty[state.difficulty] || CONFIG.difficulty.normal;
+  }
+
+  function loadFactStats() {
+    try {
+      const parsed = JSON.parse(storage.get(CONFIG.storageKeys.factStats, "{}"));
+      if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        return {};
+      }
+
+      return Object.fromEntries(Object.entries(parsed).filter(([, value]) => {
+        return value && Number.isFinite(value.wrong) && Number.isFinite(value.correct);
+      }));
+    } catch {
+      return {};
+    }
+  }
+
+  function saveFactStats() {
+    storage.set(CONFIG.storageKeys.factStats, JSON.stringify(state.factStats));
+  }
+
   const state = {
     phase: "start",
     clock: 0,
@@ -143,15 +222,19 @@
     backdropStars: [],
     score: 0,
     combo: 0,
-    lives: INITIAL_LIVES,
+    lives: CONFIG.initialLives,
     correctAnswers: 0,
-    bestScore: Number(storage.get(BEST_SCORE_KEY, "0")) || 0,
+    bestScore: Number(storage.get(CONFIG.storageKeys.bestScore, "0")) || 0,
     playerName: "",
+    difficulty: normalizeDifficulty(storage.get(CONFIG.storageKeys.difficulty, "normal")),
+    factStats: loadFactStats(),
+    recentQuestionKeys: [],
+    mission: null,
     question: null,
     currentGhostId: null,
     answerLocked: false,
     nextGhostId: 1,
-    soundEnabled: storage.get(SOUND_KEY, "on") !== "off",
+    soundEnabled: storage.get(CONFIG.storageKeys.sound, "on") !== "off",
     audioContext: null,
     shake: 0,
     fireworkTimer: 0
@@ -401,14 +484,16 @@
     const cell = chooseGhostSpawnCell(index);
     const pos = centerOfCell(cell.x, cell.y);
     const direction = randomItem(DIR_NAMES);
+    const difficulty = getDifficultySettings();
     const speedTier = Math.min(34, Math.floor(state.correctAnswers / 8) * 2);
+    const speed = (94 + speedTier + (index % 4) * 4) * difficulty.ghostSpeedMultiplier;
 
     return {
       id: state.nextGhostId,
       x: pos.x,
       y: pos.y,
       radius: 10.4,
-      speed: 94 + speedTier + (index % 4) * 4,
+      speed,
       direction,
       color: GHOST_COLORS[index % GHOST_COLORS.length],
       scatter: scatterCornerFor(index),
@@ -466,8 +551,9 @@
   }
 
   function ensureGhostCount() {
+    const minGhosts = getDifficultySettings().ghostCount || CONFIG.minGhosts;
     const totalIncoming = state.ghosts.length + state.pendingSpawns.length;
-    for (let i = totalIncoming; i < MIN_GHOSTS; i += 1) {
+    for (let i = totalIncoming; i < minGhosts; i += 1) {
       scheduleGhostSpawn(0.25 + i * 0.08);
     }
   }
@@ -493,18 +579,21 @@
     state.pendingSpawns = [];
     state.score = 0;
     state.combo = 0;
-    state.lives = INITIAL_LIVES;
+    state.lives = CONFIG.initialLives;
     state.correctAnswers = 0;
+    state.recentQuestionKeys = [];
     state.question = null;
     state.currentGhostId = null;
     state.answerLocked = false;
     state.nextGhostId = 1;
     state.shake = 0;
     state.fireworkTimer = 0;
+    assignMission();
     seedPellets();
     seedBackdrop();
 
-    for (let i = 0; i < MIN_GHOSTS; i += 1) {
+    const minGhosts = getDifficultySettings().ghostCount || CONFIG.minGhosts;
+    for (let i = 0; i < minGhosts; i += 1) {
       spawnGhost(i);
     }
 
@@ -528,6 +617,25 @@
     return value.trim().replace(/\s+/g, " ").slice(0, 18);
   }
 
+  function getSelectedDifficulty() {
+    const selected = els.difficultyInputs.find((input) => input.checked);
+    return normalizeDifficulty(selected?.value || state.difficulty);
+  }
+
+  function setDifficulty(value, persist = true) {
+    state.difficulty = normalizeDifficulty(value);
+    if (persist) {
+      storage.set(CONFIG.storageKeys.difficulty, state.difficulty);
+    }
+    syncDifficultyInputs();
+  }
+
+  function syncDifficultyInputs() {
+    for (const input of els.difficultyInputs) {
+      input.checked = input.value === state.difficulty;
+    }
+  }
+
   function startGame(event) {
     event?.preventDefault();
     const playerName = normalizePlayerName(els.playerNameInput.value);
@@ -539,6 +647,7 @@
     }
 
     state.playerName = playerName;
+    setDifficulty(getSelectedDifficulty());
     els.nameError.textContent = "";
     setupGame();
     state.phase = "playing";
@@ -562,6 +671,7 @@
     els.playerNameInput.value = "";
     els.nameError.textContent = "";
     els.pause.textContent = "Ⅱ";
+    syncDifficultyInputs();
     setupGame();
     setTimeout(() => els.playerNameInput.focus(), 30);
   }
@@ -584,7 +694,7 @@
 
   function toggleSound() {
     state.soundEnabled = !state.soundEnabled;
-    storage.set(SOUND_KEY, state.soundEnabled ? "on" : "off");
+    storage.set(CONFIG.storageKeys.sound, state.soundEnabled ? "on" : "off");
     updateSoundButton();
     if (state.soundEnabled) {
       resumeAudio();
@@ -639,6 +749,12 @@
     setTimeout(() => playTone(740, 0.09, "triangle", 0.035), 55);
   }
 
+  function playMissionSound() {
+    playTone(660, 0.07, "triangle", 0.035);
+    setTimeout(() => playTone(880, 0.08, "triangle", 0.03), 60);
+    setTimeout(() => playTone(990, 0.09, "triangle", 0.025), 120);
+  }
+
   function playWrongSound() {
     playTone(160, 0.16, "sawtooth", 0.035);
   }
@@ -655,13 +771,121 @@
 
   function updateHud() {
     els.correct.textContent = state.correctAnswers;
+    els.targetCorrect.textContent = `/${CONFIG.targetCorrect}`;
     els.score.textContent = numberFormat.format(state.score);
     els.combo.textContent = state.combo;
     const hearts = "♥".repeat(Math.max(0, state.lives));
     els.lives.textContent = hearts || "0";
     els.lives.setAttribute("aria-label", `${state.lives} חיים`);
-    els.progress.style.width = `${Math.min(100, state.correctAnswers)}%`;
+    els.progress.style.width = `${Math.min(100, state.correctAnswers / CONFIG.targetCorrect * 100)}%`;
     els.bestScore.textContent = numberFormat.format(state.bestScore);
+    updateMissionHud();
+  }
+
+  function updateMissionHud() {
+    if (!state.mission) {
+      els.missionTitle.textContent = "משימה חדשה בדרך";
+      els.missionProgress.textContent = "";
+      return;
+    }
+
+    const progress = getMissionProgress();
+    els.missionTitle.textContent = state.mission.label;
+    els.missionProgress.textContent = `${Math.min(progress, state.mission.target)}/${state.mission.target}`;
+    els.missionCard.setAttribute("aria-label", `משימה: ${state.mission.label}, ${progress} מתוך ${state.mission.target}`);
+  }
+
+  function assignMission() {
+    const previousType = state.mission?.type;
+    const pool = CONFIG.missions.filter((mission) => mission.type !== previousType);
+    const template = randomItem(pool.length ? pool : CONFIG.missions);
+    state.mission = {
+      ...template,
+      progress: 0,
+      startScore: state.score
+    };
+  }
+
+  function getMissionProgress() {
+    if (!state.mission) {
+      return 0;
+    }
+
+    if (state.mission.type === "combo") {
+      return state.combo;
+    }
+
+    if (state.mission.type === "score") {
+      return Math.max(0, state.score - state.mission.startScore);
+    }
+
+    return state.mission.progress;
+  }
+
+  function updateMission(eventName, amount = 1) {
+    if (!state.mission) {
+      return;
+    }
+
+    if (
+      (eventName === "score" && state.mission.type === "score") ||
+      (eventName === "correctAnswer" && state.mission.type === "combo")
+    ) {
+      pulseElement(els.missionCard, "metric-pulse");
+      if (getMissionProgress() >= state.mission.target) {
+        completeMission();
+      }
+      return;
+    }
+
+    const before = getMissionProgress();
+
+    if (eventName === "wrongAnswer" && state.mission.type === "safeCorrect") {
+      state.mission.progress = 0;
+    }
+
+    if (eventName === "correctAnswer" && (state.mission.type === "correct" || state.mission.type === "safeCorrect")) {
+      state.mission.progress += amount;
+    }
+
+    if (eventName === "ghostDefeated" && state.mission.type === "ghosts") {
+      state.mission.progress += amount;
+    }
+
+    const after = getMissionProgress();
+    if (after !== before) {
+      pulseElement(els.missionCard, "metric-pulse");
+    }
+
+    if (after >= state.mission.target) {
+      completeMission();
+    }
+  }
+
+  function completeMission() {
+    const bonus = CONFIG.missionBonus;
+    state.score += bonus;
+    playMissionSound();
+    pulseElement(els.missionCard, "metric-pulse");
+    pulseElement(els.progressWrap, "progress-pulse");
+
+    if (state.player) {
+      addFloatingText(state.player.x, state.player.y - 34, `משימה +${bonus}`, "#67f08b");
+      addBurst(state.player.x, state.player.y, "#67f08b", 18, 110);
+    }
+
+    assignMission();
+    updateHud();
+  }
+
+  function pulseElement(element, className) {
+    if (!element) {
+      return;
+    }
+
+    element.classList.remove(className);
+    void element.offsetWidth;
+    element.classList.add(className);
   }
 
   function update(dt) {
@@ -869,6 +1093,7 @@
 
     if (eaten > 0) {
       playTone(620 + Math.min(eaten, 4) * 40, 0.035, "square", 0.012);
+      updateMission("score");
       updateHud();
     }
   }
@@ -1032,21 +1257,65 @@
   }
 
   function generateQuestion() {
-    const tier = Math.min(4, Math.floor(state.correctAnswers / 20));
+    const reviewQuestion = Math.random() < CONFIG.adaptiveQuestionChance ? createReviewQuestion() : null;
+    const question = reviewQuestion || createRandomQuestion();
+    rememberQuestionKey(question.key);
+    return question;
+  }
+
+  function createRandomQuestion() {
+    const difficulty = getDifficultySettings();
+    const tier = Math.min(4, Math.floor(state.correctAnswers / difficulty.questionTierStep));
     const maxByTier = [9, 10, 12, 12, 12][tier];
+    const max = clamp(maxByTier + difficulty.questionMaxOffset, 6, 12);
     const minByTier = tier >= 3 ? 3 : 2;
     const multiplication = Math.random() > 0.42 || state.correctAnswers < 5;
-    const a = randomInt(minByTier, maxByTier);
-    const b = randomInt(2, maxByTier);
+    let a = randomInt(minByTier, max);
+    let b = randomInt(2, max);
 
-    if (multiplication) {
-      return {
-        text: formatQuestion(a, "×", b),
-        answer: a * b
-      };
+    for (let attempt = 0; attempt < 8 && hasRecentQuestion(factKey(a, b)); attempt += 1) {
+      a = randomInt(minByTier, max);
+      b = randomInt(2, max);
     }
 
+    return multiplication ? makeMultiplicationQuestion(a, b) : makeDivisionQuestion(a, b);
+  }
+
+  function createReviewQuestion() {
+    const candidates = Object.entries(state.factStats)
+      .map(([key, stats]) => ({
+        key,
+        stats,
+        weight: Math.max(0, stats.wrong * 2 - stats.correct)
+      }))
+      .filter((candidate) => candidate.weight > 0 && !hasRecentQuestion(candidate.key));
+
+    if (candidates.length === 0) {
+      return null;
+    }
+
+    const candidate = weightedRandom(candidates);
+    const factors = parseFactKey(candidate.key);
+    if (!factors) {
+      return null;
+    }
+
+    return Math.random() < 0.55
+      ? makeMultiplicationQuestion(factors.a, factors.b)
+      : makeDivisionQuestion(factors.a, factors.b);
+  }
+
+  function makeMultiplicationQuestion(a, b) {
     return {
+      key: factKey(a, b),
+      text: formatQuestion(a, "×", b),
+      answer: a * b
+    };
+  }
+
+  function makeDivisionQuestion(a, b) {
+    return {
+      key: factKey(a, b),
       text: formatQuestion(a * b, "÷", b),
       answer: a
     };
@@ -1054,6 +1323,61 @@
 
   function formatQuestion(left, operator, right) {
     return `${LTR_ISOLATE_START}${left} ${operator} ${right} = ?${LTR_ISOLATE_END}`;
+  }
+
+  function factKey(a, b) {
+    return `${a}×${b}`;
+  }
+
+  function parseFactKey(key) {
+    const match = /^(\d+)×(\d+)$/.exec(key);
+    if (!match) {
+      return null;
+    }
+
+    return {
+      a: Number(match[1]),
+      b: Number(match[2])
+    };
+  }
+
+  function hasRecentQuestion(key) {
+    return state.recentQuestionKeys.includes(key);
+  }
+
+  function rememberQuestionKey(key) {
+    state.recentQuestionKeys.unshift(key);
+    state.recentQuestionKeys = state.recentQuestionKeys.slice(0, CONFIG.recentQuestionMemory);
+  }
+
+  function weightedRandom(items) {
+    const total = items.reduce((sum, item) => sum + item.weight, 0);
+    let cursor = Math.random() * total;
+
+    for (const item of items) {
+      cursor -= item.weight;
+      if (cursor <= 0) {
+        return item;
+      }
+    }
+
+    return items[items.length - 1];
+  }
+
+  function recordFactResult(question, correct) {
+    if (!question?.key) {
+      return;
+    }
+
+    const stats = state.factStats[question.key] || { wrong: 0, correct: 0 };
+    if (correct) {
+      stats.correct += 1;
+    } else {
+      stats.wrong += 1;
+    }
+
+    state.factStats[question.key] = stats;
+    saveFactStats();
   }
 
   function randomInt(min, max) {
@@ -1071,6 +1395,8 @@
     els.questionFeedback.textContent = "";
     els.questionFeedback.style.color = "";
     els.answerInput.value = "";
+    els.answerInput.disabled = false;
+    els.submitAnswer.disabled = false;
     els.questionDialog.hidden = false;
     playTone(310, 0.08, "triangle", 0.035);
     setTimeout(() => els.answerInput.focus(), 30);
@@ -1079,6 +1405,8 @@
   function finishQuestion(correct) {
     els.questionDialog.hidden = true;
     state.answerLocked = false;
+    els.answerInput.disabled = false;
+    els.submitAnswer.disabled = false;
 
     if (correct) {
       applyCorrectAnswer();
@@ -1097,13 +1425,17 @@
     state.score += 260 + comboBonus;
     state.shake = 0.07;
     playCorrectSound();
+    pulseElement(els.progressWrap, "progress-pulse");
 
     if (ghost) {
       addBurst(ghost.x, ghost.y, ghost.color, 36, 150);
       addFloatingText(ghost.x, ghost.y - 24, `+${260 + comboBonus}`, "#67f08b");
       state.ghosts = state.ghosts.filter((candidate) => candidate.id !== ghost.id);
       scheduleGhostSpawn(0.9);
+      updateMission("ghostDefeated");
     }
+
+    updateMission("correctAnswer");
 
     if (state.correctAnswers % 25 === 0) {
       state.lives += 1;
@@ -1111,7 +1443,7 @@
       playTone(880, 0.12, "triangle", 0.04);
     }
 
-    if (state.correctAnswers >= TARGET_CORRECT) {
+    if (state.correctAnswers >= CONFIG.targetCorrect) {
       showEndScreen(true);
       return;
     }
@@ -1127,7 +1459,11 @@
     state.combo = 0;
     state.shake = 0.28;
     playWrongSound();
+    updateMission("wrongAnswer");
+    pulseElement(stage, "stage-hit");
+    pulseElement(els.lives.closest(".metric"), "life-hit");
     addBurst(state.player.x, state.player.y, "#ff4c5f", 26, 130);
+    addFloatingText(state.player.x, state.player.y - 26, "-חיים", "#ff4c5f");
 
     if (state.lives <= 0) {
       showEndScreen(false);
@@ -1177,7 +1513,7 @@
 
     if (state.score > state.bestScore) {
       state.bestScore = state.score;
-      storage.set(BEST_SCORE_KEY, String(state.bestScore));
+      storage.set(CONFIG.storageKeys.bestScore, String(state.bestScore));
       els.bestScore.textContent = numberFormat.format(state.bestScore);
     }
 
@@ -1644,9 +1980,12 @@
     const answer = Number(raw);
     const correct = Number.isFinite(answer) && answer === state.question.answer;
     state.answerLocked = true;
-    els.questionFeedback.textContent = correct ? "נכון!" : `כמעט. התשובה היא ${state.question.answer}`;
+    els.answerInput.disabled = true;
+    els.submitAnswer.disabled = true;
+    recordFactResult(state.question, correct);
+    els.questionFeedback.textContent = correct ? randomItem(CONFIG.positiveFeedback) : `לא נכון. התשובה היא ${state.question.answer}`;
     els.questionFeedback.style.color = correct ? "#67f08b" : "#ff4c5f";
-    setTimeout(() => finishQuestion(correct), correct ? 280 : 760);
+    setTimeout(() => finishQuestion(correct), correct ? CONFIG.questionFeedbackDelay.correct : CONFIG.questionFeedbackDelay.wrong);
   });
 
   els.pause.addEventListener("click", togglePause);
@@ -1654,6 +1993,9 @@
   els.playerForm.addEventListener("submit", startGame);
   els.playerNameInput.addEventListener("input", () => {
     els.nameError.textContent = "";
+  });
+  els.difficultyInputs.forEach((input) => {
+    input.addEventListener("change", () => setDifficulty(input.value));
   });
   els.restartButton.addEventListener("click", showStartScreen);
   window.addEventListener("resize", resizeCanvas);
@@ -1664,6 +2006,7 @@
   });
 
   resizeCanvas();
+  syncDifficultyInputs();
   setupGame();
   updateSoundButton();
   setTimeout(() => els.playerNameInput.focus(), 30);

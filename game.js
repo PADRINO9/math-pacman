@@ -1,0 +1,1671 @@
+(() => {
+  "use strict";
+
+  const WIDTH = 960;
+  const HEIGHT = 720;
+  const TILE = 24;
+  const COLS = WIDTH / TILE;
+  const ROWS = HEIGHT / TILE;
+  const TARGET_CORRECT = 100;
+  const INITIAL_LIVES = 3;
+  const MIN_GHOSTS = 10;
+  const BEST_SCORE_KEY = "mathPacmanBest";
+  const SOUND_KEY = "mathPacmanSound";
+  const PLAYER_START = { x: 2, y: 2 };
+  const CENTER_CELL = { x: Math.floor(COLS / 2), y: Math.floor(ROWS / 2) };
+
+  const DIRS = {
+    none: { x: 0, y: 0 },
+    up: { x: 0, y: -1 },
+    down: { x: 0, y: 1 },
+    left: { x: -1, y: 0 },
+    right: { x: 1, y: 0 }
+  };
+
+  const DIR_NAMES = ["up", "down", "left", "right"];
+  const OPPOSITE = { up: "down", down: "up", left: "right", right: "left", none: "none" };
+  const INPUT_BUFFER_SECONDS = 0.7;
+  const TURN_LOOKAHEAD = 7.5;
+  const TURN_SNAP_DISTANCE = 8.5;
+  const LTR_ISOLATE_START = "\u2066";
+  const LTR_ISOLATE_END = "\u2069";
+  const KEY_TO_DIR = {
+    ArrowUp: "up",
+    ArrowDown: "down",
+    ArrowLeft: "left",
+    ArrowRight: "right",
+    w: "up",
+    W: "up",
+    s: "down",
+    S: "down",
+    a: "left",
+    A: "left",
+    d: "right",
+    D: "right",
+    8: "up",
+    2: "down",
+    4: "left",
+    6: "right",
+    7: "up",
+    9: "up",
+    1: "down",
+    3: "down"
+  };
+
+  const GHOST_COLORS = [
+    "#ff4c5f",
+    "#42d9ff",
+    "#ffb340",
+    "#ff5fd7",
+    "#67f08b",
+    "#8a7dff",
+    "#f7f06a",
+    "#ff7a4d",
+    "#55ffd6",
+    "#c77dff"
+  ];
+
+  const AMBUSH_CELLS = [
+    { x: 8, y: 2 },
+    { x: 2, y: 8 },
+    { x: 11, y: 6 },
+    { x: 29, y: 6 },
+    { x: 8, y: 18 },
+    { x: 31, y: 18 }
+  ];
+
+  const canvas = document.getElementById("game-canvas");
+  const ctx = canvas.getContext("2d");
+  const stage = document.querySelector(".stage");
+
+  const els = {
+    correct: document.getElementById("correct-answers"),
+    score: document.getElementById("score"),
+    combo: document.getElementById("combo"),
+    lives: document.getElementById("lives"),
+    progress: document.getElementById("progress-fill"),
+    pause: document.getElementById("pause-button"),
+    sound: document.getElementById("sound-button"),
+    startScreen: document.getElementById("start-screen"),
+    playerForm: document.getElementById("player-form"),
+    playerNameInput: document.getElementById("player-name-input"),
+    nameError: document.getElementById("name-error"),
+    startButton: document.getElementById("start-button"),
+    bestScore: document.getElementById("best-score"),
+    endScreen: document.getElementById("end-screen"),
+    winnerTrophy: document.getElementById("winner-trophy"),
+    endKicker: document.getElementById("end-kicker"),
+    endTitle: document.getElementById("end-title"),
+    endCopy: document.getElementById("end-copy"),
+    finalScore: document.getElementById("final-score"),
+    finalCorrect: document.getElementById("final-correct"),
+    restartButton: document.getElementById("restart-button"),
+    questionDialog: document.getElementById("question-dialog"),
+    questionStatus: document.getElementById("question-status"),
+    questionTitle: document.getElementById("question-title"),
+    answerForm: document.getElementById("answer-form"),
+    answerInput: document.getElementById("answer-input"),
+    questionFeedback: document.getElementById("question-feedback")
+  };
+
+  const numberFormat = new Intl.NumberFormat("he-IL");
+
+  const storage = {
+    get(key, fallback) {
+      try {
+        return localStorage.getItem(key) ?? fallback;
+      } catch {
+        return fallback;
+      }
+    },
+    set(key, value) {
+      try {
+        localStorage.setItem(key, value);
+      } catch {
+        // Storage can be unavailable in some private browser contexts.
+      }
+    }
+  };
+
+  const state = {
+    phase: "start",
+    clock: 0,
+    lastTime: 0,
+    maze: [],
+    reachable: new Set(),
+    reachableList: [],
+    pellets: new Map(),
+    player: null,
+    ghosts: [],
+    particles: [],
+    floatingTexts: [],
+    pendingSpawns: [],
+    backdropStars: [],
+    score: 0,
+    combo: 0,
+    lives: INITIAL_LIVES,
+    correctAnswers: 0,
+    bestScore: Number(storage.get(BEST_SCORE_KEY, "0")) || 0,
+    playerName: "",
+    question: null,
+    currentGhostId: null,
+    answerLocked: false,
+    nextGhostId: 1,
+    soundEnabled: storage.get(SOUND_KEY, "on") !== "off",
+    audioContext: null,
+    shake: 0,
+    fireworkTimer: 0
+  };
+
+  function cellKey(x, y) {
+    return `${x},${y}`;
+  }
+
+  function centerOfCell(x, y) {
+    return {
+      x: x * TILE + TILE / 2,
+      y: y * TILE + TILE / 2
+    };
+  }
+
+  function toCell(x, y) {
+    return {
+      x: Math.floor(x / TILE),
+      y: Math.floor(y / TILE)
+    };
+  }
+
+  function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function distanceCells(a, b) {
+    return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+  }
+
+  function distanceSq(a, b) {
+    const dx = a.x - b.x;
+    const dy = a.y - b.y;
+    return dx * dx + dy * dy;
+  }
+
+  function randomItem(items) {
+    return items[Math.floor(Math.random() * items.length)];
+  }
+
+  function shuffle(items) {
+    const copy = items.slice();
+    for (let i = copy.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [copy[i], copy[j]] = [copy[j], copy[i]];
+    }
+    return copy;
+  }
+
+  function resizeCanvas() {
+    const ratio = Math.min(window.devicePixelRatio || 1, 2);
+    canvas.width = Math.round(WIDTH * ratio);
+    canvas.height = Math.round(HEIGHT * ratio);
+    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+  }
+
+  function createMaze() {
+    const maze = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+
+    for (let x = 0; x < COLS; x += 1) {
+      maze[0][x] = 1;
+      maze[ROWS - 1][x] = 1;
+    }
+
+    for (let y = 0; y < ROWS; y += 1) {
+      maze[y][0] = 1;
+      maze[y][COLS - 1] = 1;
+    }
+
+    const addBlock = (x, y, w, h) => {
+      for (let cy = y; cy < y + h; cy += 1) {
+        for (let cx = x; cx < x + w; cx += 1) {
+          if (cx > 0 && cx < COLS - 1 && cy > 0 && cy < ROWS - 1) {
+            maze[cy][cx] = 1;
+          }
+        }
+      }
+    };
+
+    const mirrorBlock = (x, y, w, h) => {
+      addBlock(x, y, w, h);
+      addBlock(COLS - x - w, y, w, h);
+    };
+
+    mirrorBlock(3, 3, 5, 2);
+    mirrorBlock(11, 3, 4, 2);
+    mirrorBlock(4, 7, 3, 5);
+    mirrorBlock(10, 8, 7, 2);
+    mirrorBlock(3, 15, 6, 2);
+    mirrorBlock(11, 13, 3, 6);
+    mirrorBlock(6, 21, 5, 2);
+    mirrorBlock(14, 22, 5, 2);
+    mirrorBlock(17, 6, 2, 5);
+    mirrorBlock(18, 17, 4, 2);
+    addBlock(18, 11, 4, 1);
+    addBlock(16, 15, 8, 1);
+    addBlock(19, 24, 2, 3);
+
+    clearZone(maze, PLAYER_START.x, PLAYER_START.y, 2);
+    clearZone(maze, CENTER_CELL.x, CENTER_CELL.y, 3);
+    clearZone(maze, 2, ROWS - 3, 2);
+    clearZone(maze, COLS - 3, ROWS - 3, 2);
+
+    return maze;
+  }
+
+  function clearZone(maze, cx, cy, radius) {
+    for (let y = cy - radius; y <= cy + radius; y += 1) {
+      for (let x = cx - radius; x <= cx + radius; x += 1) {
+        if (x > 0 && x < COLS - 1 && y > 0 && y < ROWS - 1) {
+          maze[y][x] = 0;
+        }
+      }
+    }
+  }
+
+  function isWallCell(x, y) {
+    if (x < 0 || y < 0 || x >= COLS || y >= ROWS) {
+      return true;
+    }
+
+    return state.maze[y][x] === 1;
+  }
+
+  function isWalkableCell(x, y) {
+    return !isWallCell(x, y);
+  }
+
+  function circleRectCollision(cx, cy, radius, rx, ry, rw, rh) {
+    const closestX = clamp(cx, rx, rx + rw);
+    const closestY = clamp(cy, ry, ry + rh);
+    const dx = cx - closestX;
+    const dy = cy - closestY;
+    return dx * dx + dy * dy < radius * radius;
+  }
+
+  function circleHitsWall(x, y, radius) {
+    const left = Math.floor((x - radius) / TILE);
+    const right = Math.floor((x + radius) / TILE);
+    const top = Math.floor((y - radius) / TILE);
+    const bottom = Math.floor((y + radius) / TILE);
+
+    for (let cy = top; cy <= bottom; cy += 1) {
+      for (let cx = left; cx <= right; cx += 1) {
+        if (isWallCell(cx, cy)) {
+          const rx = cx * TILE;
+          const ry = cy * TILE;
+          if (circleRectCollision(x, y, radius, rx, ry, TILE, TILE)) {
+            return true;
+          }
+        }
+      }
+    }
+
+    return false;
+  }
+
+  function computeReachable(start) {
+    const reachable = new Set();
+    const queue = [start];
+    reachable.add(cellKey(start.x, start.y));
+
+    for (let i = 0; i < queue.length; i += 1) {
+      const cell = queue[i];
+      for (const dir of DIR_NAMES) {
+        const next = {
+          x: cell.x + DIRS[dir].x,
+          y: cell.y + DIRS[dir].y
+        };
+        const key = cellKey(next.x, next.y);
+        if (!reachable.has(key) && isWalkableCell(next.x, next.y)) {
+          reachable.add(key);
+          queue.push(next);
+        }
+      }
+    }
+
+    return {
+      reachable,
+      list: queue
+    };
+  }
+
+  function seedPellets() {
+    state.pellets.clear();
+    for (const cell of state.reachableList) {
+      const nearPlayer = distanceCells(cell, PLAYER_START) <= 2;
+      const nearCenter = distanceCells(cell, CENTER_CELL) <= 2;
+      if (nearPlayer || nearCenter) {
+        continue;
+      }
+
+      if ((cell.x + cell.y) % 2 === 0 || Math.random() < 0.32) {
+        const pos = centerOfCell(cell.x, cell.y);
+        state.pellets.set(cellKey(cell.x, cell.y), {
+          x: pos.x,
+          y: pos.y,
+          phase: Math.random() * Math.PI * 2,
+          radius: Math.random() < 0.08 ? 4.5 : 2.6,
+          value: Math.random() < 0.08 ? 30 : 10
+        });
+      }
+    }
+  }
+
+  function refillPellets() {
+    if (state.pellets.size > 60) {
+      return;
+    }
+
+    const playerCell = toCell(state.player.x, state.player.y);
+    const candidates = shuffle(state.reachableList).filter((cell) => {
+      const key = cellKey(cell.x, cell.y);
+      return !state.pellets.has(key) && distanceCells(cell, playerCell) > 3 && distanceCells(cell, CENTER_CELL) > 2;
+    });
+
+    for (const cell of candidates.slice(0, 90)) {
+      const pos = centerOfCell(cell.x, cell.y);
+      state.pellets.set(cellKey(cell.x, cell.y), {
+        x: pos.x,
+        y: pos.y,
+        phase: Math.random() * Math.PI * 2,
+        radius: Math.random() < 0.1 ? 4.5 : 2.6,
+        value: Math.random() < 0.1 ? 30 : 10
+      });
+    }
+  }
+
+  function createPlayer() {
+    const pos = centerOfCell(PLAYER_START.x, PLAYER_START.y);
+    return {
+      x: pos.x,
+      y: pos.y,
+      radius: 10.2,
+      speed: 142,
+      direction: "right",
+      desiredDirection: "right",
+      directionRequestTime: 0,
+      mouth: 0.25,
+      invulnerable: 0,
+      trail: []
+    };
+  }
+
+  function createGhost(index) {
+    const cell = chooseGhostSpawnCell(index);
+    const pos = centerOfCell(cell.x, cell.y);
+    const direction = randomItem(DIR_NAMES);
+    const speedTier = Math.min(34, Math.floor(state.correctAnswers / 8) * 2);
+
+    return {
+      id: state.nextGhostId,
+      x: pos.x,
+      y: pos.y,
+      radius: 10.4,
+      speed: 94 + speedTier + (index % 4) * 4,
+      direction,
+      color: GHOST_COLORS[index % GHOST_COLORS.length],
+      scatter: scatterCornerFor(index),
+      personality: index % 4,
+      pathCooldown: 0,
+      spawnFlash: 0.8,
+      wobble: Math.random() * Math.PI * 2
+    };
+  }
+
+  function scatterCornerFor(index) {
+    const corners = [
+      { x: 2, y: 2 },
+      { x: COLS - 3, y: 2 },
+      { x: 2, y: ROWS - 3 },
+      { x: COLS - 3, y: ROWS - 3 }
+    ];
+    return corners[index % corners.length];
+  }
+
+  function chooseGhostSpawnCell(index) {
+    const playerCell = state.player ? toCell(state.player.x, state.player.y) : PLAYER_START;
+    const centerOptions = [
+      CENTER_CELL,
+      { x: CENTER_CELL.x - 2, y: CENTER_CELL.y },
+      { x: CENTER_CELL.x + 2, y: CENTER_CELL.y },
+      { x: CENTER_CELL.x, y: CENTER_CELL.y - 2 },
+      { x: CENTER_CELL.x, y: CENTER_CELL.y + 2 }
+    ];
+
+    const corner = scatterCornerFor(index);
+    const ambushOptions = AMBUSH_CELLS.slice(index % AMBUSH_CELLS.length)
+      .concat(AMBUSH_CELLS.slice(0, index % AMBUSH_CELLS.length));
+    const closeButFair = ambushOptions.filter((cell) => {
+      const distance = distanceCells(cell, playerCell);
+      return state.reachable.has(cellKey(cell.x, cell.y)) && distance >= 5 && distance <= 13;
+    });
+    const ordered = shuffle(closeButFair.concat(centerOptions, [corner])).filter((cell) => {
+      return state.reachable.has(cellKey(cell.x, cell.y)) && distanceCells(cell, playerCell) > 4;
+    });
+
+    if (ordered.length > 0) {
+      return ordered[0];
+    }
+
+    const farCells = state.reachableList.filter((cell) => distanceCells(cell, playerCell) > 10);
+    return randomItem(farCells.length ? farCells : state.reachableList);
+  }
+
+  function scheduleGhostSpawn(delay) {
+    state.pendingSpawns.push({
+      delay,
+      index: state.nextGhostId
+    });
+  }
+
+  function ensureGhostCount() {
+    const totalIncoming = state.ghosts.length + state.pendingSpawns.length;
+    for (let i = totalIncoming; i < MIN_GHOSTS; i += 1) {
+      scheduleGhostSpawn(0.25 + i * 0.08);
+    }
+  }
+
+  function spawnGhost(index) {
+    const ghost = createGhost(index);
+    state.nextGhostId += 1;
+    state.ghosts.push(ghost);
+    addBurst(ghost.x, ghost.y, ghost.color, 18, 90);
+  }
+
+  function setupGame() {
+    state.clock = 0;
+    state.lastTime = performance.now();
+    state.maze = createMaze();
+    const reachability = computeReachable(PLAYER_START);
+    state.reachable = reachability.reachable;
+    state.reachableList = reachability.list;
+    state.player = createPlayer();
+    state.ghosts = [];
+    state.particles = [];
+    state.floatingTexts = [];
+    state.pendingSpawns = [];
+    state.score = 0;
+    state.combo = 0;
+    state.lives = INITIAL_LIVES;
+    state.correctAnswers = 0;
+    state.question = null;
+    state.currentGhostId = null;
+    state.answerLocked = false;
+    state.nextGhostId = 1;
+    state.shake = 0;
+    state.fireworkTimer = 0;
+    seedPellets();
+    seedBackdrop();
+
+    for (let i = 0; i < MIN_GHOSTS; i += 1) {
+      spawnGhost(i);
+    }
+
+    updateHud();
+    if (state.phase === "playing") {
+      els.answerInput.blur();
+      stage.focus({ preventScroll: true });
+    }
+  }
+
+  function seedBackdrop() {
+    state.backdropStars = Array.from({ length: 90 }, (_, index) => ({
+      x: (index * 137.31) % WIDTH,
+      y: (index * 91.77) % HEIGHT,
+      size: 0.6 + ((index * 17) % 10) / 13,
+      phase: (index * 0.73) % (Math.PI * 2)
+    }));
+  }
+
+  function normalizePlayerName(value) {
+    return value.trim().replace(/\s+/g, " ").slice(0, 18);
+  }
+
+  function startGame(event) {
+    event?.preventDefault();
+    const playerName = normalizePlayerName(els.playerNameInput.value);
+
+    if (!playerName) {
+      els.nameError.textContent = "צריך שם לפני שמתחילים.";
+      els.playerNameInput.focus();
+      return;
+    }
+
+    state.playerName = playerName;
+    els.nameError.textContent = "";
+    setupGame();
+    state.phase = "playing";
+    els.startScreen.hidden = true;
+    els.startScreen.classList.remove("screen-visible");
+    els.endScreen.hidden = true;
+    els.pause.textContent = "Ⅱ";
+    stage.focus({ preventScroll: true });
+    resumeAudio();
+    playTone(420, 0.08, "triangle", 0.04);
+  }
+
+  function showStartScreen() {
+    state.phase = "start";
+    state.playerName = "";
+    els.endScreen.hidden = true;
+    els.questionDialog.hidden = true;
+    els.startScreen.hidden = false;
+    els.startScreen.classList.add("screen-visible");
+    els.winnerTrophy.hidden = true;
+    els.playerNameInput.value = "";
+    els.nameError.textContent = "";
+    els.pause.textContent = "Ⅱ";
+    setupGame();
+    setTimeout(() => els.playerNameInput.focus(), 30);
+  }
+
+  function togglePause() {
+    if (state.phase === "playing") {
+      state.phase = "paused";
+      els.pause.textContent = "▶";
+      playTone(220, 0.06, "sine", 0.035);
+      return;
+    }
+
+    if (state.phase === "paused") {
+      state.phase = "playing";
+      els.pause.textContent = "Ⅱ";
+      state.lastTime = performance.now();
+      playTone(440, 0.06, "sine", 0.035);
+    }
+  }
+
+  function toggleSound() {
+    state.soundEnabled = !state.soundEnabled;
+    storage.set(SOUND_KEY, state.soundEnabled ? "on" : "off");
+    updateSoundButton();
+    if (state.soundEnabled) {
+      resumeAudio();
+      playTone(520, 0.08, "triangle", 0.04);
+    }
+  }
+
+  function updateSoundButton() {
+    els.sound.textContent = state.soundEnabled ? "♪" : "×";
+    els.sound.setAttribute("aria-label", state.soundEnabled ? "צלילים פועלים" : "צלילים כבויים");
+  }
+
+  function resumeAudio() {
+    if (!state.soundEnabled) {
+      return;
+    }
+
+    if (!state.audioContext) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) {
+        return;
+      }
+      state.audioContext = new AudioContextClass();
+    }
+
+    if (state.audioContext.state === "suspended") {
+      state.audioContext.resume();
+    }
+  }
+
+  function playTone(frequency, duration, type = "sine", gainValue = 0.035) {
+    if (!state.soundEnabled || !state.audioContext) {
+      return;
+    }
+
+    const now = state.audioContext.currentTime;
+    const oscillator = state.audioContext.createOscillator();
+    const gain = state.audioContext.createGain();
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(frequency, now);
+    gain.gain.setValueAtTime(0, now);
+    gain.gain.linearRampToValueAtTime(gainValue, now + 0.01);
+    gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+    oscillator.connect(gain);
+    gain.connect(state.audioContext.destination);
+    oscillator.start(now);
+    oscillator.stop(now + duration + 0.02);
+  }
+
+  function playCorrectSound() {
+    playTone(520, 0.08, "triangle", 0.04);
+    setTimeout(() => playTone(740, 0.09, "triangle", 0.035), 55);
+  }
+
+  function playWrongSound() {
+    playTone(160, 0.16, "sawtooth", 0.035);
+  }
+
+  function setDirection(direction) {
+    if (!DIRS[direction] || !state.player || state.phase !== "playing") {
+      return;
+    }
+
+    state.player.desiredDirection = direction;
+    state.player.directionRequestTime = state.clock;
+    tryApplyPlayerDirection(state.player, direction);
+  }
+
+  function updateHud() {
+    els.correct.textContent = state.correctAnswers;
+    els.score.textContent = numberFormat.format(state.score);
+    els.combo.textContent = state.combo;
+    const hearts = "♥".repeat(Math.max(0, state.lives));
+    els.lives.textContent = hearts || "0";
+    els.lives.setAttribute("aria-label", `${state.lives} חיים`);
+    els.progress.style.width = `${Math.min(100, state.correctAnswers)}%`;
+    els.bestScore.textContent = numberFormat.format(state.bestScore);
+  }
+
+  function update(dt) {
+    state.clock += dt;
+    state.shake = Math.max(0, state.shake - dt);
+
+    if (state.phase === "playing") {
+      updatePlaying(dt);
+    } else {
+      updateAmbient(dt);
+    }
+  }
+
+  function updatePlaying(dt) {
+    updateSpawns(dt);
+    updatePlayer(dt);
+    eatPellets();
+    updateGhosts(dt);
+    checkGhostCollision();
+    refillPellets();
+    updateParticles(dt);
+    updateFloatingTexts(dt);
+    ensureGhostCount();
+  }
+
+  function updateAmbient(dt) {
+    if (state.player) {
+      state.player.mouth = 0.24 + Math.abs(Math.sin(state.clock * 8)) * 0.32;
+    }
+
+    if (state.phase === "ended") {
+      updateFireworks(dt);
+    }
+
+    updateParticles(dt);
+    updateFloatingTexts(dt);
+  }
+
+  function updateSpawns(dt) {
+    for (let i = state.pendingSpawns.length - 1; i >= 0; i -= 1) {
+      const pending = state.pendingSpawns[i];
+      pending.delay -= dt;
+      if (pending.delay <= 0) {
+        spawnGhost(pending.index);
+        state.pendingSpawns.splice(i, 1);
+      }
+    }
+  }
+
+  function updatePlayer(dt) {
+    const player = state.player;
+    player.invulnerable = Math.max(0, player.invulnerable - dt);
+    player.mouth = 0.24 + Math.abs(Math.sin(state.clock * 10)) * 0.34;
+
+    const hasFreshDirection = state.clock - player.directionRequestTime <= INPUT_BUFFER_SECONDS;
+
+    if (hasFreshDirection) {
+      tryApplyPlayerDirection(player, player.desiredDirection);
+    }
+
+    const moved = moveActor(player, player.direction, player.speed * dt);
+
+    if (!moved && hasFreshDirection && tryApplyPlayerDirection(player, player.desiredDirection)) {
+      moveActor(player, player.direction, player.speed * dt);
+    }
+
+    player.trail.unshift({ x: player.x, y: player.y, life: 0.28 });
+    player.trail = player.trail.filter((point) => {
+      point.life -= dt;
+      return point.life > 0;
+    }).slice(0, 14);
+  }
+
+  function tryApplyPlayerDirection(player, direction) {
+    if (!DIRS[direction] || direction === "none") {
+      return false;
+    }
+
+    const turnPosition = getPlayerTurnPosition(player, direction);
+    if (!turnPosition) {
+      return false;
+    }
+
+    const vector = DIRS[direction];
+    const nextX = turnPosition.x + vector.x * TURN_LOOKAHEAD;
+    const nextY = turnPosition.y + vector.y * TURN_LOOKAHEAD;
+
+    if (circleHitsWall(nextX, nextY, player.radius)) {
+      return false;
+    }
+
+    player.x = turnPosition.x;
+    player.y = turnPosition.y;
+    player.direction = direction;
+    return true;
+  }
+
+  function getPlayerTurnPosition(player, direction) {
+    const vector = DIRS[direction];
+    const turnPosition = { x: player.x, y: player.y };
+
+    if (vector.x !== 0) {
+      const laneY = nearestLaneCenter(player.y);
+      if (Math.abs(player.y - laneY) > TURN_SNAP_DISTANCE) {
+        return null;
+      }
+      turnPosition.y = laneY;
+    }
+
+    if (vector.y !== 0) {
+      const laneX = nearestLaneCenter(player.x);
+      if (Math.abs(player.x - laneX) > TURN_SNAP_DISTANCE) {
+        return null;
+      }
+      turnPosition.x = laneX;
+    }
+
+    return turnPosition;
+  }
+
+  function nearestLaneCenter(value) {
+    return Math.round((value - TILE / 2) / TILE) * TILE + TILE / 2;
+  }
+
+  function canMove(actor, direction, distance) {
+    const vector = DIRS[direction];
+    if (!vector) {
+      return false;
+    }
+
+    const aligned = alignedPosition(actor, direction);
+    return !circleHitsWall(aligned.x + vector.x * distance, aligned.y + vector.y * distance, actor.radius);
+  }
+
+  function moveActor(actor, direction, distance) {
+    const vector = DIRS[direction];
+    if (!vector || direction === "none") {
+      return false;
+    }
+
+    const aligned = alignedPosition(actor, direction);
+    actor.x = aligned.x;
+    actor.y = aligned.y;
+
+    let moved = false;
+    let remaining = distance;
+    const step = TILE / 5;
+
+    while (remaining > 0) {
+      const amount = Math.min(step, remaining);
+      const nextX = actor.x + vector.x * amount;
+      const nextY = actor.y + vector.y * amount;
+
+      if (circleHitsWall(nextX, nextY, actor.radius)) {
+        return moved;
+      }
+
+      actor.x = nextX;
+      actor.y = nextY;
+      remaining -= amount;
+      moved = true;
+    }
+
+    return moved;
+  }
+
+  function alignedPosition(actor, direction) {
+    const vector = DIRS[direction];
+    const result = { x: actor.x, y: actor.y };
+    const cell = toCell(actor.x, actor.y);
+    const center = centerOfCell(cell.x, cell.y);
+    const snapDistance = 4.8;
+
+    if (vector.x !== 0 && Math.abs(actor.y - center.y) < snapDistance) {
+      result.y = center.y;
+    }
+
+    if (vector.y !== 0 && Math.abs(actor.x - center.x) < snapDistance) {
+      result.x = center.x;
+    }
+
+    return result;
+  }
+
+  function eatPellets() {
+    const player = state.player;
+    let eaten = 0;
+
+    for (const [key, pellet] of state.pellets) {
+      const dx = pellet.x - player.x;
+      const dy = pellet.y - player.y;
+      const hitRadius = player.radius + pellet.radius + 1.4;
+      if (dx * dx + dy * dy <= hitRadius * hitRadius) {
+        state.pellets.delete(key);
+        state.score += pellet.value;
+        eaten += 1;
+        if (pellet.value > 10) {
+          addBurst(pellet.x, pellet.y, "#ffd84a", 12, 70);
+          addFloatingText(pellet.x, pellet.y - 12, `+${pellet.value}`, "#ffd84a");
+        } else if (Math.random() < 0.2) {
+          addBurst(pellet.x, pellet.y, "#f7fbff", 4, 42);
+        }
+      }
+    }
+
+    if (eaten > 0) {
+      playTone(620 + Math.min(eaten, 4) * 40, 0.035, "square", 0.012);
+      updateHud();
+    }
+  }
+
+  function updateGhosts(dt) {
+    const playerCell = toCell(state.player.x, state.player.y);
+    for (const ghost of state.ghosts) {
+      ghost.pathCooldown -= dt;
+      ghost.spawnFlash = Math.max(0, ghost.spawnFlash - dt);
+      ghost.wobble += dt * 4;
+
+      const cell = toCell(ghost.x, ghost.y);
+      const center = centerOfCell(cell.x, cell.y);
+      const nearCenter = Math.abs(ghost.x - center.x) < 2.6 && Math.abs(ghost.y - center.y) < 2.6;
+      const blocked = !canMove(ghost, ghost.direction, 3.2);
+
+      if (nearCenter || blocked || ghost.pathCooldown <= 0) {
+        ghost.x = nearCenter ? center.x : ghost.x;
+        ghost.y = nearCenter ? center.y : ghost.y;
+        const target = getGhostTarget(ghost, playerCell);
+        ghost.direction = findNextDirection(cell, target, ghost.direction);
+        ghost.pathCooldown = 0.18 + Math.random() * 0.16;
+      }
+
+      moveActor(ghost, ghost.direction, ghost.speed * dt);
+    }
+  }
+
+  function getGhostTarget(ghost, playerCell) {
+    const player = state.player;
+    const playerDir = DIRS[player.direction] || DIRS.right;
+    const cycle = state.clock % 24;
+    const scatterWindow = state.clock > 10 && cycle > 18;
+
+    if (player.invulnerable > 0 || scatterWindow) {
+      return normalizeTargetCell(ghost.scatter);
+    }
+
+    if (ghost.personality === 1) {
+      return normalizeTargetCell({
+        x: playerCell.x + playerDir.x * 4,
+        y: playerCell.y + playerDir.y * 4
+      });
+    }
+
+    if (ghost.personality === 2) {
+      const side = state.clock % 6 < 3 ? { x: playerDir.y, y: -playerDir.x } : { x: -playerDir.y, y: playerDir.x };
+      return normalizeTargetCell({
+        x: playerCell.x + side.x * 5,
+        y: playerCell.y + side.y * 5
+      });
+    }
+
+    if (ghost.personality === 3 && distanceCells(toCell(ghost.x, ghost.y), playerCell) < 7) {
+      return normalizeTargetCell(ghost.scatter);
+    }
+
+    return normalizeTargetCell(playerCell);
+  }
+
+  function normalizeTargetCell(cell) {
+    const clampedCell = {
+      x: clamp(cell.x, 1, COLS - 2),
+      y: clamp(cell.y, 1, ROWS - 2)
+    };
+
+    if (state.reachable.has(cellKey(clampedCell.x, clampedCell.y))) {
+      return clampedCell;
+    }
+
+    let best = PLAYER_START;
+    let bestDistance = Infinity;
+    for (const reachable of state.reachableList) {
+      const dx = reachable.x - clampedCell.x;
+      const dy = reachable.y - clampedCell.y;
+      const d = dx * dx + dy * dy;
+      if (d < bestDistance) {
+        best = reachable;
+        bestDistance = d;
+      }
+    }
+
+    return best;
+  }
+
+  function findNextDirection(start, target, currentDirection) {
+    const options = DIR_NAMES.filter((dir) => {
+      const next = {
+        x: start.x + DIRS[dir].x,
+        y: start.y + DIRS[dir].y
+      };
+      return state.reachable.has(cellKey(next.x, next.y));
+    });
+
+    if (options.length === 0) {
+      return OPPOSITE[currentDirection] || "right";
+    }
+
+    const withoutReverse = options.filter((dir) => dir !== OPPOSITE[currentDirection]);
+    const firstMoves = shuffle(withoutReverse.length > 0 ? withoutReverse : options);
+    const visited = new Set([cellKey(start.x, start.y)]);
+    const queue = [];
+
+    for (const dir of firstMoves) {
+      const next = {
+        x: start.x + DIRS[dir].x,
+        y: start.y + DIRS[dir].y
+      };
+      const key = cellKey(next.x, next.y);
+      visited.add(key);
+      queue.push({ cell: next, first: dir });
+    }
+
+    let fallback = firstMoves[0];
+    let fallbackScore = Infinity;
+
+    for (let i = 0; i < queue.length; i += 1) {
+      const item = queue[i];
+      const score = distanceCells(item.cell, target);
+      if (score < fallbackScore) {
+        fallback = item.first;
+        fallbackScore = score;
+      }
+
+      if (item.cell.x === target.x && item.cell.y === target.y) {
+        return item.first;
+      }
+
+      for (const dir of DIR_NAMES) {
+        const next = {
+          x: item.cell.x + DIRS[dir].x,
+          y: item.cell.y + DIRS[dir].y
+        };
+        const key = cellKey(next.x, next.y);
+        if (!visited.has(key) && state.reachable.has(key)) {
+          visited.add(key);
+          queue.push({ cell: next, first: item.first });
+        }
+      }
+    }
+
+    return fallback;
+  }
+
+  function checkGhostCollision() {
+    if (state.player.invulnerable > 0 || state.phase !== "playing") {
+      return;
+    }
+
+    const player = state.player;
+    const ghost = state.ghosts.find((candidate) => {
+      const dx = candidate.x - player.x;
+      const dy = candidate.y - player.y;
+      const radius = candidate.radius + player.radius - 1.5;
+      return dx * dx + dy * dy < radius * radius;
+    });
+
+    if (ghost) {
+      openQuestion(ghost);
+    }
+  }
+
+  function generateQuestion() {
+    const tier = Math.min(4, Math.floor(state.correctAnswers / 20));
+    const maxByTier = [9, 10, 12, 12, 12][tier];
+    const minByTier = tier >= 3 ? 3 : 2;
+    const multiplication = Math.random() > 0.42 || state.correctAnswers < 5;
+    const a = randomInt(minByTier, maxByTier);
+    const b = randomInt(2, maxByTier);
+
+    if (multiplication) {
+      return {
+        text: formatQuestion(a, "×", b),
+        answer: a * b
+      };
+    }
+
+    return {
+      text: formatQuestion(a * b, "÷", b),
+      answer: a
+    };
+  }
+
+  function formatQuestion(left, operator, right) {
+    return `${LTR_ISOLATE_START}${left} ${operator} ${right} = ?${LTR_ISOLATE_END}`;
+  }
+
+  function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  function openQuestion(ghost) {
+    state.phase = "question";
+    state.question = generateQuestion();
+    state.currentGhostId = ghost.id;
+    state.answerLocked = false;
+    els.questionStatus.textContent = `רוח ${state.combo > 2 ? "ברצף" : "נתפסה"}`;
+    els.questionTitle.dir = "ltr";
+    els.questionTitle.textContent = state.question.text;
+    els.questionFeedback.textContent = "";
+    els.questionFeedback.style.color = "";
+    els.answerInput.value = "";
+    els.questionDialog.hidden = false;
+    playTone(310, 0.08, "triangle", 0.035);
+    setTimeout(() => els.answerInput.focus(), 30);
+  }
+
+  function finishQuestion(correct) {
+    els.questionDialog.hidden = true;
+    state.answerLocked = false;
+
+    if (correct) {
+      applyCorrectAnswer();
+    } else {
+      applyWrongAnswer();
+    }
+
+    updateHud();
+  }
+
+  function applyCorrectAnswer() {
+    const ghost = state.ghosts.find((candidate) => candidate.id === state.currentGhostId);
+    state.correctAnswers += 1;
+    state.combo += 1;
+    const comboBonus = Math.min(750, state.combo * 35);
+    state.score += 260 + comboBonus;
+    state.shake = 0.07;
+    playCorrectSound();
+
+    if (ghost) {
+      addBurst(ghost.x, ghost.y, ghost.color, 36, 150);
+      addFloatingText(ghost.x, ghost.y - 24, `+${260 + comboBonus}`, "#67f08b");
+      state.ghosts = state.ghosts.filter((candidate) => candidate.id !== ghost.id);
+      scheduleGhostSpawn(0.9);
+    }
+
+    if (state.correctAnswers % 25 === 0) {
+      state.lives += 1;
+      addFloatingText(state.player.x, state.player.y - 28, "+חיים", "#ff5f9f");
+      playTone(880, 0.12, "triangle", 0.04);
+    }
+
+    if (state.correctAnswers >= TARGET_CORRECT) {
+      showEndScreen(true);
+      return;
+    }
+
+    state.phase = "playing";
+    state.currentGhostId = null;
+    state.question = null;
+    ensureGhostCount();
+  }
+
+  function applyWrongAnswer() {
+    state.lives -= 1;
+    state.combo = 0;
+    state.shake = 0.28;
+    playWrongSound();
+    addBurst(state.player.x, state.player.y, "#ff4c5f", 26, 130);
+
+    if (state.lives <= 0) {
+      showEndScreen(false);
+      return;
+    }
+
+    resetPositionsAfterHit();
+    state.player.invulnerable = 2.6;
+    state.phase = "playing";
+    state.currentGhostId = null;
+    state.question = null;
+  }
+
+  function resetPositionsAfterHit() {
+    const playerPos = centerOfCell(PLAYER_START.x, PLAYER_START.y);
+    state.player.x = playerPos.x;
+    state.player.y = playerPos.y;
+    state.player.direction = "right";
+    state.player.desiredDirection = "right";
+    state.player.directionRequestTime = state.clock;
+    state.player.trail = [];
+
+    state.ghosts.forEach((ghost, index) => {
+      const cell = chooseGhostSpawnCell(index);
+      const pos = centerOfCell(cell.x, cell.y);
+      ghost.x = pos.x;
+      ghost.y = pos.y;
+      ghost.direction = randomItem(DIR_NAMES);
+      ghost.pathCooldown = 0;
+      ghost.spawnFlash = 0.8;
+    });
+  }
+
+  function showEndScreen(won) {
+    const playerName = state.playerName || "שחקן";
+    state.phase = "ended";
+    state.currentGhostId = null;
+    state.question = null;
+    els.questionDialog.hidden = true;
+    els.endScreen.hidden = false;
+    els.winnerTrophy.hidden = !won;
+    els.endKicker.textContent = won ? `כל הכבוד ${playerName}` : "עוד סיבוב";
+    els.endTitle.textContent = won ? `${playerName} ניצח!` : "נגמרו החיים";
+    els.endCopy.textContent = won ? `${playerName} השלים 100 תשובות נכונות.` : `${playerName}, השיא הבא מחכה כבר על הלוח.`;
+    els.finalScore.textContent = numberFormat.format(state.score);
+    els.finalCorrect.textContent = state.correctAnswers;
+
+    if (state.score > state.bestScore) {
+      state.bestScore = state.score;
+      storage.set(BEST_SCORE_KEY, String(state.bestScore));
+      els.bestScore.textContent = numberFormat.format(state.bestScore);
+    }
+
+    if (won) {
+      state.fireworkTimer = 0;
+      for (let i = 0; i < 7; i += 1) {
+        spawnFirework(90 + i * 120, 90 + Math.random() * 210);
+      }
+    }
+  }
+
+  function updateFireworks(dt) {
+    state.fireworkTimer -= dt;
+    if (state.fireworkTimer <= 0) {
+      spawnFirework(80 + Math.random() * (WIDTH - 160), 80 + Math.random() * 260);
+      state.fireworkTimer = 0.28 + Math.random() * 0.35;
+    }
+  }
+
+  function addBurst(x, y, color, count, speed) {
+    for (let i = 0; i < count; i += 1) {
+      const angle = Math.random() * Math.PI * 2;
+      const velocity = speed * (0.35 + Math.random() * 0.9);
+      state.particles.push({
+        x,
+        y,
+        vx: Math.cos(angle) * velocity,
+        vy: Math.sin(angle) * velocity,
+        color,
+        radius: 1.4 + Math.random() * 2.8,
+        life: 0.45 + Math.random() * 0.45,
+        maxLife: 0.9
+      });
+    }
+  }
+
+  function spawnFirework(x, y) {
+    const color = randomItem(["#ffd84a", "#67f08b", "#42d9ff", "#ff5f9f", "#f7f06a"]);
+    addBurst(x, y, color, 58, 210);
+    playTone(560 + Math.random() * 260, 0.08, "triangle", 0.018);
+  }
+
+  function addFloatingText(x, y, text, color) {
+    state.floatingTexts.push({
+      x,
+      y,
+      text,
+      color,
+      life: 0.9,
+      maxLife: 0.9
+    });
+  }
+
+  function updateParticles(dt) {
+    state.particles = state.particles.filter((particle) => {
+      particle.life -= dt;
+      particle.x += particle.vx * dt;
+      particle.y += particle.vy * dt;
+      particle.vx *= 0.985;
+      particle.vy *= 0.985;
+      return particle.life > 0;
+    });
+  }
+
+  function updateFloatingTexts(dt) {
+    state.floatingTexts = state.floatingTexts.filter((item) => {
+      item.life -= dt;
+      item.y -= 28 * dt;
+      return item.life > 0;
+    });
+  }
+
+  function render() {
+    ctx.save();
+    ctx.clearRect(0, 0, WIDTH, HEIGHT);
+
+    if (state.shake > 0) {
+      const amount = state.shake * 12;
+      ctx.translate((Math.random() - 0.5) * amount, (Math.random() - 0.5) * amount);
+    }
+
+    drawBackdrop();
+    drawMaze();
+    drawPellets();
+    drawPlayer();
+    drawGhosts();
+    drawParticles();
+    drawFloatingTexts();
+
+    if (state.phase === "paused") {
+      drawPaused();
+    }
+
+    ctx.restore();
+  }
+
+  function drawBackdrop() {
+    const gradient = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
+    gradient.addColorStop(0, "#02050c");
+    gradient.addColorStop(0.55, "#061020");
+    gradient.addColorStop(1, "#02040a");
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+
+    ctx.save();
+    ctx.globalAlpha = 0.28;
+    ctx.strokeStyle = "rgba(104, 231, 255, 0.08)";
+    ctx.lineWidth = 1;
+    for (let x = 0; x <= WIDTH; x += TILE) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, HEIGHT);
+      ctx.stroke();
+    }
+    for (let y = 0; y <= HEIGHT; y += TILE) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(WIDTH, y);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    for (const star of state.backdropStars) {
+      const alpha = 0.16 + Math.sin(state.clock * 1.8 + star.phase) * 0.08;
+      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+
+  function drawMaze() {
+    ctx.save();
+    ctx.shadowColor = "rgba(66, 217, 255, 0.65)";
+    ctx.shadowBlur = 14;
+
+    const wallGradient = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
+    wallGradient.addColorStop(0, "#1235b8");
+    wallGradient.addColorStop(0.45, "#0b7ec3");
+    wallGradient.addColorStop(1, "#6f36ff");
+    ctx.fillStyle = wallGradient;
+
+    for (let y = 0; y < ROWS; y += 1) {
+      for (let x = 0; x < COLS; x += 1) {
+        if (state.maze[y][x] !== 1) {
+          continue;
+        }
+
+        const px = x * TILE;
+        const py = y * TILE;
+        roundedRect(px + 2, py + 2, TILE - 4, TILE - 4, 5);
+        ctx.fill();
+      }
+    }
+
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+    ctx.lineWidth = 1;
+    for (let y = 0; y < ROWS; y += 1) {
+      for (let x = 0; x < COLS; x += 1) {
+        if (state.maze[y][x] === 1) {
+          ctx.strokeRect(x * TILE + 3.5, y * TILE + 3.5, TILE - 7, TILE - 7);
+        }
+      }
+    }
+
+    ctx.restore();
+  }
+
+  function roundedRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
+  function drawPellets() {
+    ctx.save();
+    ctx.shadowColor = "rgba(255, 216, 74, 0.6)";
+    ctx.shadowBlur = 8;
+    for (const pellet of state.pellets.values()) {
+      const pulse = 1 + Math.sin(state.clock * 5 + pellet.phase) * 0.18;
+      const radius = pellet.radius * pulse;
+      ctx.fillStyle = pellet.value > 10 ? "#ffd84a" : "#f7fbff";
+
+      if (pellet.value > 10) {
+        drawStar(pellet.x, pellet.y, 5, radius + 2, radius * 0.48, state.clock + pellet.phase);
+        ctx.fill();
+      } else {
+        ctx.beginPath();
+        ctx.arc(pellet.x, pellet.y, radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+    ctx.restore();
+  }
+
+  function drawStar(cx, cy, spikes, outerRadius, innerRadius, rotation = -Math.PI / 2) {
+    let rot = rotation;
+    const step = Math.PI / spikes;
+
+    ctx.beginPath();
+    ctx.moveTo(cx + Math.cos(rot) * outerRadius, cy + Math.sin(rot) * outerRadius);
+
+    for (let i = 0; i < spikes; i += 1) {
+      rot += step;
+      ctx.lineTo(cx + Math.cos(rot) * innerRadius, cy + Math.sin(rot) * innerRadius);
+      rot += step;
+      ctx.lineTo(cx + Math.cos(rot) * outerRadius, cy + Math.sin(rot) * outerRadius);
+    }
+
+    ctx.closePath();
+  }
+
+  function drawPlayer() {
+    const player = state.player;
+    if (!player) {
+      return;
+    }
+
+    ctx.save();
+    for (const point of player.trail) {
+      const alpha = Math.max(0, point.life / 0.28) * 0.24;
+      ctx.fillStyle = `rgba(255, 216, 74, ${alpha})`;
+      ctx.beginPath();
+      ctx.arc(point.x, point.y, player.radius * (0.7 + alpha), 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    const flicker = player.invulnerable > 0 && Math.floor(state.clock * 16) % 2 === 0;
+    if (flicker) {
+      ctx.globalAlpha = 0.55;
+    }
+
+    const angle = directionAngle(player.direction);
+    const mouth = player.mouth;
+    const bodyGradient = ctx.createRadialGradient(player.x - 4, player.y - 6, 2, player.x, player.y, player.radius + 5);
+    bodyGradient.addColorStop(0, "#fff9a2");
+    bodyGradient.addColorStop(0.45, "#ffd84a");
+    bodyGradient.addColorStop(1, "#f1a900");
+
+    ctx.shadowColor = "rgba(255, 216, 74, 0.62)";
+    ctx.shadowBlur = 18;
+    ctx.fillStyle = bodyGradient;
+    ctx.beginPath();
+    ctx.moveTo(player.x, player.y);
+    ctx.arc(player.x, player.y, player.radius, angle + mouth, angle + Math.PI * 2 - mouth, false);
+    ctx.closePath();
+    ctx.fill();
+
+    const eyeAngle = angle - 0.9;
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#191400";
+    ctx.beginPath();
+    ctx.arc(
+      player.x + Math.cos(eyeAngle) * player.radius * 0.48,
+      player.y + Math.sin(eyeAngle) * player.radius * 0.48,
+      1.8,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+    ctx.restore();
+  }
+
+  function directionAngle(direction) {
+    if (direction === "left") {
+      return Math.PI;
+    }
+    if (direction === "up") {
+      return -Math.PI / 2;
+    }
+    if (direction === "down") {
+      return Math.PI / 2;
+    }
+    return 0;
+  }
+
+  function drawGhosts() {
+    const player = state.player;
+    for (const ghost of state.ghosts) {
+      ctx.save();
+      const flashAlpha = ghost.spawnFlash > 0 ? 0.48 + Math.sin(state.clock * 24) * 0.22 : 1;
+      ctx.globalAlpha = clamp(flashAlpha, 0.28, 1);
+      ctx.shadowColor = ghost.color;
+      ctx.shadowBlur = 16;
+      ctx.fillStyle = ghost.color;
+
+      const wobble = Math.sin(ghost.wobble) * 1.5;
+      const x = ghost.x;
+      const y = ghost.y + wobble;
+      const r = ghost.radius;
+
+      ctx.beginPath();
+      ctx.moveTo(x - r, y + r);
+      ctx.lineTo(x - r, y);
+      ctx.arc(x, y, r, Math.PI, 0, false);
+      ctx.lineTo(x + r, y + r);
+
+      for (let i = 0; i < 4; i += 1) {
+        const waveX = x + r - (i + 0.5) * (r * 2 / 4);
+        const nextX = x + r - (i + 1) * (r * 2 / 4);
+        ctx.quadraticCurveTo(waveX, y + r - 5, nextX, y + r);
+      }
+
+      ctx.closePath();
+      ctx.fill();
+
+      ctx.shadowBlur = 0;
+      const look = player
+        ? {
+          x: clamp((player.x - ghost.x) / 140, -1, 1),
+          y: clamp((player.y - ghost.y) / 140, -1, 1)
+        }
+        : DIRS[ghost.direction];
+
+      drawGhostEye(x - r * 0.36, y - r * 0.16, r, look);
+      drawGhostEye(x + r * 0.36, y - r * 0.16, r, look);
+      ctx.restore();
+    }
+  }
+
+  function drawGhostEye(x, y, radius, look) {
+    ctx.fillStyle = "#f7fbff";
+    ctx.beginPath();
+    ctx.ellipse(x, y, radius * 0.27, radius * 0.34, 0, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = "#08111f";
+    ctx.beginPath();
+    ctx.arc(x + look.x * radius * 0.11, y + look.y * radius * 0.11, radius * 0.12, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+  function drawParticles() {
+    ctx.save();
+    for (const particle of state.particles) {
+      const alpha = clamp(particle.life / particle.maxLife, 0, 1);
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = particle.color;
+      ctx.shadowColor = particle.color;
+      ctx.shadowBlur = 12;
+      ctx.beginPath();
+      ctx.arc(particle.x, particle.y, particle.radius * (0.7 + alpha), 0, Math.PI * 2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  function drawFloatingTexts() {
+    ctx.save();
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.font = "700 20px Arial, sans-serif";
+    for (const item of state.floatingTexts) {
+      const alpha = clamp(item.life / item.maxLife, 0, 1);
+      ctx.globalAlpha = alpha;
+      ctx.fillStyle = item.color;
+      ctx.shadowColor = "rgba(0, 0, 0, 0.8)";
+      ctx.shadowBlur = 6;
+      ctx.fillText(item.text, item.x, item.y);
+    }
+    ctx.restore();
+  }
+
+  function drawPaused() {
+    ctx.save();
+    ctx.fillStyle = "rgba(0, 0, 0, 0.42)";
+    ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#ffd84a";
+    ctx.shadowColor = "rgba(255, 216, 74, 0.42)";
+    ctx.shadowBlur = 18;
+    ctx.font = "700 54px Arial, sans-serif";
+    ctx.fillText("השהיה", WIDTH / 2, HEIGHT / 2);
+    ctx.restore();
+  }
+
+  function gameLoop(now) {
+    const dt = Math.min(0.033, Math.max(0, (now - state.lastTime) / 1000 || 0));
+    state.lastTime = now;
+    update(dt);
+    render();
+    requestAnimationFrame(gameLoop);
+  }
+
+  document.addEventListener("keydown", (event) => {
+    if (state.phase === "question") {
+      return;
+    }
+
+    if (event.key === " " || event.key === "Escape") {
+      event.preventDefault();
+      togglePause();
+      return;
+    }
+
+    const direction = KEY_TO_DIR[event.key];
+    if (direction) {
+      event.preventDefault();
+      setDirection(direction);
+    }
+  });
+
+  document.querySelectorAll(".touch-pad button").forEach((button) => {
+    const direction = button.dataset.dir;
+    button.addEventListener("pointerdown", (event) => {
+      event.preventDefault();
+      setDirection(direction);
+    });
+    button.addEventListener("click", () => setDirection(direction));
+  });
+
+  let pointerStart = null;
+  stage.addEventListener("pointerdown", (event) => {
+    if (state.phase !== "playing" || event.target.closest("button, input")) {
+      return;
+    }
+
+    pointerStart = { x: event.clientX, y: event.clientY };
+  });
+
+  stage.addEventListener("pointermove", (event) => {
+    if (!pointerStart || state.phase !== "playing") {
+      return;
+    }
+
+    const dx = event.clientX - pointerStart.x;
+    const dy = event.clientY - pointerStart.y;
+    if (Math.hypot(dx, dy) < 28) {
+      return;
+    }
+
+    setDirection(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : (dy > 0 ? "down" : "up"));
+    pointerStart = { x: event.clientX, y: event.clientY };
+  });
+
+  stage.addEventListener("pointerup", () => {
+    pointerStart = null;
+  });
+
+  stage.addEventListener("pointercancel", () => {
+    pointerStart = null;
+  });
+
+  els.answerForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    if (state.answerLocked || !state.question) {
+      return;
+    }
+
+    const raw = els.answerInput.value.trim();
+    if (raw === "") {
+      return;
+    }
+
+    const answer = Number(raw);
+    const correct = Number.isFinite(answer) && answer === state.question.answer;
+    state.answerLocked = true;
+    els.questionFeedback.textContent = correct ? "נכון!" : `כמעט. התשובה היא ${state.question.answer}`;
+    els.questionFeedback.style.color = correct ? "#67f08b" : "#ff4c5f";
+    setTimeout(() => finishQuestion(correct), correct ? 280 : 760);
+  });
+
+  els.pause.addEventListener("click", togglePause);
+  els.sound.addEventListener("click", toggleSound);
+  els.playerForm.addEventListener("submit", startGame);
+  els.playerNameInput.addEventListener("input", () => {
+    els.nameError.textContent = "";
+  });
+  els.restartButton.addEventListener("click", showStartScreen);
+  window.addEventListener("resize", resizeCanvas);
+  window.addEventListener("blur", () => {
+    if (state.phase === "playing") {
+      togglePause();
+    }
+  });
+
+  resizeCanvas();
+  setupGame();
+  updateSoundButton();
+  setTimeout(() => els.playerNameInput.focus(), 30);
+  requestAnimationFrame(gameLoop);
+})();

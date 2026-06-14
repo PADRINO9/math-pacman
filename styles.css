@@ -49,17 +49,20 @@ button {
 }
 
 .game-shell {
+  --stage-width: min(100%, 1180px, calc((100vh - 118px) * 1.3333));
   width: 100vw;
   height: 100vh;
   display: grid;
-  place-items: center;
+  grid-template-rows: auto auto;
+  align-content: center;
+  justify-items: center;
+  gap: 10px;
   padding: clamp(10px, 2vw, 24px);
 }
 
 .stage {
   position: relative;
-  width: min(100%, calc((100vh - 28px) * 1.3333));
-  max-width: 1180px;
+  width: var(--stage-width);
   aspect-ratio: 4 / 3;
   overflow: hidden;
   touch-action: none;
@@ -85,10 +88,10 @@ button {
 }
 
 .hud {
-  position: absolute;
-  inset: 14px 14px auto 14px;
+  position: relative;
+  width: var(--stage-width);
   display: grid;
-  grid-template-columns: 1fr minmax(160px, 26%) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(150px, 25%) auto;
   align-items: start;
   gap: 12px;
   z-index: 5;
@@ -547,9 +550,12 @@ button {
   }
 
   .game-shell {
+    --stage-width: 100%;
     align-items: start;
     height: auto;
     min-height: 100vh;
+    align-content: start;
+    gap: 8px;
     padding: 8px;
   }
 
@@ -559,7 +565,7 @@ button {
   }
 
   .hud {
-    inset: 8px 8px auto 8px;
+    width: 100%;
     grid-template-columns: 1fr auto;
     gap: 8px;
   }

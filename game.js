@@ -20,6 +20,14 @@
       correct: 420,
       wrong: 900
     },
+    speed: {
+      player: 184,
+      ghostBase: 108,
+      ghostTierEveryAnswers: 6,
+      ghostTierStep: 3,
+      ghostTierMax: 42,
+      ghostIndexStep: 5
+    },
     storageKeys: {
       bestScore: "mathPacmanBest",
       sound: "mathPacmanSound",
@@ -470,7 +478,7 @@
       x: pos.x,
       y: pos.y,
       radius: 10.2,
-      speed: 142,
+      speed: CONFIG.speed.player,
       direction: "right",
       desiredDirection: "right",
       directionRequestTime: 0,
@@ -485,8 +493,15 @@
     const pos = centerOfCell(cell.x, cell.y);
     const direction = randomItem(DIR_NAMES);
     const difficulty = getDifficultySettings();
-    const speedTier = Math.min(34, Math.floor(state.correctAnswers / 8) * 2);
-    const speed = (94 + speedTier + (index % 4) * 4) * difficulty.ghostSpeedMultiplier;
+    const speedTier = Math.min(
+      CONFIG.speed.ghostTierMax,
+      Math.floor(state.correctAnswers / CONFIG.speed.ghostTierEveryAnswers) * CONFIG.speed.ghostTierStep
+    );
+    const speed = (
+      CONFIG.speed.ghostBase +
+      speedTier +
+      (index % 4) * CONFIG.speed.ghostIndexStep
+    ) * difficulty.ghostSpeedMultiplier;
 
     return {
       id: state.nextGhostId,
@@ -1771,7 +1786,7 @@
     ctx.closePath();
     ctx.fill();
 
-    const eyeAngle = angle - 0.9;
+    const eyeAngle = player.direction === "left" ? angle + 0.9 : angle - 0.9;
     ctx.shadowBlur = 0;
     ctx.fillStyle = "#191400";
     ctx.beginPath();

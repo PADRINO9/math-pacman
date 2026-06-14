@@ -7,47 +7,47 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>פאקמן מתמטי</title>
-  <link rel="stylesheet" href="styles.css?v=20260614-5">
+  <link rel="stylesheet" href="styles.css?v=20260614-6">
 </head>
 <body>
   <main class="game-shell" aria-label="פאקמן מתמטי">
-    <section class="stage" aria-label="לוח המשחק" tabindex="-1">
-      <canvas id="game-canvas" width="960" height="720"></canvas>
-
-      <div class="hud" aria-live="polite">
-        <div class="hud-group hud-group-main">
-          <div class="metric">
-            <span class="metric-label">תשובות</span>
-            <strong><span id="correct-answers">0</span><span id="target-correct" class="metric-muted">/100</span></strong>
-          </div>
-          <div class="metric">
-            <span class="metric-label">ניקוד</span>
-            <strong id="score">0</strong>
-          </div>
-          <div class="metric">
-            <span class="metric-label">רצף</span>
-            <strong id="combo">0</strong>
-          </div>
-          <div class="metric metric-lives">
-            <span class="metric-label">חיים</span>
-            <strong id="lives" aria-label="3 חיים">♥♥♥</strong>
-          </div>
-          <div id="mission-card" class="metric metric-mission">
-            <span class="metric-label">משימה</span>
-            <strong id="mission-title">ענה נכון על 10 שאלות</strong>
-            <span id="mission-progress" class="mission-progress">0/10</span>
-          </div>
+    <div class="hud" aria-live="polite">
+      <div class="hud-group hud-group-main">
+        <div class="metric">
+          <span class="metric-label">תשובות</span>
+          <strong><span id="correct-answers">0</span><span id="target-correct" class="metric-muted">/100</span></strong>
         </div>
-
-        <div class="progress-wrap" aria-label="התקדמות עד ניצחון">
-          <div id="progress-fill"></div>
+        <div class="metric">
+          <span class="metric-label">ניקוד</span>
+          <strong id="score">0</strong>
         </div>
-
-        <div class="hud-group hud-actions">
-          <button id="pause-button" class="icon-button" type="button" aria-label="השהיה">Ⅱ</button>
-          <button id="sound-button" class="icon-button" type="button" aria-label="צלילים">♪</button>
+        <div class="metric">
+          <span class="metric-label">רצף</span>
+          <strong id="combo">0</strong>
+        </div>
+        <div class="metric metric-lives">
+          <span class="metric-label">חיים</span>
+          <strong id="lives" aria-label="3 חיים">♥♥♥</strong>
+        </div>
+        <div id="mission-card" class="metric metric-mission">
+          <span class="metric-label">משימה</span>
+          <strong id="mission-title">ענה נכון על 10 שאלות</strong>
+          <span id="mission-progress" class="mission-progress">0/10</span>
         </div>
       </div>
+
+      <div class="progress-wrap" aria-label="התקדמות עד ניצחון">
+        <div id="progress-fill"></div>
+      </div>
+
+      <div class="hud-group hud-actions">
+        <button id="pause-button" class="icon-button" type="button" aria-label="השהיה">Ⅱ</button>
+        <button id="sound-button" class="icon-button" type="button" aria-label="צלילים">♪</button>
+      </div>
+    </div>
+
+    <section class="stage" aria-label="לוח המשחק" tabindex="-1">
+      <canvas id="game-canvas" width="960" height="720"></canvas>
 
       <div id="question-dialog" class="dialog" role="dialog" aria-modal="true" aria-labelledby="question-title" hidden>
         <div class="dialog-inner">
@@ -118,6 +118,6 @@
     </section>
   </main>
 
-  <script src="game.js?v=20260614-5"></script>
+  <script src="game.js?v=20260614-6"></script>
 </body>
 </html>

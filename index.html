@@ -2,12 +2,12 @@
 <html lang="he" dir="rtl">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>פאקמן מתמטי</title>
-  <link rel="stylesheet" href="styles.css?v=20260614-6">
+  <link rel="stylesheet" href="styles.css?v=20260614-9">
 </head>
 <body>
   <main class="game-shell" aria-label="פאקמן מתמטי">
@@ -54,7 +54,7 @@
           <span id="question-status" class="dialog-kicker">רוח נתפסה</span>
           <h1 id="question-title" dir="ltr">8 × 7 = ?</h1>
           <form id="answer-form" autocomplete="off">
-            <input id="answer-input" type="number" inputmode="numeric" aria-label="תשובה" required>
+            <input id="answer-input" type="text" inputmode="numeric" pattern="[0-9]*" enterkeyhint="done" aria-label="תשובה" required>
             <button id="submit-answer" type="submit">שלח</button>
           </form>
           <p id="question-feedback" aria-live="assertive"></p>
@@ -109,15 +109,15 @@
         </div>
       </div>
 
-      <div class="touch-pad" aria-label="בקרי תנועה">
-        <button type="button" data-dir="up" aria-label="למעלה">▲</button>
-        <button type="button" data-dir="left" aria-label="שמאלה">◀</button>
-        <button type="button" data-dir="right" aria-label="ימינה">▶</button>
-        <button type="button" data-dir="down" aria-label="למטה">▼</button>
-      </div>
     </section>
+
+    <div class="mobile-joystick" aria-label="בקרי תנועה">
+      <div id="movement-joystick" class="joystick-base" role="application" aria-label="ג׳ויסטיק תנועה">
+        <div class="joystick-knob" aria-hidden="true"></div>
+      </div>
+    </div>
   </main>
 
-  <script src="game.js?v=20260614-6"></script>
+  <script src="game.js?v=20260614-9"></script>
 </body>
 </html>

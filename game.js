@@ -80,6 +80,7 @@
   const INPUT_BUFFER_SECONDS = 0.7;
   const TURN_LOOKAHEAD = 7.5;
   const TURN_SNAP_DISTANCE = 8.5;
+  const JOYSTICK_DEADZONE = 12;
   const LTR_ISOLATE_START = "\u2066";
   const LTR_ISOLATE_END = "\u2069";
   const KEY_TO_DIR = {
@@ -165,7 +166,9 @@
     answerForm: document.getElementById("answer-form"),
     answerInput: document.getElementById("answer-input"),
     submitAnswer: document.getElementById("submit-answer"),
-    questionFeedback: document.getElementById("question-feedback")
+    questionFeedback: document.getElementById("question-feedback"),
+    joystick: document.getElementById("movement-joystick"),
+    joystickKnob: document.querySelector(".joystick-knob")
   };
 
   const numberFormat = new Intl.NumberFormat("he-IL");
@@ -688,12 +691,13 @@
     els.pause.textContent = "Ⅱ";
     syncDifficultyInputs();
     setupGame();
-    setTimeout(() => els.playerNameInput.focus(), 30);
+    focusPlayerNameWhenUseful();
   }
 
   function togglePause() {
     if (state.phase === "playing") {
       state.phase = "paused";
+      resetJoystick();
       els.pause.textContent = "▶";
       playTone(220, 0.06, "sine", 0.035);
       return;
@@ -1401,6 +1405,7 @@
 
   function openQuestion(ghost) {
     state.phase = "question";
+    resetJoystick();
     state.question = generateQuestion();
     state.currentGhostId = ghost.id;
     state.answerLocked = false;
@@ -1515,6 +1520,7 @@
   function showEndScreen(won) {
     const playerName = state.playerName || "שחקן";
     state.phase = "ended";
+    resetJoystick();
     state.currentGhostId = null;
     state.question = null;
     els.questionDialog.hidden = true;
@@ -1940,14 +1946,82 @@
     }
   });
 
-  document.querySelectorAll(".touch-pad button").forEach((button) => {
-    const direction = button.dataset.dir;
-    button.addEventListener("pointerdown", (event) => {
-      event.preventDefault();
-      setDirection(direction);
+  function shouldAvoidMobileKeyboard() {
+    return window.matchMedia("(hover: none), (pointer: coarse), (max-width: 760px)").matches;
+  }
+
+  function focusPlayerNameWhenUseful() {
+    if (shouldAvoidMobileKeyboard()) {
+      return;
+    }
+
+    setTimeout(() => els.playerNameInput.focus(), 30);
+  }
+
+  let joystickPointerId = null;
+
+  function updateJoystick(event) {
+    if (!els.joystick || !els.joystickKnob) {
+      return;
+    }
+
+    event.preventDefault();
+    const rect = els.joystick.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    const dx = event.clientX - centerX;
+    const dy = event.clientY - centerY;
+    const distance = Math.hypot(dx, dy);
+    const limit = rect.width * 0.27;
+    const knobX = distance > 0 ? dx / distance * Math.min(limit, distance) : 0;
+    const knobY = distance > 0 ? dy / distance * Math.min(limit, distance) : 0;
+
+    els.joystickKnob.style.setProperty("--knob-x", `${knobX}px`);
+    els.joystickKnob.style.setProperty("--knob-y", `${knobY}px`);
+
+    if (state.phase !== "playing" || distance < JOYSTICK_DEADZONE) {
+      return;
+    }
+
+    setDirection(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? "right" : "left") : (dy > 0 ? "down" : "up"));
+  }
+
+  function resetJoystick() {
+    joystickPointerId = null;
+    if (!els.joystick || !els.joystickKnob) {
+      return;
+    }
+
+    els.joystick.classList.remove("is-active");
+    els.joystickKnob.style.setProperty("--knob-x", "0px");
+    els.joystickKnob.style.setProperty("--knob-y", "0px");
+  }
+
+  if (els.joystick) {
+    els.joystick.addEventListener("pointerdown", (event) => {
+      joystickPointerId = event.pointerId;
+      els.joystick.setPointerCapture?.(event.pointerId);
+      els.joystick.classList.add("is-active");
+      updateJoystick(event);
     });
-    button.addEventListener("click", () => setDirection(direction));
-  });
+
+    els.joystick.addEventListener("pointermove", (event) => {
+      if (event.pointerId !== joystickPointerId) {
+        return;
+      }
+
+      updateJoystick(event);
+    });
+
+    els.joystick.addEventListener("pointerup", (event) => {
+      if (event.pointerId === joystickPointerId) {
+        resetJoystick();
+      }
+    });
+
+    els.joystick.addEventListener("pointercancel", resetJoystick);
+    els.joystick.addEventListener("lostpointercapture", resetJoystick);
+  }
 
   let pointerStart = null;
   stage.addEventListener("pointerdown", (event) => {
@@ -2009,6 +2083,12 @@
   els.playerNameInput.addEventListener("input", () => {
     els.nameError.textContent = "";
   });
+  els.answerInput.addEventListener("input", () => {
+    const digitsOnly = els.answerInput.value.replace(/\D/g, "");
+    if (els.answerInput.value !== digitsOnly) {
+      els.answerInput.value = digitsOnly;
+    }
+  });
   els.difficultyInputs.forEach((input) => {
     input.addEventListener("change", () => setDifficulty(input.value));
   });
@@ -2024,6 +2104,6 @@
   syncDifficultyInputs();
   setupGame();
   updateSoundButton();
-  setTimeout(() => els.playerNameInput.focus(), 30);
+  focusPlayerNameWhenUseful();
   requestAnimationFrame(gameLoop);
 })();

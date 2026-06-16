@@ -1533,15 +1533,18 @@
   }
 
   function createTwoDigitByOneQuestion() {
-    return createSizedQuestion(12, 99, 2, 9);
+    return Math.random() > 0.45
+      ? createSizedMultiplicationQuestion(12, 99, 2, 9)
+      : createDisplayedDivisionQuestion(12, 99, 2, 9);
   }
 
   function createTwoDigitByTwoQuestion() {
-    return createSizedQuestion(12, 99, 12, 99);
+    return Math.random() > 0.45
+      ? createSizedMultiplicationQuestion(12, 99, 12, 99)
+      : createDisplayedDivisionQuestion(12, 99, 12, 99);
   }
 
-  function createSizedQuestion(aMin, aMax, bMin, bMax) {
-    const multiplication = Math.random() > 0.45;
+  function createSizedMultiplicationQuestion(aMin, aMax, bMin, bMax) {
     let a = randomInt(aMin, aMax);
     let b = randomInt(bMin, bMax);
 
@@ -1550,27 +1553,45 @@
       b = randomInt(bMin, bMax);
     }
 
-    return multiplication ? makeMultiplicationQuestion(a, b) : makeDivisionQuestion(a, b);
+    return makeMultiplicationQuestion(a, b);
+  }
+
+  function createDisplayedDivisionQuestion(dividendMin, dividendMax, divisorMin, divisorMax) {
+    const usableDivisorMax = Math.min(divisorMax, Math.floor(dividendMax / 2));
+    let dividend = dividendMin;
+    let divisor = divisorMin;
+
+    for (let attempt = 0; attempt < 18; attempt += 1) {
+      divisor = randomInt(divisorMin, usableDivisorMax);
+      const quotientMin = Math.max(2, Math.ceil(dividendMin / divisor));
+      const quotientMax = Math.floor(dividendMax / divisor);
+      const quotient = randomInt(quotientMin, quotientMax);
+      dividend = divisor * quotient;
+
+      if (!hasRecentQuestion(divisionKey(dividend, divisor))) {
+        return makeDisplayedDivisionQuestion(dividend, divisor);
+      }
+    }
+
+    return makeDisplayedDivisionQuestion(dividend, divisor);
   }
 
   function createReviewQuestion() {
     const candidates = Object.entries(state.factStats)
       .map(([key, stats]) => ({
         key,
+        factors: parseFactKey(key),
         stats,
         weight: Math.max(0, stats.wrong * 2 - stats.correct)
       }))
-      .filter((candidate) => candidate.weight > 0 && !hasRecentQuestion(candidate.key));
+      .filter((candidate) => candidate.factors && candidate.weight > 0 && !hasRecentQuestion(candidate.key));
 
     if (candidates.length === 0) {
       return null;
     }
 
     const candidate = weightedRandom(candidates);
-    const factors = parseFactKey(candidate.key);
-    if (!factors) {
-      return null;
-    }
+    const factors = candidate.factors;
 
     return Math.random() < 0.55
       ? makeMultiplicationQuestion(factors.a, factors.b)
@@ -1593,12 +1614,24 @@
     };
   }
 
+  function makeDisplayedDivisionQuestion(dividend, divisor) {
+    return {
+      key: divisionKey(dividend, divisor),
+      text: formatQuestion(dividend, "÷", divisor),
+      answer: dividend / divisor
+    };
+  }
+
   function formatQuestion(left, operator, right) {
     return `${LTR_ISOLATE_START}${left} ${operator} ${right} = ?${LTR_ISOLATE_END}`;
   }
 
   function factKey(a, b) {
     return `${a}×${b}`;
+  }
+
+  function divisionKey(dividend, divisor) {
+    return `${dividend}÷${divisor}`;
   }
 
   function parseFactKey(key) {

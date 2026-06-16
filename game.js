@@ -11,13 +11,14 @@
 
   const CONFIG = {
     targetCorrect: 100,
+    answersPerLevel: 25,
     initialLives: 3,
     minGhosts: 10,
     missionBonus: 420,
     adaptiveQuestionChance: 0.3,
     recentQuestionMemory: 3,
     questionFeedbackDelay: {
-      correct: 420,
+      correct: 650,
       wrong: 900
     },
     speed: {
@@ -40,23 +41,122 @@
         ghostCount: 8,
         ghostSpeedMultiplier: 0.9,
         questionTierStep: 24,
-        questionMaxOffset: -1
+        questionMaxOffset: -1,
+        questionMode: "classic"
       },
       normal: {
         label: "רגיל",
         ghostCount: 10,
         ghostSpeedMultiplier: 1,
         questionTierStep: 20,
-        questionMaxOffset: 0
+        questionMaxOffset: 0,
+        questionMode: "classic"
       },
       hard: {
         label: "קשה",
         ghostCount: 11,
         ghostSpeedMultiplier: 1.1,
         questionTierStep: 16,
-        questionMaxOffset: 1
+        questionMaxOffset: 1,
+        questionMode: "classic"
+      },
+      veryHard: {
+        label: "קשה מאוד",
+        ghostCount: 12,
+        ghostSpeedMultiplier: 1.18,
+        questionTierStep: 12,
+        questionMaxOffset: 2,
+        questionMode: "twoByOne",
+        adaptiveQuestionChance: 0
+      },
+      impossible: {
+        label: "הכי קשה בעולם",
+        ghostCount: 13,
+        ghostSpeedMultiplier: 1.28,
+        questionTierStep: 10,
+        questionMaxOffset: 3,
+        questionMode: "twoByTwo",
+        adaptiveQuestionChance: 0
       }
     },
+    levels: [
+      {
+        name: "עולם הקרח",
+        shortName: "קרח",
+        intro: "שלב 1: עולם הקרח",
+        ghostStyle: "ice",
+        decor: "snow",
+        ghostCountBonus: 0,
+        ghostSpeedMultiplier: 1,
+        wallStops: ["#0d5d9c", "#52dff7", "#d7fbff"],
+        backgroundStops: ["#06131f", "#0b2a3d", "#04101d"],
+        gridColor: "rgba(170, 244, 255, 0.1)",
+        wallGlow: "rgba(146, 240, 255, 0.72)",
+        wallStroke: "rgba(232, 253, 255, 0.38)",
+        pelletColor: "#e9fdff",
+        powerPelletColor: "#9ef7ff",
+        accent: "#9ef7ff",
+        decorRgb: "224, 253, 255",
+        ghostColors: ["#bdf8ff", "#71e7ff", "#d9feff", "#7dc9ff", "#b7f1ff"]
+      },
+      {
+        name: "עולם הלבה",
+        shortName: "לבה",
+        intro: "שלב 2: עולם הלבה",
+        ghostStyle: "lava",
+        decor: "embers",
+        ghostCountBonus: 1,
+        ghostSpeedMultiplier: 1.08,
+        wallStops: ["#7f1d14", "#f97316", "#ffd166"],
+        backgroundStops: ["#160506", "#3a0d09", "#090305"],
+        gridColor: "rgba(255, 145, 77, 0.1)",
+        wallGlow: "rgba(255, 111, 55, 0.78)",
+        wallStroke: "rgba(255, 231, 170, 0.34)",
+        pelletColor: "#fff2cf",
+        powerPelletColor: "#ff9f1c",
+        accent: "#ffb340",
+        decorRgb: "255, 144, 66",
+        ghostColors: ["#ff4c1f", "#ff8a2a", "#ffd166", "#ff3864", "#ffb340"]
+      },
+      {
+        name: "עולם העתיקות",
+        shortName: "עתיקות",
+        intro: "שלב 3: עולם העתיקות",
+        ghostStyle: "ancient",
+        decor: "runes",
+        ghostCountBonus: 2,
+        ghostSpeedMultiplier: 1.16,
+        wallStops: ["#6b5734", "#c2a36a", "#1fb6a6"],
+        backgroundStops: ["#100d08", "#241b0e", "#071714"],
+        gridColor: "rgba(230, 198, 128, 0.09)",
+        wallGlow: "rgba(230, 198, 128, 0.58)",
+        wallStroke: "rgba(255, 240, 196, 0.3)",
+        pelletColor: "#ffe8a3",
+        powerPelletColor: "#27e0c3",
+        accent: "#27e0c3",
+        decorRgb: "230, 198, 128",
+        ghostColors: ["#d6bd82", "#c59f5d", "#27e0c3", "#f1d391", "#a88a4b"]
+      },
+      {
+        name: "עולם היהלומים",
+        shortName: "יהלומים",
+        intro: "שלב 4: עולם היהלומים",
+        ghostStyle: "diamond",
+        decor: "diamonds",
+        ghostCountBonus: 3,
+        ghostSpeedMultiplier: 1.25,
+        wallStops: ["#1836a3", "#55ffd6", "#ff5fd7"],
+        backgroundStops: ["#050817", "#101b45", "#070611"],
+        gridColor: "rgba(122, 255, 231, 0.1)",
+        wallGlow: "rgba(85, 255, 214, 0.7)",
+        wallStroke: "rgba(255, 255, 255, 0.36)",
+        pelletColor: "#f8ffff",
+        powerPelletColor: "#ff5fd7",
+        accent: "#55ffd6",
+        decorRgb: "143, 255, 239",
+        ghostColors: ["#55ffd6", "#73a7ff", "#ff5fd7", "#f8ffff", "#9d7cff"]
+      }
+    ],
     missions: [
       { type: "correct", target: 10, label: "ענה נכון על 10 שאלות" },
       { type: "combo", target: 5, label: "צבור רצף של 5" },
@@ -64,7 +164,14 @@
       { type: "safeCorrect", target: 3, label: "ענה נכון על 3 שאלות בלי לאבד חיים" },
       { type: "ghosts", target: 5, label: "נצח 5 רוחות" }
     ],
-    positiveFeedback: ["נכון!", "מעולה!", "יפה מאוד!"]
+    positiveFeedback: ["נכון!", "מעולה!", "יפה מאוד!", "אלוף!", "בול!", "איזה רצף!", "עבודה חכמה!"],
+    supportFeedback: [
+      "לא נורא, מתקדמים. התשובה היא {answer}",
+      "כמעט! התשובה היא {answer}",
+      "טעות קטנה, הראש עובד. התשובה היא {answer}",
+      "נשימה ולנסות שוב. התשובה היא {answer}",
+      "זה חלק מהאימון. התשובה היא {answer}"
+    ]
   };
 
   const DIRS = {
@@ -135,6 +242,8 @@
   const els = {
     correct: document.getElementById("correct-answers"),
     targetCorrect: document.getElementById("target-correct"),
+    levelNumber: document.getElementById("level-number"),
+    worldName: document.getElementById("world-name"),
     score: document.getElementById("score"),
     combo: document.getElementById("combo"),
     lives: document.getElementById("lives"),
@@ -198,6 +307,28 @@
     return CONFIG.difficulty[state.difficulty] || CONFIG.difficulty.normal;
   }
 
+  function getLevelIndexForAnswers(correctAnswers) {
+    const levelIndex = Math.floor(correctAnswers / CONFIG.answersPerLevel);
+    return clamp(levelIndex, 0, CONFIG.levels.length - 1);
+  }
+
+  function getCurrentLevel() {
+    return CONFIG.levels[state.levelIndex] || CONFIG.levels[0];
+  }
+
+  function getRequiredGhostCount() {
+    const difficulty = getDifficultySettings();
+    const level = getCurrentLevel();
+    return (difficulty.ghostCount || CONFIG.minGhosts) + (level.ghostCountBonus || 0);
+  }
+
+  function getAdaptiveQuestionChance() {
+    const difficulty = getDifficultySettings();
+    return Number.isFinite(difficulty.adaptiveQuestionChance)
+      ? difficulty.adaptiveQuestionChance
+      : CONFIG.adaptiveQuestionChance;
+  }
+
   function loadFactStats() {
     try {
       const parsed = JSON.parse(storage.get(CONFIG.storageKeys.factStats, "{}"));
@@ -231,6 +362,8 @@
     floatingTexts: [],
     pendingSpawns: [],
     backdropStars: [],
+    levelIndex: 0,
+    levelBanner: null,
     score: 0,
     combo: 0,
     lives: CONFIG.initialLives,
@@ -303,7 +436,7 @@
     ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
   }
 
-  function createMaze() {
+  function createMaze(levelIndex = 0) {
     const maze = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
 
     for (let x = 0; x < COLS; x += 1) {
@@ -344,6 +477,7 @@
     addBlock(18, 11, 4, 1);
     addBlock(16, 15, 8, 1);
     addBlock(19, 24, 2, 3);
+    addLevelMazePattern(levelIndex, addBlock, mirrorBlock);
 
     clearZone(maze, PLAYER_START.x, PLAYER_START.y, 2);
     clearZone(maze, CENTER_CELL.x, CENTER_CELL.y, 3);
@@ -351,6 +485,37 @@
     clearZone(maze, COLS - 3, ROWS - 3, 2);
 
     return maze;
+  }
+
+  function addLevelMazePattern(levelIndex, addBlock, mirrorBlock) {
+    const pattern = levelIndex % CONFIG.levels.length;
+
+    if (pattern === 0) {
+      mirrorBlock(5, 11, 3, 1);
+      mirrorBlock(15, 20, 2, 1);
+      addBlock(19, 7, 2, 2);
+      return;
+    }
+
+    if (pattern === 1) {
+      mirrorBlock(8, 11, 1, 4);
+      mirrorBlock(13, 5, 2, 3);
+      addBlock(18, 20, 4, 1);
+      return;
+    }
+
+    if (pattern === 2) {
+      mirrorBlock(7, 12, 4, 1);
+      mirrorBlock(15, 9, 1, 4);
+      addBlock(19, 4, 2, 3);
+      addBlock(19, 25, 2, 2);
+      return;
+    }
+
+    mirrorBlock(5, 6, 2, 2);
+    mirrorBlock(9, 19, 2, 3);
+    mirrorBlock(16, 12, 1, 3);
+    addBlock(18, 14, 4, 1);
   }
 
   function clearZone(maze, cx, cy, radius) {
@@ -496,6 +661,8 @@
     const pos = centerOfCell(cell.x, cell.y);
     const direction = randomItem(DIR_NAMES);
     const difficulty = getDifficultySettings();
+    const level = getCurrentLevel();
+    const ghostColors = level.ghostColors || GHOST_COLORS;
     const speedTier = Math.min(
       CONFIG.speed.ghostTierMax,
       Math.floor(state.correctAnswers / CONFIG.speed.ghostTierEveryAnswers) * CONFIG.speed.ghostTierStep
@@ -504,7 +671,7 @@
       CONFIG.speed.ghostBase +
       speedTier +
       (index % 4) * CONFIG.speed.ghostIndexStep
-    ) * difficulty.ghostSpeedMultiplier;
+    ) * difficulty.ghostSpeedMultiplier * (level.ghostSpeedMultiplier || 1);
 
     return {
       id: state.nextGhostId,
@@ -513,7 +680,8 @@
       radius: 10.4,
       speed,
       direction,
-      color: GHOST_COLORS[index % GHOST_COLORS.length],
+      color: ghostColors[index % ghostColors.length],
+      style: level.ghostStyle || "classic",
       scatter: scatterCornerFor(index),
       personality: index % 4,
       pathCooldown: 0,
@@ -569,7 +737,7 @@
   }
 
   function ensureGhostCount() {
-    const minGhosts = getDifficultySettings().ghostCount || CONFIG.minGhosts;
+    const minGhosts = getRequiredGhostCount();
     const totalIncoming = state.ghosts.length + state.pendingSpawns.length;
     for (let i = totalIncoming; i < minGhosts; i += 1) {
       scheduleGhostSpawn(0.25 + i * 0.08);
@@ -583,18 +751,42 @@
     addBurst(ghost.x, ghost.y, ghost.color, 18, 90);
   }
 
-  function setupGame() {
-    state.clock = 0;
-    state.lastTime = performance.now();
-    state.maze = createMaze();
+  function enterLevel(levelIndex, options = {}) {
+    state.levelIndex = clamp(levelIndex, 0, CONFIG.levels.length - 1);
+    state.maze = createMaze(state.levelIndex);
     const reachability = computeReachable(PLAYER_START);
     state.reachable = reachability.reachable;
     state.reachableList = reachability.list;
     state.player = createPlayer();
     state.ghosts = [];
+    state.pendingSpawns = [];
     state.particles = [];
     state.floatingTexts = [];
-    state.pendingSpawns = [];
+    seedPellets();
+    seedBackdrop();
+
+    const minGhosts = getRequiredGhostCount();
+    for (let i = 0; i < minGhosts; i += 1) {
+      spawnGhost(i);
+    }
+
+    if (options.announce) {
+      state.player.invulnerable = 2.4;
+      showLevelBanner(options.awardedLife);
+      addBurst(state.player.x, state.player.y, getCurrentLevel().accent, 42, 145);
+      if (options.awardedLife) {
+        addFloatingText(state.player.x, state.player.y - 28, "+חיים", "#ff5f9f");
+      }
+    }
+
+    updateHud();
+  }
+
+  function setupGame() {
+    state.clock = 0;
+    state.lastTime = performance.now();
+    state.levelIndex = 0;
+    state.levelBanner = null;
     state.score = 0;
     state.combo = 0;
     state.lives = CONFIG.initialLives;
@@ -607,13 +799,7 @@
     state.shake = 0;
     state.fireworkTimer = 0;
     assignMission();
-    seedPellets();
-    seedBackdrop();
-
-    const minGhosts = getDifficultySettings().ghostCount || CONFIG.minGhosts;
-    for (let i = 0; i < minGhosts; i += 1) {
-      spawnGhost(i);
-    }
+    enterLevel(0);
 
     updateHud();
     if (state.phase === "playing") {
@@ -629,6 +815,32 @@
       size: 0.6 + ((index * 17) % 10) / 13,
       phase: (index * 0.73) % (Math.PI * 2)
     }));
+  }
+
+  function showLevelBanner(awardedLife = false) {
+    const level = getCurrentLevel();
+    const nextGoal = Math.min(CONFIG.targetCorrect, (state.levelIndex + 1) * CONFIG.answersPerLevel);
+    state.levelBanner = {
+      title: level.intro,
+      subtitle: awardedLife
+        ? `עוד עולם נפתח, וקיבלת חיים. היעד הבא: ${nextGoal} תשובות`
+        : `היעד הבא: ${nextGoal} תשובות נכונות`,
+      color: level.accent,
+      life: 2.25,
+      maxLife: 2.25
+    };
+    playMissionSound();
+  }
+
+  function updateLevelBanner(dt) {
+    if (!state.levelBanner) {
+      return;
+    }
+
+    state.levelBanner.life -= dt;
+    if (state.levelBanner.life <= 0) {
+      state.levelBanner = null;
+    }
   }
 
   function normalizePlayerName(value) {
@@ -789,8 +1001,16 @@
   }
 
   function updateHud() {
+    const level = getCurrentLevel();
     els.correct.textContent = state.correctAnswers;
     els.targetCorrect.textContent = `/${CONFIG.targetCorrect}`;
+    if (els.levelNumber) {
+      els.levelNumber.textContent = `${state.levelIndex + 1}`;
+    }
+    if (els.worldName) {
+      els.worldName.textContent = level.shortName;
+      els.worldName.setAttribute("aria-label", level.name);
+    }
     els.score.textContent = numberFormat.format(state.score);
     els.combo.textContent = state.combo;
     const hearts = "♥".repeat(Math.max(0, state.lives));
@@ -916,6 +1136,8 @@
     } else {
       updateAmbient(dt);
     }
+
+    updateLevelBanner(dt);
   }
 
   function updatePlaying(dt) {
@@ -1276,7 +1498,9 @@
   }
 
   function generateQuestion() {
-    const reviewQuestion = Math.random() < CONFIG.adaptiveQuestionChance ? createReviewQuestion() : null;
+    const difficulty = getDifficultySettings();
+    const canUseReview = difficulty.questionMode === "classic";
+    const reviewQuestion = canUseReview && Math.random() < getAdaptiveQuestionChance() ? createReviewQuestion() : null;
     const question = reviewQuestion || createRandomQuestion();
     rememberQuestionKey(question.key);
     return question;
@@ -1284,7 +1508,15 @@
 
   function createRandomQuestion() {
     const difficulty = getDifficultySettings();
-    const tier = Math.min(4, Math.floor(state.correctAnswers / difficulty.questionTierStep));
+    if (difficulty.questionMode === "twoByOne") {
+      return createTwoDigitByOneQuestion();
+    }
+
+    if (difficulty.questionMode === "twoByTwo") {
+      return createTwoDigitByTwoQuestion();
+    }
+
+    const tier = Math.min(4, Math.floor((state.correctAnswers + state.levelIndex * 8) / difficulty.questionTierStep));
     const maxByTier = [9, 10, 12, 12, 12][tier];
     const max = clamp(maxByTier + difficulty.questionMaxOffset, 6, 12);
     const minByTier = tier >= 3 ? 3 : 2;
@@ -1295,6 +1527,27 @@
     for (let attempt = 0; attempt < 8 && hasRecentQuestion(factKey(a, b)); attempt += 1) {
       a = randomInt(minByTier, max);
       b = randomInt(2, max);
+    }
+
+    return multiplication ? makeMultiplicationQuestion(a, b) : makeDivisionQuestion(a, b);
+  }
+
+  function createTwoDigitByOneQuestion() {
+    return createSizedQuestion(12, 99, 2, 9);
+  }
+
+  function createTwoDigitByTwoQuestion() {
+    return createSizedQuestion(12, 99, 12, 99);
+  }
+
+  function createSizedQuestion(aMin, aMax, bMin, bMax) {
+    const multiplication = Math.random() > 0.45;
+    let a = randomInt(aMin, aMax);
+    let b = randomInt(bMin, bMax);
+
+    for (let attempt = 0; attempt < 10 && hasRecentQuestion(factKey(a, b)); attempt += 1) {
+      a = randomInt(aMin, aMax);
+      b = randomInt(bMin, bMax);
     }
 
     return multiplication ? makeMultiplicationQuestion(a, b) : makeDivisionQuestion(a, b);
@@ -1403,6 +1656,14 @@
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
 
+  function positiveFeedback() {
+    return randomItem(CONFIG.positiveFeedback);
+  }
+
+  function supportFeedback(answer) {
+    return randomItem(CONFIG.supportFeedback).replace("{answer}", String(answer));
+  }
+
   function openQuestion(ghost) {
     state.phase = "question";
     resetJoystick();
@@ -1439,6 +1700,7 @@
 
   function applyCorrectAnswer() {
     const ghost = state.ghosts.find((candidate) => candidate.id === state.currentGhostId);
+    const previousLevelIndex = state.levelIndex;
     state.correctAnswers += 1;
     state.combo += 1;
     const comboBonus = Math.min(750, state.combo * 35);
@@ -1455,9 +1717,14 @@
       updateMission("ghostDefeated");
     }
 
+    if (state.player) {
+      addFloatingText(state.player.x, state.player.y - 44, positiveFeedback(), getCurrentLevel().accent);
+    }
+
     updateMission("correctAnswer");
 
-    if (state.correctAnswers % 25 === 0) {
+    const awardedLife = state.correctAnswers % CONFIG.answersPerLevel === 0;
+    if (awardedLife) {
       state.lives += 1;
       addFloatingText(state.player.x, state.player.y - 28, "+חיים", "#ff5f9f");
       playTone(880, 0.12, "triangle", 0.04);
@@ -1468,9 +1735,16 @@
       return;
     }
 
+    const nextLevelIndex = getLevelIndexForAnswers(state.correctAnswers);
     state.phase = "playing";
     state.currentGhostId = null;
     state.question = null;
+
+    if (nextLevelIndex !== previousLevelIndex) {
+      enterLevel(nextLevelIndex, { announce: true, awardedLife });
+      return;
+    }
+
     ensureGhostCount();
   }
 
@@ -1483,6 +1757,7 @@
     pulseElement(stage, "stage-hit");
     pulseElement(els.lives.closest(".metric"), "life-hit");
     addBurst(state.player.x, state.player.y, "#ff4c5f", 26, 130);
+    addFloatingText(state.player.x, state.player.y - 44, "מנסים שוב", "#ffd84a");
     addFloatingText(state.player.x, state.player.y - 26, "-חיים", "#ff4c5f");
 
     if (state.lives <= 0) {
@@ -1572,7 +1847,8 @@
   }
 
   function spawnFirework(x, y) {
-    const color = randomItem(["#ffd84a", "#67f08b", "#42d9ff", "#ff5f9f", "#f7f06a"]);
+    const level = getCurrentLevel();
+    const color = randomItem([level.accent, level.powerPelletColor, "#ffd84a", "#67f08b", "#ff5f9f"]);
     addBurst(x, y, color, 58, 210);
     playTone(560 + Math.random() * 260, 0.08, "triangle", 0.018);
   }
@@ -1623,6 +1899,7 @@
     drawGhosts();
     drawParticles();
     drawFloatingTexts();
+    drawLevelBanner();
 
     if (state.phase === "paused") {
       drawPaused();
@@ -1632,16 +1909,18 @@
   }
 
   function drawBackdrop() {
+    const level = getCurrentLevel();
     const gradient = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
-    gradient.addColorStop(0, "#02050c");
-    gradient.addColorStop(0.55, "#061020");
-    gradient.addColorStop(1, "#02040a");
+    const stops = level.backgroundStops || ["#02050c", "#061020", "#02040a"];
+    gradient.addColorStop(0, stops[0]);
+    gradient.addColorStop(0.55, stops[1]);
+    gradient.addColorStop(1, stops[2]);
     ctx.fillStyle = gradient;
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
 
     ctx.save();
     ctx.globalAlpha = 0.28;
-    ctx.strokeStyle = "rgba(104, 231, 255, 0.08)";
+    ctx.strokeStyle = level.gridColor || "rgba(104, 231, 255, 0.08)";
     ctx.lineWidth = 1;
     for (let x = 0; x <= WIDTH; x += TILE) {
       ctx.beginPath();
@@ -1658,23 +1937,66 @@
     ctx.restore();
 
     for (const star of state.backdropStars) {
-      const alpha = 0.16 + Math.sin(state.clock * 1.8 + star.phase) * 0.08;
-      ctx.fillStyle = `rgba(255, 255, 255, ${alpha})`;
-      ctx.beginPath();
-      ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
-      ctx.fill();
+      drawLevelDecoration(star, level);
     }
   }
 
-  function drawMaze() {
+  function drawLevelDecoration(item, level) {
+    const alpha = 0.14 + Math.sin(state.clock * 1.8 + item.phase) * 0.08;
+    const rgb = level.decorRgb || "255, 255, 255";
+
     ctx.save();
-    ctx.shadowColor = "rgba(66, 217, 255, 0.65)";
+    ctx.globalAlpha = clamp(alpha, 0.05, 0.28);
+    ctx.strokeStyle = `rgba(${rgb}, 0.9)`;
+    ctx.fillStyle = `rgba(${rgb}, 0.9)`;
+
+    if (level.decor === "snow") {
+      const radius = item.size * 3.2;
+      ctx.translate(item.x, item.y);
+      ctx.rotate(item.phase);
+      for (let i = 0; i < 3; i += 1) {
+        ctx.rotate(Math.PI / 3);
+        ctx.beginPath();
+        ctx.moveTo(-radius, 0);
+        ctx.lineTo(radius, 0);
+        ctx.stroke();
+      }
+    } else if (level.decor === "embers") {
+      const y = (item.y - state.clock * 18 * (0.4 + item.size)) % HEIGHT;
+      ctx.beginPath();
+      ctx.arc(item.x + Math.sin(state.clock + item.phase) * 8, y < 0 ? y + HEIGHT : y, item.size * 1.7, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (level.decor === "runes") {
+      ctx.lineWidth = 1.4;
+      ctx.strokeRect(item.x - item.size * 3, item.y - item.size * 3, item.size * 6, item.size * 6);
+      ctx.beginPath();
+      ctx.moveTo(item.x - item.size * 4, item.y + item.size * 3);
+      ctx.lineTo(item.x + item.size * 4, item.y - item.size * 3);
+      ctx.stroke();
+    } else if (level.decor === "diamonds") {
+      drawDiamond(item.x, item.y, item.size * 4.5);
+      ctx.fill();
+      ctx.stroke();
+    } else {
+      ctx.beginPath();
+      ctx.arc(item.x, item.y, item.size, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    ctx.restore();
+  }
+
+  function drawMaze() {
+    const level = getCurrentLevel();
+    ctx.save();
+    ctx.shadowColor = level.wallGlow || "rgba(66, 217, 255, 0.65)";
     ctx.shadowBlur = 14;
 
     const wallGradient = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
-    wallGradient.addColorStop(0, "#1235b8");
-    wallGradient.addColorStop(0.45, "#0b7ec3");
-    wallGradient.addColorStop(1, "#6f36ff");
+    const stops = level.wallStops || ["#1235b8", "#0b7ec3", "#6f36ff"];
+    wallGradient.addColorStop(0, stops[0]);
+    wallGradient.addColorStop(0.45, stops[1]);
+    wallGradient.addColorStop(1, stops[2]);
     ctx.fillStyle = wallGradient;
 
     for (let y = 0; y < ROWS; y += 1) {
@@ -1691,14 +2013,53 @@
     }
 
     ctx.shadowBlur = 0;
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.2)";
+    ctx.strokeStyle = level.wallStroke || "rgba(255, 255, 255, 0.2)";
     ctx.lineWidth = 1;
     for (let y = 0; y < ROWS; y += 1) {
       for (let x = 0; x < COLS; x += 1) {
         if (state.maze[y][x] === 1) {
           ctx.strokeRect(x * TILE + 3.5, y * TILE + 3.5, TILE - 7, TILE - 7);
+          drawWallMotif(x, y, level);
         }
       }
+    }
+
+    ctx.restore();
+  }
+
+  function drawWallMotif(cellX, cellY, level) {
+    if ((cellX * 7 + cellY * 11 + state.levelIndex * 5) % 19 !== 0) {
+      return;
+    }
+
+    const x = cellX * TILE + TILE / 2;
+    const y = cellY * TILE + TILE / 2;
+    ctx.save();
+    ctx.globalAlpha = 0.52;
+    ctx.strokeStyle = level.accent;
+    ctx.fillStyle = level.accent;
+    ctx.lineWidth = 1.4;
+
+    if (level.ghostStyle === "ice") {
+      ctx.beginPath();
+      ctx.moveTo(x - 5, y);
+      ctx.lineTo(x + 5, y);
+      ctx.moveTo(x, y - 5);
+      ctx.lineTo(x, y + 5);
+      ctx.stroke();
+    } else if (level.ghostStyle === "lava") {
+      ctx.beginPath();
+      ctx.arc(x, y, 3, 0, Math.PI * 2);
+      ctx.fill();
+    } else if (level.ghostStyle === "ancient") {
+      ctx.beginPath();
+      ctx.moveTo(x - 5, y + 4);
+      ctx.lineTo(x, y - 5);
+      ctx.lineTo(x + 5, y + 4);
+      ctx.stroke();
+    } else {
+      drawDiamond(x, y, 5);
+      ctx.stroke();
     }
 
     ctx.restore();
@@ -1719,13 +2080,14 @@
   }
 
   function drawPellets() {
+    const level = getCurrentLevel();
     ctx.save();
-    ctx.shadowColor = "rgba(255, 216, 74, 0.6)";
+    ctx.shadowColor = level.powerPelletColor || "rgba(255, 216, 74, 0.6)";
     ctx.shadowBlur = 8;
     for (const pellet of state.pellets.values()) {
       const pulse = 1 + Math.sin(state.clock * 5 + pellet.phase) * 0.18;
       const radius = pellet.radius * pulse;
-      ctx.fillStyle = pellet.value > 10 ? "#ffd84a" : "#f7fbff";
+      ctx.fillStyle = pellet.value > 10 ? level.powerPelletColor : level.pelletColor;
 
       if (pellet.value > 10) {
         drawStar(pellet.x, pellet.y, 5, radius + 2, radius * 0.48, state.clock + pellet.phase);
@@ -1753,6 +2115,15 @@
       ctx.lineTo(cx + Math.cos(rot) * outerRadius, cy + Math.sin(rot) * outerRadius);
     }
 
+    ctx.closePath();
+  }
+
+  function drawDiamond(cx, cy, radius) {
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - radius);
+    ctx.lineTo(cx + radius * 0.82, cy);
+    ctx.lineTo(cx, cy + radius);
+    ctx.lineTo(cx - radius * 0.82, cy);
     ctx.closePath();
   }
 
@@ -1835,20 +2206,7 @@
       const y = ghost.y + wobble;
       const r = ghost.radius;
 
-      ctx.beginPath();
-      ctx.moveTo(x - r, y + r);
-      ctx.lineTo(x - r, y);
-      ctx.arc(x, y, r, Math.PI, 0, false);
-      ctx.lineTo(x + r, y + r);
-
-      for (let i = 0; i < 4; i += 1) {
-        const waveX = x + r - (i + 0.5) * (r * 2 / 4);
-        const nextX = x + r - (i + 1) * (r * 2 / 4);
-        ctx.quadraticCurveTo(waveX, y + r - 5, nextX, y + r);
-      }
-
-      ctx.closePath();
-      ctx.fill();
+      drawThemedGhostBody(ghost, x, y, r);
 
       ctx.shadowBlur = 0;
       const look = player
@@ -1862,6 +2220,128 @@
       drawGhostEye(x + r * 0.36, y - r * 0.16, r, look);
       ctx.restore();
     }
+  }
+
+  function drawThemedGhostBody(ghost, x, y, r) {
+    const style = ghost.style || "classic";
+
+    if (style === "diamond") {
+      drawDiamondGhostBody(ghost, x, y, r);
+      return;
+    }
+
+    drawClassicGhostBody(x, y, r);
+
+    if (style === "ice") {
+      drawIceGhostDetails(x, y, r);
+    } else if (style === "lava") {
+      drawLavaGhostDetails(x, y, r);
+    } else if (style === "ancient") {
+      drawAncientGhostDetails(x, y, r);
+    }
+  }
+
+  function drawClassicGhostBody(x, y, r) {
+    ctx.beginPath();
+    ctx.moveTo(x - r, y + r);
+    ctx.lineTo(x - r, y);
+    ctx.arc(x, y, r, Math.PI, 0, false);
+    ctx.lineTo(x + r, y + r);
+
+    for (let i = 0; i < 4; i += 1) {
+      const waveX = x + r - (i + 0.5) * (r * 2 / 4);
+      const nextX = x + r - (i + 1) * (r * 2 / 4);
+      ctx.quadraticCurveTo(waveX, y + r - 5, nextX, y + r);
+    }
+
+    ctx.closePath();
+    ctx.fill();
+  }
+
+  function drawIceGhostDetails(x, y, r) {
+    ctx.save();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "rgba(255, 255, 255, 0.62)";
+    for (let i = 0; i < 3; i += 1) {
+      const spikeX = x - r * 0.58 + i * r * 0.58;
+      ctx.beginPath();
+      ctx.moveTo(spikeX - 3.2, y + r * 0.78);
+      ctx.lineTo(spikeX + 3.2, y + r * 0.78);
+      ctx.lineTo(spikeX, y + r * 1.22);
+      ctx.closePath();
+      ctx.fill();
+    }
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.7)";
+    ctx.beginPath();
+    ctx.arc(x - r * 0.24, y - r * 0.45, r * 0.2, 0, Math.PI * 1.4);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawLavaGhostDetails(x, y, r) {
+    ctx.save();
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "rgba(255, 230, 128, 0.75)";
+    ctx.beginPath();
+    ctx.moveTo(x - r * 0.34, y - r * 0.2);
+    ctx.quadraticCurveTo(x - r * 0.12, y - r * 0.95, x + r * 0.05, y - r * 0.18);
+    ctx.quadraticCurveTo(x + r * 0.3, y - r * 0.75, x + r * 0.42, y - r * 0.06);
+    ctx.quadraticCurveTo(x + r * 0.08, y + r * 0.04, x - r * 0.34, y - r * 0.2);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(80, 12, 8, 0.45)";
+    ctx.beginPath();
+    ctx.moveTo(x - r * 0.7, y + r * 0.46);
+    ctx.lineTo(x + r * 0.64, y + r * 0.18);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  function drawAncientGhostDetails(x, y, r) {
+    ctx.save();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = "rgba(255, 244, 205, 0.62)";
+    ctx.lineWidth = 2;
+    for (let i = 0; i < 3; i += 1) {
+      const yy = y - r * 0.42 + i * r * 0.42;
+      ctx.beginPath();
+      ctx.moveTo(x - r * 0.82, yy);
+      ctx.lineTo(x + r * 0.72, yy + (i % 2 === 0 ? 3 : -3));
+      ctx.stroke();
+    }
+    ctx.fillStyle = "rgba(39, 224, 195, 0.55)";
+    ctx.fillRect(x - 2, y + r * 0.52, 4, 4);
+    ctx.restore();
+  }
+
+  function drawDiamondGhostBody(ghost, x, y, r) {
+    const gradient = ctx.createLinearGradient(x - r, y - r, x + r, y + r);
+    gradient.addColorStop(0, "#f8ffff");
+    gradient.addColorStop(0.4, ghost.color);
+    gradient.addColorStop(1, "#302c9c");
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.moveTo(x, y - r * 1.08);
+    ctx.lineTo(x + r * 0.94, y - r * 0.22);
+    ctx.lineTo(x + r * 0.72, y + r * 0.9);
+    ctx.lineTo(x, y + r * 1.22);
+    ctx.lineTo(x - r * 0.72, y + r * 0.9);
+    ctx.lineTo(x - r * 0.94, y - r * 0.22);
+    ctx.closePath();
+    ctx.fill();
+
+    ctx.save();
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.46)";
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(x, y - r * 1.02);
+    ctx.lineTo(x, y + r * 1.14);
+    ctx.moveTo(x - r * 0.82, y - r * 0.16);
+    ctx.lineTo(x + r * 0.82, y - r * 0.16);
+    ctx.moveTo(x - r * 0.58, y + r * 0.82);
+    ctx.lineTo(x + r * 0.58, y + r * 0.82);
+    ctx.stroke();
+    ctx.restore();
   }
 
   function drawGhostEye(x, y, radius, look) {
@@ -1903,6 +2383,34 @@
       ctx.shadowBlur = 6;
       ctx.fillText(item.text, item.x, item.y);
     }
+    ctx.restore();
+  }
+
+  function drawLevelBanner() {
+    if (!state.levelBanner) {
+      return;
+    }
+
+    const banner = state.levelBanner;
+    const alpha = clamp(banner.life / banner.maxLife, 0, 1);
+    const ease = Math.sin(alpha * Math.PI);
+    ctx.save();
+    ctx.globalAlpha = clamp(alpha + 0.08, 0, 1);
+    ctx.fillStyle = "rgba(0, 0, 0, 0.48)";
+    ctx.fillRect(0, HEIGHT * 0.32, WIDTH, 132);
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.shadowColor = banner.color;
+    ctx.shadowBlur = 22 * ease;
+    ctx.fillStyle = banner.color;
+    ctx.font = "700 44px Arial, sans-serif";
+    ctx.fillText(banner.title, WIDTH / 2, HEIGHT * 0.32 + 48);
+
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#f7fbff";
+    ctx.font = "700 20px Arial, sans-serif";
+    ctx.fillText(banner.subtitle, WIDTH / 2, HEIGHT * 0.32 + 92);
     ctx.restore();
   }
 
@@ -2072,7 +2580,7 @@
     els.answerInput.disabled = true;
     els.submitAnswer.disabled = true;
     recordFactResult(state.question, correct);
-    els.questionFeedback.textContent = correct ? randomItem(CONFIG.positiveFeedback) : `לא נכון. התשובה היא ${state.question.answer}`;
+    els.questionFeedback.textContent = correct ? positiveFeedback() : supportFeedback(state.question.answer);
     els.questionFeedback.style.color = correct ? "#67f08b" : "#ff4c5f";
     setTimeout(() => finishQuestion(correct), correct ? CONFIG.questionFeedbackDelay.correct : CONFIG.questionFeedbackDelay.wrong);
   });

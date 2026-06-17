@@ -60,6 +60,10 @@
       <div id="question-dialog" class="dialog" role="dialog" aria-modal="true" aria-labelledby="question-title" hidden>
         <div class="dialog-inner">
           <span id="question-status" class="dialog-kicker">רוח נתפסה</span>
+          <div id="question-timer" class="question-timer" hidden>
+            <span>זמן</span>
+            <strong id="question-time">25</strong>
+          </div>
           <h1 id="question-title" dir="ltr">8 × 7 = ?</h1>
           <form id="answer-form" autocomplete="off">
             <input id="answer-input" type="text" inputmode="numeric" pattern="[0-9]*" enterkeyhint="done" aria-label="תשובה" required>
@@ -89,8 +93,8 @@
                   <span>קל</span>
                 </label>
                 <label>
-                  <input type="radio" name="difficulty" value="normal" checked>
-                  <span>רגיל</span>
+                  <input type="radio" name="difficulty" value="medium" checked>
+                  <span>בינוני</span>
                 </label>
                 <label>
                   <input type="radio" name="difficulty" value="hard">
@@ -100,12 +104,15 @@
                   <input type="radio" name="difficulty" value="veryHard">
                   <span>קשה מאוד</span>
                 </label>
-                <label>
-                  <input type="radio" name="difficulty" value="impossible">
-                  <span>הכי קשה בעולם</span>
-                </label>
               </div>
             </fieldset>
+            <div class="time-limit-setting">
+              <span class="time-limit-title">זמן לכל תרגיל</span>
+              <button id="time-limit-toggle" class="time-limit-toggle" type="button" aria-pressed="false" aria-label="הפעל הגבלת זמן של 25 שניות לכל תרגיל">
+                <span class="clock-icon" aria-hidden="true"></span>
+              </button>
+              <span id="time-limit-state" class="time-limit-state">ללא זמן</span>
+            </div>
             <button id="start-button" class="primary-button" type="submit">התחל משחק</button>
           </form>
         </div>

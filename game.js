@@ -17,6 +17,7 @@
     missionBonus: 420,
     adaptiveQuestionChance: 0.3,
     recentQuestionMemory: 3,
+    questionTimeLimit: 25,
     questionFeedbackDelay: {
       correct: 650,
       wrong: 900
@@ -33,6 +34,7 @@
       bestScore: "mathPacmanBest",
       sound: "mathPacmanSound",
       difficulty: "mathPacmanDifficulty",
+      timeLimit: "mathPacmanTimeLimit",
       factStats: "mathPacmanFactStats"
     },
     difficulty: {
@@ -40,41 +42,27 @@
         label: "קל",
         ghostCount: 8,
         ghostSpeedMultiplier: 0.9,
-        questionTierStep: 24,
-        questionMaxOffset: -1,
-        questionMode: "classic"
+        questionMode: "table",
+        adaptiveQuestionChance: 0.3
       },
-      normal: {
-        label: "רגיל",
+      medium: {
+        label: "בינוני",
         ghostCount: 10,
         ghostSpeedMultiplier: 1,
-        questionTierStep: 20,
-        questionMaxOffset: 0,
-        questionMode: "classic"
+        questionMode: "filteredTable",
+        adaptiveQuestionChance: 0.3
       },
       hard: {
         label: "קשה",
         ghostCount: 11,
         ghostSpeedMultiplier: 1.1,
-        questionTierStep: 16,
-        questionMaxOffset: 1,
-        questionMode: "classic"
+        questionMode: "twoByOne",
+        adaptiveQuestionChance: 0
       },
       veryHard: {
         label: "קשה מאוד",
         ghostCount: 12,
         ghostSpeedMultiplier: 1.18,
-        questionTierStep: 12,
-        questionMaxOffset: 2,
-        questionMode: "twoByOne",
-        adaptiveQuestionChance: 0
-      },
-      impossible: {
-        label: "הכי קשה בעולם",
-        ghostCount: 13,
-        ghostSpeedMultiplier: 1.28,
-        questionTierStep: 10,
-        questionMaxOffset: 3,
         questionMode: "twoByTwo",
         adaptiveQuestionChance: 0
       }
@@ -188,6 +176,11 @@
   const TURN_LOOKAHEAD = 7.5;
   const TURN_SNAP_DISTANCE = 8.5;
   const JOYSTICK_DEADZONE = 12;
+  const NON_EASY_FACTORS = [3, 4, 5, 6, 7, 8, 9];
+  const LEGACY_DIFFICULTY_MAP = {
+    normal: "medium",
+    impossible: "veryHard"
+  };
   const LTR_ISOLATE_START = "\u2066";
   const LTR_ISOLATE_END = "\u2069";
   const KEY_TO_DIR = {
@@ -258,6 +251,8 @@
     playerForm: document.getElementById("player-form"),
     playerNameInput: document.getElementById("player-name-input"),
     difficultyInputs: Array.from(document.querySelectorAll("input[name='difficulty']")),
+    timeLimitToggle: document.getElementById("time-limit-toggle"),
+    timeLimitState: document.getElementById("time-limit-state"),
     nameError: document.getElementById("name-error"),
     startButton: document.getElementById("start-button"),
     bestScore: document.getElementById("best-score"),
@@ -271,6 +266,8 @@
     restartButton: document.getElementById("restart-button"),
     questionDialog: document.getElementById("question-dialog"),
     questionStatus: document.getElementById("question-status"),
+    questionTimer: document.getElementById("question-timer"),
+    questionTime: document.getElementById("question-time"),
     questionTitle: document.getElementById("question-title"),
     answerForm: document.getElementById("answer-form"),
     answerInput: document.getElementById("answer-input"),
@@ -300,11 +297,12 @@
   };
 
   function normalizeDifficulty(value) {
-    return Object.prototype.hasOwnProperty.call(CONFIG.difficulty, value) ? value : "normal";
+    const mappedValue = LEGACY_DIFFICULTY_MAP[value] || value;
+    return Object.prototype.hasOwnProperty.call(CONFIG.difficulty, mappedValue) ? mappedValue : "medium";
   }
 
   function getDifficultySettings() {
-    return CONFIG.difficulty[state.difficulty] || CONFIG.difficulty.normal;
+    return CONFIG.difficulty[state.difficulty] || CONFIG.difficulty.medium;
   }
 
   function getLevelIndexForAnswers(correctAnswers) {
@@ -370,11 +368,14 @@
     correctAnswers: 0,
     bestScore: Number(storage.get(CONFIG.storageKeys.bestScore, "0")) || 0,
     playerName: "",
-    difficulty: normalizeDifficulty(storage.get(CONFIG.storageKeys.difficulty, "normal")),
+    difficulty: normalizeDifficulty(storage.get(CONFIG.storageKeys.difficulty, "medium")),
+    timeLimitEnabled: storage.get(CONFIG.storageKeys.timeLimit, "off") === "on",
     factStats: loadFactStats(),
     recentQuestionKeys: [],
     mission: null,
     question: null,
+    questionTimeRemaining: null,
+    questionFeedbackTimerId: null,
     currentGhostId: null,
     answerLocked: false,
     nextGhostId: 1,
@@ -783,6 +784,7 @@
   }
 
   function setupGame() {
+    clearQuestionFeedbackTimer();
     state.clock = 0;
     state.lastTime = performance.now();
     state.levelIndex = 0;
@@ -793,6 +795,7 @@
     state.correctAnswers = 0;
     state.recentQuestionKeys = [];
     state.question = null;
+    state.questionTimeRemaining = null;
     state.currentGhostId = null;
     state.answerLocked = false;
     state.nextGhostId = 1;
@@ -866,6 +869,32 @@
     }
   }
 
+  function setTimeLimitEnabled(enabled, persist = true) {
+    state.timeLimitEnabled = Boolean(enabled);
+    if (persist) {
+      storage.set(CONFIG.storageKeys.timeLimit, state.timeLimitEnabled ? "on" : "off");
+    }
+    syncTimeLimitToggle();
+  }
+
+  function toggleTimeLimit() {
+    setTimeLimitEnabled(!state.timeLimitEnabled);
+  }
+
+  function syncTimeLimitToggle() {
+    if (!els.timeLimitToggle || !els.timeLimitState) {
+      return;
+    }
+
+    const enabled = state.timeLimitEnabled;
+    els.timeLimitToggle.setAttribute("aria-pressed", String(enabled));
+    els.timeLimitToggle.setAttribute(
+      "aria-label",
+      enabled ? "בטל הגבלת זמן לכל תרגיל" : "הפעל הגבלת זמן של 25 שניות לכל תרגיל"
+    );
+    els.timeLimitState.textContent = enabled ? "25 שניות" : "ללא זמן";
+  }
+
   function startGame(event) {
     event?.preventDefault();
     const playerName = normalizePlayerName(els.playerNameInput.value);
@@ -902,6 +931,7 @@
     els.nameError.textContent = "";
     els.pause.textContent = "Ⅱ";
     syncDifficultyInputs();
+    syncTimeLimitToggle();
     setupGame();
     focusPlayerNameWhenUseful();
   }
@@ -1134,6 +1164,9 @@
     if (state.phase === "playing") {
       updatePlaying(dt);
     } else {
+      if (state.phase === "question") {
+        updateQuestionTimer(dt);
+      }
       updateAmbient(dt);
     }
 
@@ -1499,8 +1532,7 @@
 
   function generateQuestion() {
     const difficulty = getDifficultySettings();
-    const canUseReview = difficulty.questionMode === "classic";
-    const reviewQuestion = canUseReview && Math.random() < getAdaptiveQuestionChance() ? createReviewQuestion() : null;
+    const reviewQuestion = Math.random() < getAdaptiveQuestionChance() ? createReviewQuestion(difficulty) : null;
     const question = reviewQuestion || createRandomQuestion();
     rememberQuestionKey(question.key);
     return question;
@@ -1508,75 +1540,44 @@
 
   function createRandomQuestion() {
     const difficulty = getDifficultySettings();
-    if (difficulty.questionMode === "twoByOne") {
-      return createTwoDigitByOneQuestion();
-    }
+    let { a, b } = createFactorPair(difficulty);
 
-    if (difficulty.questionMode === "twoByTwo") {
-      return createTwoDigitByTwoQuestion();
-    }
-
-    const tier = Math.min(4, Math.floor((state.correctAnswers + state.levelIndex * 8) / difficulty.questionTierStep));
-    const maxByTier = [9, 10, 12, 12, 12][tier];
-    const max = clamp(maxByTier + difficulty.questionMaxOffset, 6, 12);
-    const minByTier = tier >= 3 ? 3 : 2;
-    const multiplication = Math.random() > 0.42 || state.correctAnswers < 5;
-    let a = randomInt(minByTier, max);
-    let b = randomInt(2, max);
-
-    for (let attempt = 0; attempt < 8 && hasRecentQuestion(factKey(a, b)); attempt += 1) {
-      a = randomInt(minByTier, max);
-      b = randomInt(2, max);
-    }
-
-    return multiplication ? makeMultiplicationQuestion(a, b) : makeDivisionQuestion(a, b);
-  }
-
-  function createTwoDigitByOneQuestion() {
-    return Math.random() > 0.45
-      ? createSizedMultiplicationQuestion(12, 99, 2, 9)
-      : createDisplayedDivisionQuestion(12, 99, 2, 9);
-  }
-
-  function createTwoDigitByTwoQuestion() {
-    return Math.random() > 0.45
-      ? createSizedMultiplicationQuestion(12, 99, 12, 99)
-      : createDisplayedDivisionQuestion(12, 99, 12, 99);
-  }
-
-  function createSizedMultiplicationQuestion(aMin, aMax, bMin, bMax) {
-    let a = randomInt(aMin, aMax);
-    let b = randomInt(bMin, bMax);
-
-    for (let attempt = 0; attempt < 10 && hasRecentQuestion(factKey(a, b)); attempt += 1) {
-      a = randomInt(aMin, aMax);
-      b = randomInt(bMin, bMax);
+    for (let attempt = 0; attempt < 12 && hasRecentQuestion(factKey(a, b)); attempt += 1) {
+      ({ a, b } = createFactorPair(difficulty));
     }
 
     return makeMultiplicationQuestion(a, b);
   }
 
-  function createDisplayedDivisionQuestion(dividendMin, dividendMax, divisorMin, divisorMax) {
-    const usableDivisorMax = Math.min(divisorMax, Math.floor(dividendMax / 2));
-    let dividend = dividendMin;
-    let divisor = divisorMin;
-
-    for (let attempt = 0; attempt < 18; attempt += 1) {
-      divisor = randomInt(divisorMin, usableDivisorMax);
-      const quotientMin = Math.max(2, Math.ceil(dividendMin / divisor));
-      const quotientMax = Math.floor(dividendMax / divisor);
-      const quotient = randomInt(quotientMin, quotientMax);
-      dividend = divisor * quotient;
-
-      if (!hasRecentQuestion(divisionKey(dividend, divisor))) {
-        return makeDisplayedDivisionQuestion(dividend, divisor);
-      }
+  function createFactorPair(difficulty) {
+    if (difficulty.questionMode === "table") {
+      return {
+        a: randomInt(1, 10),
+        b: randomInt(1, 10)
+      };
     }
 
-    return makeDisplayedDivisionQuestion(dividend, divisor);
+    if (difficulty.questionMode === "filteredTable") {
+      return {
+        a: randomItem(NON_EASY_FACTORS),
+        b: randomItem(NON_EASY_FACTORS)
+      };
+    }
+
+    if (difficulty.questionMode === "twoByOne") {
+      return {
+        a: randomInt(11, 99),
+        b: randomItem(NON_EASY_FACTORS)
+      };
+    }
+
+    return {
+      a: randomInt(11, 99),
+      b: randomInt(11, 99)
+    };
   }
 
-  function createReviewQuestion() {
+  function createReviewQuestion(difficulty) {
     const candidates = Object.entries(state.factStats)
       .map(([key, stats]) => ({
         key,
@@ -1584,7 +1585,12 @@
         stats,
         weight: Math.max(0, stats.wrong * 2 - stats.correct)
       }))
-      .filter((candidate) => candidate.factors && candidate.weight > 0 && !hasRecentQuestion(candidate.key));
+      .filter((candidate) => {
+        return candidate.factors
+          && candidate.weight > 0
+          && !hasRecentQuestion(candidate.key)
+          && isFactAllowedForDifficulty(candidate.factors.a, candidate.factors.b, difficulty);
+      });
 
     if (candidates.length === 0) {
       return null;
@@ -1593,9 +1599,27 @@
     const candidate = weightedRandom(candidates);
     const factors = candidate.factors;
 
-    return Math.random() < 0.55
-      ? makeMultiplicationQuestion(factors.a, factors.b)
-      : makeDivisionQuestion(factors.a, factors.b);
+    return makeMultiplicationQuestion(factors.a, factors.b);
+  }
+
+  function isFactAllowedForDifficulty(a, b, difficulty) {
+    if (difficulty.questionMode === "table") {
+      return isBetween(a, 1, 10) && isBetween(b, 1, 10);
+    }
+
+    if (difficulty.questionMode === "filteredTable") {
+      return NON_EASY_FACTORS.includes(a) && NON_EASY_FACTORS.includes(b);
+    }
+
+    if (difficulty.questionMode === "twoByOne") {
+      return isBetween(a, 11, 99) && NON_EASY_FACTORS.includes(b);
+    }
+
+    return isBetween(a, 11, 99) && isBetween(b, 11, 99);
+  }
+
+  function isBetween(value, min, max) {
+    return value >= min && value <= max;
   }
 
   function makeMultiplicationQuestion(a, b) {
@@ -1606,32 +1630,12 @@
     };
   }
 
-  function makeDivisionQuestion(a, b) {
-    return {
-      key: factKey(a, b),
-      text: formatQuestion(a * b, "÷", b),
-      answer: a
-    };
-  }
-
-  function makeDisplayedDivisionQuestion(dividend, divisor) {
-    return {
-      key: divisionKey(dividend, divisor),
-      text: formatQuestion(dividend, "÷", divisor),
-      answer: dividend / divisor
-    };
-  }
-
   function formatQuestion(left, operator, right) {
     return `${LTR_ISOLATE_START}${left} ${operator} ${right} = ?${LTR_ISOLATE_END}`;
   }
 
   function factKey(a, b) {
     return `${a}×${b}`;
-  }
-
-  function divisionKey(dividend, divisor) {
-    return `${dividend}÷${divisor}`;
   }
 
   function parseFactKey(key) {
@@ -1697,7 +1701,12 @@
     return randomItem(CONFIG.supportFeedback).replace("{answer}", String(answer));
   }
 
+  function timeExpiredFeedback(answer) {
+    return `נגמר הזמן. התשובה היא ${answer}`;
+  }
+
   function openQuestion(ghost) {
+    clearQuestionFeedbackTimer();
     state.phase = "question";
     resetJoystick();
     state.question = generateQuestion();
@@ -1712,11 +1721,86 @@
     els.answerInput.disabled = false;
     els.submitAnswer.disabled = false;
     els.questionDialog.hidden = false;
+    startQuestionTimer();
     playTone(310, 0.08, "triangle", 0.035);
     setTimeout(() => els.answerInput.focus(), 30);
   }
 
+  function startQuestionTimer() {
+    if (!state.timeLimitEnabled) {
+      state.questionTimeRemaining = null;
+      updateQuestionTimerDisplay();
+      return;
+    }
+
+    state.questionTimeRemaining = CONFIG.questionTimeLimit;
+    updateQuestionTimerDisplay();
+  }
+
+  function updateQuestionTimer(dt) {
+    if (!state.timeLimitEnabled || state.answerLocked || !state.question || state.questionTimeRemaining === null) {
+      return;
+    }
+
+    state.questionTimeRemaining = Math.max(0, state.questionTimeRemaining - dt);
+    updateQuestionTimerDisplay();
+
+    if (state.questionTimeRemaining <= 0) {
+      expireQuestionTimer();
+    }
+  }
+
+  function updateQuestionTimerDisplay() {
+    if (!els.questionTimer || !els.questionTime) {
+      return;
+    }
+
+    const hasTimer = state.timeLimitEnabled && state.questionTimeRemaining !== null;
+    els.questionTimer.hidden = !hasTimer;
+    if (!hasTimer) {
+      return;
+    }
+
+    const seconds = Math.ceil(state.questionTimeRemaining);
+    els.questionTime.textContent = String(seconds);
+    els.questionTimer.classList.toggle("question-timer-low", seconds <= 5);
+  }
+
+  function expireQuestionTimer() {
+    if (state.answerLocked || !state.question) {
+      return;
+    }
+
+    state.answerLocked = true;
+    els.answerInput.disabled = true;
+    els.submitAnswer.disabled = true;
+    recordFactResult(state.question, false);
+    els.questionFeedback.textContent = timeExpiredFeedback(state.question.answer);
+    els.questionFeedback.style.color = "#ff4c5f";
+    scheduleQuestionFinish(false);
+  }
+
+  function clearQuestionFeedbackTimer() {
+    if (!state.questionFeedbackTimerId) {
+      return;
+    }
+
+    clearTimeout(state.questionFeedbackTimerId);
+    state.questionFeedbackTimerId = null;
+  }
+
+  function scheduleQuestionFinish(correct) {
+    clearQuestionFeedbackTimer();
+    state.questionFeedbackTimerId = setTimeout(
+      () => finishQuestion(correct),
+      correct ? CONFIG.questionFeedbackDelay.correct : CONFIG.questionFeedbackDelay.wrong
+    );
+  }
+
   function finishQuestion(correct) {
+    state.questionFeedbackTimerId = null;
+    state.questionTimeRemaining = null;
+    updateQuestionTimerDisplay();
     els.questionDialog.hidden = true;
     state.answerLocked = false;
     els.answerInput.disabled = false;
@@ -2615,7 +2699,7 @@
     recordFactResult(state.question, correct);
     els.questionFeedback.textContent = correct ? positiveFeedback() : supportFeedback(state.question.answer);
     els.questionFeedback.style.color = correct ? "#67f08b" : "#ff4c5f";
-    setTimeout(() => finishQuestion(correct), correct ? CONFIG.questionFeedbackDelay.correct : CONFIG.questionFeedbackDelay.wrong);
+    scheduleQuestionFinish(correct);
   });
 
   els.pause.addEventListener("click", togglePause);
@@ -2633,6 +2717,7 @@
   els.difficultyInputs.forEach((input) => {
     input.addEventListener("change", () => setDifficulty(input.value));
   });
+  els.timeLimitToggle?.addEventListener("click", toggleTimeLimit);
   els.restartButton.addEventListener("click", showStartScreen);
   window.addEventListener("resize", resizeCanvas);
   window.addEventListener("blur", () => {
@@ -2643,6 +2728,7 @@
 
   resizeCanvas();
   syncDifficultyInputs();
+  syncTimeLimitToggle();
   setupGame();
   updateSoundButton();
   focusPlayerNameWhenUseful();

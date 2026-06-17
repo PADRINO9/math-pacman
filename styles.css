@@ -49,16 +49,22 @@ button {
 }
 
 .game-shell {
-  --stage-width: min(100%, 1180px, calc((100vh - 168px) * 1.3333));
+  --shell-padding: clamp(8px, 1.4vw, 18px);
+  --stage-width: min(
+    calc(100vw - var(--shell-padding) - var(--shell-padding)),
+    1180px,
+    calc((100dvh - 132px - var(--shell-padding) - var(--shell-padding)) * 1.3333)
+  );
   --joystick-size: 112px;
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
   display: grid;
   grid-template-rows: auto auto;
   align-content: center;
   justify-items: center;
-  gap: 10px;
-  padding: clamp(10px, 2vw, 24px);
+  gap: clamp(6px, 1.1dvh, 10px);
+  padding: var(--shell-padding);
 }
 
 .stage {
@@ -241,12 +247,13 @@ button {
 }
 
 .screen {
-  position: absolute;
+  position: fixed;
   inset: 0;
   z-index: 14;
   display: grid;
   place-items: center;
-  padding: 24px;
+  overflow-y: auto;
+  padding: clamp(10px, 2vmin, 24px);
   background:
     linear-gradient(180deg, rgba(0, 0, 0, 0.34), rgba(0, 0, 0, 0.76)),
     rgba(2, 5, 12, 0.62);
@@ -285,8 +292,12 @@ button {
 }
 
 .screen-panel {
-  width: min(520px, 92vw);
-  padding: clamp(22px, 4vw, 34px);
+  width: min(520px, 92%);
+  max-height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  padding: clamp(18px, 3vmin, 30px);
+  scrollbar-gutter: stable;
 }
 
 .dialog-kicker,
@@ -488,7 +499,7 @@ button {
 
 .difficulty-options {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 6px;
 }
 
@@ -639,6 +650,107 @@ button {
 
 .touch-pad {
   display: none !important;
+}
+
+@media (max-height: 820px) {
+  .screen {
+    padding: 12px;
+  }
+
+  .screen-panel {
+    padding: 16px;
+  }
+
+  .dialog h1,
+  .screen h1 {
+    margin: 10px 0 12px;
+  }
+
+  .screen h1 {
+    font-size: clamp(30px, 5.2vw, 48px);
+  }
+
+  .screen-stats {
+    gap: 6px;
+    margin: 10px 0 12px;
+  }
+
+  .screen-stats span {
+    padding: 7px 9px;
+  }
+
+  .name-form,
+  .difficulty-field {
+    gap: 8px;
+  }
+
+  #player-name-input {
+    height: 46px;
+    font-size: 20px;
+  }
+
+  .difficulty-options span {
+    min-height: 38px;
+  }
+
+  .time-limit-setting {
+    gap: 5px;
+    margin: 0;
+  }
+
+  .time-limit-toggle {
+    width: 48px;
+    height: 48px;
+  }
+
+  .clock-icon {
+    width: 24px;
+    height: 24px;
+  }
+
+  .primary-button {
+    min-height: 44px;
+  }
+}
+
+@media (max-height: 620px) {
+  .hud {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 6px;
+  }
+
+  .hud-group-main {
+    gap: 4px;
+  }
+
+  .metric {
+    min-width: 58px;
+    padding: 4px 6px;
+  }
+
+  .metric-world {
+    min-width: 68px;
+  }
+
+  .metric-label {
+    margin-bottom: 3px;
+    font-size: 9px;
+  }
+
+  .metric strong {
+    font-size: 14px;
+  }
+
+  .progress-wrap {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    margin-top: 0;
+  }
+
+  .icon-button {
+    width: 30px;
+    height: 30px;
+  }
 }
 
 .joystick-base {

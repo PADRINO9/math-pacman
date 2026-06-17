@@ -623,10 +623,15 @@ button {
 }
 
 .difficulty-field legend {
-  color: var(--muted);
-  font-size: 14px;
-  font-weight: 700;
+  display: block;
+  width: 100%;
+  padding: 0;
+  color: var(--ink);
+  font-size: 15px;
+  font-weight: 900;
   line-height: 1.2;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(104, 231, 255, 0.28);
 }
 
 .difficulty-options {

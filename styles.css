@@ -8,10 +8,13 @@
   --gold: #ffd84a;
   --green: #67f08b;
   --pink: #ff5f9f;
+  --violet: #9d7cff;
   --red: #ff4c5f;
   --ink: #f7fbff;
   --muted: #93a6bd;
   --shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
+  --display-font: "Fredoka", "Assistant", "Noto Sans Hebrew", Arial, sans-serif;
+  --body-font: "Assistant", "Noto Sans Hebrew", Arial, sans-serif;
 }
 
 * {
@@ -34,7 +37,7 @@ body {
     repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.018) 0 1px, transparent 1px 80px),
     #05070b;
   color: var(--ink);
-  font-family: Arial, "Noto Sans Hebrew", sans-serif;
+  font-family: var(--body-font);
   direction: rtl;
   -webkit-font-smoothing: antialiased;
 }
@@ -278,12 +281,40 @@ button {
 
 .dialog-inner,
 .screen-panel {
-  border: 1px solid rgba(255, 216, 74, 0.42);
-  background: var(--panel-strong);
+  position: relative;
+  isolation: isolate;
+  border: 1px solid rgba(104, 231, 255, 0.42);
+  background:
+    linear-gradient(180deg, rgba(10, 16, 32, 0.96), rgba(5, 7, 17, 0.98)),
+    var(--panel-strong);
   box-shadow:
-    0 24px 90px rgba(0, 0, 0, 0.62),
-    inset 0 0 42px rgba(255, 216, 74, 0.08);
+    0 24px 90px rgba(0, 0, 0, 0.66),
+    0 0 0 4px rgba(104, 231, 255, 0.04),
+    inset 0 0 44px rgba(104, 231, 255, 0.08);
   text-align: center;
+}
+
+.dialog-inner::before,
+.screen-panel::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  z-index: -1;
+  border: 1px solid rgba(255, 216, 74, 0.18);
+  pointer-events: none;
+}
+
+.screen-panel::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background:
+    linear-gradient(90deg, transparent 0 9px, rgba(104, 231, 255, 0.08) 9px 10px, transparent 10px 100%),
+    linear-gradient(0deg, transparent 0 9px, rgba(255, 216, 74, 0.07) 9px 10px, transparent 10px 100%);
+  background-size: 40px 40px;
+  opacity: 0.34;
+  pointer-events: none;
 }
 
 .dialog-inner {
@@ -307,17 +338,22 @@ button {
   justify-content: center;
   min-height: 26px;
   padding: 4px 10px;
-  border: 1px solid rgba(104, 231, 255, 0.35);
+  border: 1px solid rgba(104, 231, 255, 0.42);
   color: var(--line-hot);
-  background: rgba(104, 231, 255, 0.08);
+  background: rgba(104, 231, 255, 0.1);
   font-size: 13px;
+  font-weight: 800;
+  letter-spacing: 0;
   line-height: 1.2;
+  box-shadow: inset 0 0 16px rgba(104, 231, 255, 0.08);
 }
 
 .dialog h1,
 .screen h1 {
   margin: 16px 0 18px;
   color: var(--gold);
+  font-family: var(--display-font);
+  font-weight: 700;
   font-size: clamp(36px, 7vw, 66px);
   line-height: 1;
   text-shadow: 0 0 24px rgba(255, 216, 74, 0.42);
@@ -363,7 +399,93 @@ button {
 }
 
 .screen h1 {
-  font-size: clamp(34px, 6vw, 58px);
+  margin-top: 10px;
+  font-size: clamp(34px, 6vw, 56px);
+  letter-spacing: 0;
+}
+
+.start-graphic {
+  position: relative;
+  display: grid;
+  grid-template-columns: 58px repeat(3, 12px) 42px 42px;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  height: 74px;
+  margin: 10px auto 4px;
+  overflow: hidden;
+  border-block: 1px solid rgba(104, 231, 255, 0.16);
+}
+
+.start-graphic::before {
+  content: "×";
+  position: absolute;
+  inset-inline-start: 38px;
+  top: 50%;
+  color: rgba(255, 216, 74, 0.44);
+  font-family: var(--display-font);
+  font-size: 34px;
+  transform: translateY(-52%);
+}
+
+.start-graphic::after {
+  content: "12";
+  position: absolute;
+  inset-inline-end: 32px;
+  top: 50%;
+  color: rgba(103, 240, 139, 0.44);
+  font-family: var(--display-font);
+  font-size: 24px;
+  transform: translateY(-48%);
+}
+
+.start-graphic-pacman {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: conic-gradient(from 35deg, transparent 0 74deg, var(--gold) 75deg 360deg);
+  box-shadow: 0 0 28px rgba(255, 216, 74, 0.46);
+}
+
+.start-graphic-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: #f7fbff;
+  box-shadow: 0 0 12px rgba(247, 251, 255, 0.66);
+}
+
+.start-graphic-ghost {
+  position: relative;
+  width: 38px;
+  height: 42px;
+  border-radius: 18px 18px 9px 9px;
+  background: var(--pink);
+  box-shadow: 0 0 22px rgba(255, 95, 159, 0.38);
+}
+
+.start-graphic-ghost::before,
+.start-graphic-ghost::after {
+  content: "";
+  position: absolute;
+  top: 13px;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #f7fbff;
+}
+
+.start-graphic-ghost::before {
+  left: 9px;
+}
+
+.start-graphic-ghost::after {
+  right: 9px;
+}
+
+.start-graphic-ghost-b {
+  background: var(--line-hot);
+  box-shadow: 0 0 22px rgba(104, 231, 255, 0.36);
 }
 
 #answer-form {
@@ -392,13 +514,16 @@ button {
 #submit-answer,
 .primary-button {
   min-height: 48px;
-  border: 0;
+  border: 1px solid rgba(247, 251, 255, 0.16);
   background: linear-gradient(135deg, #13c985, #86f76f);
   color: #031009;
   cursor: pointer;
+  font-family: var(--display-font);
   font-weight: 700;
   padding: 0 16px;
-  box-shadow: 0 12px 34px rgba(19, 201, 133, 0.24);
+  box-shadow:
+    0 12px 34px rgba(19, 201, 133, 0.24),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34);
 }
 
 #submit-answer:hover,
@@ -441,9 +566,10 @@ button {
 .screen-stats span {
   min-width: 104px;
   padding: 9px 12px;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(104, 231, 255, 0.2);
+  background: rgba(104, 231, 255, 0.055);
   color: var(--muted);
+  box-shadow: inset 0 0 18px rgba(104, 231, 255, 0.05);
 }
 
 .screen-stats strong {
@@ -459,17 +585,22 @@ button {
 .name-form label {
   color: var(--muted);
   font-size: 14px;
+  font-weight: 700;
 }
 
 #player-name-input {
   width: 100%;
   height: 54px;
-  border: 1px solid rgba(104, 231, 255, 0.44);
-  background: rgba(0, 0, 0, 0.42);
+  border: 1px solid rgba(104, 231, 255, 0.5);
+  background: rgba(0, 0, 0, 0.5);
   color: var(--ink);
   text-align: center;
+  font-family: var(--display-font);
   font-size: 24px;
   outline: none;
+  box-shadow:
+    inset 0 0 18px rgba(104, 231, 255, 0.08),
+    0 10px 26px rgba(0, 0, 0, 0.22);
 }
 
 #player-name-input:focus {
@@ -494,6 +625,7 @@ button {
 .difficulty-field legend {
   color: var(--muted);
   font-size: 14px;
+  font-weight: 700;
   line-height: 1.2;
 }
 
@@ -518,20 +650,26 @@ button {
   min-height: 42px;
   place-items: center;
   padding: 0 7px;
-  border: 1px solid rgba(104, 231, 255, 0.28);
-  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(104, 231, 255, 0.32);
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025));
   color: var(--ink);
   cursor: pointer;
+  font-weight: 800;
   line-height: 1.15;
   overflow-wrap: anywhere;
   text-align: center;
+  box-shadow: inset 0 0 16px rgba(104, 231, 255, 0.04);
 }
 
 .difficulty-options input:checked + span {
   border-color: rgba(255, 216, 74, 0.82);
-  background: rgba(255, 216, 74, 0.13);
+  background:
+    linear-gradient(180deg, rgba(255, 216, 74, 0.22), rgba(255, 216, 74, 0.08));
   color: var(--gold);
-  box-shadow: inset 0 0 18px rgba(255, 216, 74, 0.08);
+  box-shadow:
+    0 0 0 2px rgba(255, 216, 74, 0.08),
+    inset 0 0 20px rgba(255, 216, 74, 0.12);
 }
 
 .difficulty-options input:focus-visible + span {
@@ -549,6 +687,7 @@ button {
 .time-limit-title {
   color: var(--muted);
   font-size: 14px;
+  font-weight: 700;
   line-height: 1.2;
 }
 
@@ -668,6 +807,53 @@ button {
 
   .screen h1 {
     font-size: clamp(30px, 5.2vw, 48px);
+  }
+
+  .start-graphic {
+    grid-template-columns: 46px repeat(3, 9px) 34px 34px;
+    gap: 9px;
+    height: 52px;
+    margin: 6px auto 2px;
+  }
+
+  .start-graphic::before {
+    inset-inline-start: 30px;
+    font-size: 25px;
+  }
+
+  .start-graphic::after {
+    inset-inline-end: 24px;
+    font-size: 19px;
+  }
+
+  .start-graphic-pacman {
+    width: 38px;
+    height: 38px;
+  }
+
+  .start-graphic-dot {
+    width: 7px;
+    height: 7px;
+  }
+
+  .start-graphic-ghost {
+    width: 30px;
+    height: 33px;
+  }
+
+  .start-graphic-ghost::before,
+  .start-graphic-ghost::after {
+    top: 10px;
+    width: 6px;
+    height: 6px;
+  }
+
+  .start-graphic-ghost::before {
+    left: 8px;
+  }
+
+  .start-graphic-ghost::after {
+    right: 8px;
   }
 
   .screen-stats {

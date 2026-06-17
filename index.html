@@ -7,7 +7,10 @@
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
   <title>פאקמן מתמטי</title>
-  <link rel="stylesheet" href="styles.css?v=20260616-1">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@500;700;800&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=20260617-2">
 </head>
 <body>
   <main class="game-shell" aria-label="פאקמן מתמטי">
@@ -76,6 +79,14 @@
       <div id="start-screen" class="screen screen-visible">
         <div class="screen-panel">
           <p class="eyebrow">פאקמן מתמטי</p>
+          <div class="start-graphic" aria-hidden="true">
+            <span class="start-graphic-pacman"></span>
+            <span class="start-graphic-dot"></span>
+            <span class="start-graphic-dot"></span>
+            <span class="start-graphic-dot"></span>
+            <span class="start-graphic-ghost start-graphic-ghost-a"></span>
+            <span class="start-graphic-ghost start-graphic-ghost-b"></span>
+          </div>
           <h1>רוחות הכפל מחכות</h1>
           <div class="screen-stats">
             <span>שיא: <strong id="best-score">0</strong></span>
@@ -141,6 +152,6 @@
     </div>
   </main>
 
-  <script src="game.js?v=20260616-1"></script>
+  <script src="game.js?v=20260617-2"></script>
 </body>
 </html>

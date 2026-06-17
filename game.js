@@ -375,6 +375,7 @@
     mission: null,
     question: null,
     questionTimeRemaining: null,
+    questionDeadline: null,
     questionFeedbackTimerId: null,
     currentGhostId: null,
     answerLocked: false,
@@ -796,6 +797,7 @@
     state.recentQuestionKeys = [];
     state.question = null;
     state.questionTimeRemaining = null;
+    state.questionDeadline = null;
     state.currentGhostId = null;
     state.answerLocked = false;
     state.nextGhostId = 1;
@@ -1165,7 +1167,7 @@
       updatePlaying(dt);
     } else {
       if (state.phase === "question") {
-        updateQuestionTimer(dt);
+        updateQuestionTimer();
       }
       updateAmbient(dt);
     }
@@ -1729,20 +1731,22 @@
   function startQuestionTimer() {
     if (!state.timeLimitEnabled) {
       state.questionTimeRemaining = null;
+      state.questionDeadline = null;
       updateQuestionTimerDisplay();
       return;
     }
 
-    state.questionTimeRemaining = CONFIG.questionTimeLimit;
+    state.questionDeadline = performance.now() + CONFIG.questionTimeLimit * 1000;
+    state.questionTimeRemaining = getQuestionTimeRemaining();
     updateQuestionTimerDisplay();
   }
 
-  function updateQuestionTimer(dt) {
-    if (!state.timeLimitEnabled || state.answerLocked || !state.question || state.questionTimeRemaining === null) {
+  function updateQuestionTimer() {
+    if (!state.timeLimitEnabled || state.answerLocked || !state.question || state.questionDeadline === null) {
       return;
     }
 
-    state.questionTimeRemaining = Math.max(0, state.questionTimeRemaining - dt);
+    state.questionTimeRemaining = getQuestionTimeRemaining();
     updateQuestionTimerDisplay();
 
     if (state.questionTimeRemaining <= 0) {
@@ -1750,12 +1754,20 @@
     }
   }
 
+  function getQuestionTimeRemaining() {
+    if (state.questionDeadline === null) {
+      return null;
+    }
+
+    return Math.max(0, (state.questionDeadline - performance.now()) / 1000);
+  }
+
   function updateQuestionTimerDisplay() {
     if (!els.questionTimer || !els.questionTime) {
       return;
     }
 
-    const hasTimer = state.timeLimitEnabled && state.questionTimeRemaining !== null;
+    const hasTimer = state.timeLimitEnabled && state.questionDeadline !== null && state.questionTimeRemaining !== null;
     els.questionTimer.hidden = !hasTimer;
     if (!hasTimer) {
       return;
@@ -1775,6 +1787,7 @@
     els.answerInput.disabled = true;
     els.submitAnswer.disabled = true;
     recordFactResult(state.question, false);
+    state.questionDeadline = null;
     els.questionFeedback.textContent = timeExpiredFeedback(state.question.answer);
     els.questionFeedback.style.color = "#ff4c5f";
     scheduleQuestionFinish(false);
@@ -1800,6 +1813,7 @@
   function finishQuestion(correct) {
     state.questionFeedbackTimerId = null;
     state.questionTimeRemaining = null;
+    state.questionDeadline = null;
     updateQuestionTimerDisplay();
     els.questionDialog.hidden = true;
     state.answerLocked = false;

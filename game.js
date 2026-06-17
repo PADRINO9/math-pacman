@@ -1933,8 +1933,8 @@
     els.endScreen.hidden = false;
     els.winnerTrophy.hidden = !won;
     els.endKicker.textContent = won ? `כל הכבוד ${playerName}` : "עוד סיבוב";
-    els.endTitle.textContent = won ? `${playerName} ניצח!` : "נגמרו החיים";
-    els.endCopy.textContent = won ? `${playerName} השלים 100 תשובות נכונות.` : `${playerName}, השיא הבא מחכה כבר על הלוח.`;
+    els.endTitle.textContent = won ? `${playerName} ניצח!` : "המשחק נגמר";
+    els.endCopy.textContent = won ? `${playerName} השלים 100 תשובות נכונות.` : "לא נורא, תנסה שוב";
     els.finalScore.textContent = numberFormat.format(state.score);
     els.finalCorrect.textContent = state.correctAnswers;
 

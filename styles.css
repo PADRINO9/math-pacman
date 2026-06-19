@@ -326,42 +326,78 @@ button {
 }
 
 .start-layout {
-  width: min(1060px, 96vw);
+  position: relative;
+  isolation: isolate;
+  width: min(980px, 94vw);
   min-height: 0;
   display: grid;
-  grid-template-columns: minmax(280px, 410px) minmax(420px, 520px);
-  align-items: center;
+  grid-template-columns: minmax(300px, 40%) minmax(440px, 60%);
+  align-items: stretch;
   justify-content: center;
-  gap: clamp(14px, 2.2vw, 30px);
+  gap: 0;
+  overflow: hidden;
+  border: 1px solid rgba(104, 231, 255, 0.42);
+  background:
+    linear-gradient(135deg, rgba(12, 18, 39, 0.98), rgba(4, 7, 18, 0.99)),
+    var(--panel-strong);
+  box-shadow:
+    0 28px 100px rgba(0, 0, 0, 0.72),
+    0 0 0 4px rgba(104, 231, 255, 0.04),
+    0 0 60px rgba(102, 66, 255, 0.12),
+    inset 0 0 50px rgba(104, 231, 255, 0.06);
   direction: ltr;
+}
+
+.start-layout::before {
+  content: "";
+  position: absolute;
+  inset: 7px;
+  z-index: 3;
+  border: 1px solid rgba(255, 216, 74, 0.14);
+  pointer-events: none;
 }
 
 .start-layout .screen-panel {
   width: 100%;
+  max-height: min(88dvh, 780px);
+  padding: clamp(20px, 2.5vmin, 30px);
+  border: 0;
+  background:
+    linear-gradient(90deg, rgba(5, 8, 20, 0.82), rgba(5, 8, 20, 0.98) 16%),
+    transparent;
+  box-shadow: none;
   direction: rtl;
+  scrollbar-gutter: stable;
+}
+
+.start-layout .screen-panel::before {
+  display: none;
+}
+
+.start-layout .screen-panel::after {
+  opacity: 0.2;
 }
 
 .start-poster-frame {
   position: relative;
   width: 100%;
-  max-height: min(82dvh, 780px);
-  aspect-ratio: 941 / 1672;
+  min-height: 100%;
+  max-height: min(88dvh, 780px);
+  aspect-ratio: auto;
   margin: 0;
   overflow: hidden;
-  border: 1px solid rgba(104, 231, 255, 0.48);
   background: #050318;
-  box-shadow:
-    0 24px 90px rgba(0, 0, 0, 0.7),
-    0 0 0 4px rgba(157, 124, 255, 0.08),
-    0 0 42px rgba(104, 231, 255, 0.18);
+  box-shadow: inset -24px 0 40px rgba(3, 5, 15, 0.5);
 }
 
 .start-poster-frame::after {
   content: "";
   position: absolute;
   inset: 0;
-  border: 1px solid rgba(255, 95, 215, 0.22);
-  box-shadow: inset 0 0 34px rgba(8, 3, 42, 0.26);
+  background:
+    linear-gradient(90deg, transparent 64%, rgba(5, 8, 20, 0.72) 88%, #050814 100%),
+    linear-gradient(180deg, rgba(4, 3, 22, 0.04), transparent 72%, rgba(4, 3, 22, 0.32));
+  box-shadow: inset 0 0 36px rgba(8, 3, 42, 0.18);
   pointer-events: none;
 }
 
@@ -859,11 +895,15 @@ button {
   }
 
   .start-layout {
-    grid-template-columns: minmax(230px, 350px) minmax(390px, 500px);
-    gap: 14px;
+    width: min(900px, 96vw);
+    grid-template-columns: minmax(250px, 38%) minmax(390px, 62%);
   }
 
   .start-poster-frame {
+    max-height: calc(100dvh - 24px);
+  }
+
+  .start-layout .screen-panel {
     max-height: calc(100dvh - 24px);
   }
 
@@ -1152,23 +1192,36 @@ button {
     width: min(100%, 520px);
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 0;
   }
 
   .start-poster-frame {
-    width: min(100%, 490px);
-    height: clamp(180px, 28dvh, 250px);
+    width: 100%;
+    min-height: 0;
+    height: clamp(150px, 24dvh, 210px);
     flex: 0 0 auto;
     aspect-ratio: auto;
+    box-shadow: inset 0 -20px 30px rgba(3, 5, 15, 0.48);
+  }
+
+  .start-poster-frame::after {
+    background:
+      linear-gradient(180deg, transparent 48%, rgba(5, 8, 20, 0.78) 86%, #050814 100%),
+      linear-gradient(90deg, rgba(4, 3, 22, 0.1), transparent 20% 80%, rgba(4, 3, 22, 0.1));
   }
 
   .start-poster {
-    object-position: center 30%;
+    object-position: center 58%;
   }
 
   .start-layout .screen-panel {
-    width: min(100%, 520px);
+    width: 100%;
+    max-height: none;
     flex: 0 0 auto;
+    padding-top: 8px;
+    background:
+      linear-gradient(180deg, rgba(5, 8, 20, 0.92), rgba(5, 8, 20, 0.99) 18%),
+      transparent;
   }
 
   .dialog {

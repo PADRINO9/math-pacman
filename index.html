@@ -15,10 +15,11 @@
   <link rel="preload" href="assets/dark-enemy-angry.png" as="image">
   <link rel="preload" href="assets/dark-enemy-surprised.png" as="image">
   <link rel="preload" href="assets/dark-enemy-sad.png" as="image">
+  <link rel="preload" href="assets/math-maze-poster.png" as="image">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@500;700;800&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260619-4">
+  <link rel="stylesheet" href="styles.css?v=20260619-5">
 </head>
 <body>
   <main class="game-shell" aria-label="Math Maze, מבוך הכפל">
@@ -85,55 +86,64 @@
       </div>
 
       <div id="start-screen" class="screen screen-visible">
-        <div class="screen-panel">
-          <p class="eyebrow">Math Maze · מבוך הכפל</p>
-          <div class="start-graphic" aria-hidden="true">
-            <span class="start-graphic-player"></span>
-            <span class="start-graphic-collectible"></span>
-            <span class="start-graphic-collectible"></span>
-            <span class="start-graphic-collectible"></span>
-            <span class="start-graphic-enemy start-graphic-enemy-a"></span>
-            <span class="start-graphic-enemy start-graphic-enemy-b"></span>
-          </div>
-          <h1>אתגרי הכפל מחכים</h1>
-          <div class="screen-stats">
-            <span>שיא: <strong id="best-score">0</strong></span>
-            <span>יעד: <strong>100</strong></span>
-          </div>
-          <form id="player-form" class="name-form" autocomplete="off" novalidate>
-            <label for="player-name-input">שם השחקן</label>
-            <input id="player-name-input" type="text" maxlength="18" required>
-            <p id="name-error" class="form-note" aria-live="assertive"></p>
-            <fieldset class="difficulty-field">
-              <legend>רמת קושי</legend>
-              <div class="difficulty-options" role="radiogroup" aria-label="רמת קושי">
-                <label>
-                  <input type="radio" name="difficulty" value="easy">
-                  <span>קל</span>
-                </label>
-                <label>
-                  <input type="radio" name="difficulty" value="medium" checked>
-                  <span>בינוני</span>
-                </label>
-                <label>
-                  <input type="radio" name="difficulty" value="hard">
-                  <span>קשה</span>
-                </label>
-                <label>
-                  <input type="radio" name="difficulty" value="veryHard">
-                  <span>קשה מאוד</span>
-                </label>
-              </div>
-            </fieldset>
-            <div class="time-limit-setting">
-              <span class="time-limit-title">זמן לכל תרגיל</span>
-              <button id="time-limit-toggle" class="time-limit-toggle" type="button" aria-pressed="false" aria-label="הפעל הגבלת זמן של 25 שניות לכל תרגיל">
-                <span class="clock-icon" aria-hidden="true"></span>
-              </button>
-              <span id="time-limit-state" class="time-limit-state">ללא זמן</span>
+        <div class="start-layout">
+          <figure class="start-poster-frame">
+            <img
+              class="start-poster"
+              src="assets/math-maze-poster.png"
+              alt="פוסטר המשחק Math Maze, מבוך הכפל"
+            >
+          </figure>
+          <div class="screen-panel">
+            <p class="eyebrow">Math Maze · מבוך הכפל</p>
+            <div class="start-graphic" aria-hidden="true">
+              <span class="start-graphic-player"></span>
+              <span class="start-graphic-collectible"></span>
+              <span class="start-graphic-collectible"></span>
+              <span class="start-graphic-collectible"></span>
+              <span class="start-graphic-enemy start-graphic-enemy-a"></span>
+              <span class="start-graphic-enemy start-graphic-enemy-b"></span>
             </div>
-            <button id="start-button" class="primary-button" type="submit">התחל משחק</button>
-          </form>
+            <h1>אתגרי הכפל מחכים</h1>
+            <div class="screen-stats">
+              <span>שיא: <strong id="best-score">0</strong></span>
+              <span>יעד: <strong>100</strong></span>
+            </div>
+            <form id="player-form" class="name-form" autocomplete="off" novalidate>
+              <label for="player-name-input">שם השחקן</label>
+              <input id="player-name-input" type="text" maxlength="18" required>
+              <p id="name-error" class="form-note" aria-live="assertive"></p>
+              <fieldset class="difficulty-field">
+                <legend>רמת קושי</legend>
+                <div class="difficulty-options" role="radiogroup" aria-label="רמת קושי">
+                  <label>
+                    <input type="radio" name="difficulty" value="easy">
+                    <span>קל</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="difficulty" value="medium" checked>
+                    <span>בינוני</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="difficulty" value="hard">
+                    <span>קשה</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="difficulty" value="veryHard">
+                    <span>קשה מאוד</span>
+                  </label>
+                </div>
+              </fieldset>
+              <div class="time-limit-setting">
+                <span class="time-limit-title">זמן לכל תרגיל</span>
+                <button id="time-limit-toggle" class="time-limit-toggle" type="button" aria-pressed="false" aria-label="הפעל הגבלת זמן של 25 שניות לכל תרגיל">
+                  <span class="clock-icon" aria-hidden="true"></span>
+                </button>
+                <span id="time-limit-state" class="time-limit-state">ללא זמן</span>
+              </div>
+              <button id="start-button" class="primary-button" type="submit">התחל משחק</button>
+            </form>
+          </div>
         </div>
       </div>
 

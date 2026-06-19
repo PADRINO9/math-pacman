@@ -14,8 +14,13 @@
     hebrewTitle: "מבוך הכפל",
     player: {
       name: "Bifly",
-      spriteSrc: "assets/bifly-player.png",
+      spriteSources: {
+        idle: "assets/bifly-player.png",
+        eatPrepare: "assets/bifly-eat-prepare.png",
+        eat: "assets/bifly-eat.png"
+      },
       renderScale: 2.55,
+      eatAnimationDuration: 0.34,
       primaryColor: "#35c9b8",
       secondaryColor: "#0f776f",
       detailColor: "#ecfffc",
@@ -23,7 +28,12 @@
       glowColor: "rgba(53, 201, 184, 0.58)"
     },
     enemies: {
-      spriteSrc: "assets/dark-enemy.png",
+      spriteSources: {
+        idle: "assets/dark-enemy.png",
+        angry: "assets/dark-enemy-angry.png",
+        surprised: "assets/dark-enemy-surprised.png",
+        sad: "assets/dark-enemy-sad.png"
+      },
       renderScale: 3.05,
       outlineColor: "rgba(255, 255, 255, 0.64)",
       detailColor: "rgba(255, 255, 255, 0.72)",
@@ -41,13 +51,26 @@
   };
 
   const GAME_ASSETS = {
-    player: new Image(),
-    enemy: new Image()
+    player: {
+      idle: new Image(),
+      eatPrepare: new Image(),
+      eat: new Image()
+    },
+    enemies: {
+      idle: new Image(),
+      angry: new Image(),
+      surprised: new Image(),
+      sad: new Image()
+    }
   };
-  GAME_ASSETS.player.decoding = "async";
-  GAME_ASSETS.player.src = GAME_THEME.player.spriteSrc;
-  GAME_ASSETS.enemy.decoding = "async";
-  GAME_ASSETS.enemy.src = GAME_THEME.enemies.spriteSrc;
+  for (const [name, image] of Object.entries(GAME_ASSETS.player)) {
+    image.decoding = "async";
+    image.src = GAME_THEME.player.spriteSources[name];
+  }
+  for (const [name, image] of Object.entries(GAME_ASSETS.enemies)) {
+    image.decoding = "async";
+    image.src = GAME_THEME.enemies.spriteSources[name];
+  }
 
   const CONFIG = {
     targetCorrect: 100,
@@ -723,6 +746,9 @@
       desiredDirection: "right",
       directionRequestTime: 0,
       visualPulse: 0.25,
+      eatAnimation: 0,
+      eatDirection: "right",
+      eatEffect: null,
       invulnerable: 0,
       trail: []
     };
@@ -759,7 +785,8 @@
       personality: index % 4,
       pathCooldown: 0,
       spawnFlash: 0.8,
-      wobble: Math.random() * Math.PI * 2
+      wobble: Math.random() * Math.PI * 2,
+      expressionOffset: index * 0.47 + Math.random() * 0.8
     };
   }
 
@@ -1261,6 +1288,7 @@
   function updateAmbient(dt) {
     if (state.player) {
       state.player.visualPulse = 0.24 + Math.abs(Math.sin(state.clock * 8)) * 0.32;
+      updatePlayerVisualState(state.player, dt);
     }
 
     if (state.phase === "ended") {
@@ -1286,6 +1314,7 @@
     const player = state.player;
     player.invulnerable = Math.max(0, player.invulnerable - dt);
     player.visualPulse = 0.24 + Math.abs(Math.sin(state.clock * 10)) * 0.34;
+    updatePlayerVisualState(player, dt);
 
     const hasFreshDirection = state.clock - player.directionRequestTime <= INPUT_BUFFER_SECONDS;
 
@@ -1304,6 +1333,16 @@
       point.life -= dt;
       return point.life > 0;
     }).slice(0, 14);
+  }
+
+  function updatePlayerVisualState(player, dt) {
+    player.eatAnimation = Math.max(0, player.eatAnimation - dt);
+    if (player.eatEffect) {
+      player.eatEffect.life -= dt;
+      if (player.eatEffect.life <= 0) {
+        player.eatEffect = null;
+      }
+    }
   }
 
   function tryApplyPlayerDirection(player, direction) {
@@ -1429,6 +1468,18 @@
         state.collectibles.delete(key);
         state.score += collectible.value;
         collected += 1;
+        player.eatAnimation = GAME_THEME.player.eatAnimationDuration;
+        player.eatDirection = player.direction;
+        player.eatEffect = {
+          x: collectible.x,
+          y: collectible.y,
+          value: collectible.value,
+          color: collectible.value > 10
+            ? getCurrentLevel().bonusCollectibleColor
+            : getCurrentLevel().collectibleColor,
+          life: GAME_THEME.player.eatAnimationDuration,
+          maxLife: GAME_THEME.player.eatAnimationDuration
+        };
         if (collectible.value > 10) {
           addBurst(collectible.x, collectible.y, "#ffd84a", 12, 70);
           addFloatingText(collectible.x, collectible.y - 12, `+${collectible.value}`, "#ffd84a");
@@ -1981,6 +2032,8 @@
     state.player.direction = "right";
     state.player.desiredDirection = "right";
     state.player.directionRequestTime = state.clock;
+    state.player.eatAnimation = 0;
+    state.player.eatEffect = null;
     state.player.trail = [];
 
     state.enemies.forEach((enemy, index) => {
@@ -2326,8 +2379,9 @@
     }
 
     const theme = GAME_THEME.player;
-    const sprite = GAME_ASSETS.player;
-    const spriteReady = sprite.complete && sprite.naturalWidth > 0;
+    const animation = getPlayerAnimationFrame(playerState);
+    const sprite = GAME_ASSETS.player[animation.frame] || GAME_ASSETS.player.idle;
+    const spriteReady = isImageReady(sprite);
     const displaySize = playerState.radius * theme.renderScale;
     renderContext.save();
     for (let index = 0; index < playerState.trail.length; index += 3) {
@@ -2335,9 +2389,9 @@
       const alpha = Math.max(0, point.life / 0.28) * 0.24;
       const trailSize = displaySize * (0.68 + alpha);
       renderContext.globalAlpha = alpha;
-      if (spriteReady) {
+      if (isImageReady(GAME_ASSETS.player.idle)) {
         renderContext.drawImage(
-          sprite,
+          GAME_ASSETS.player.idle,
           point.x - trailSize / 2,
           point.y - trailSize / 2,
           trailSize,
@@ -2364,11 +2418,19 @@
     const pulseScale = 0.96 + playerState.visualPulse * 0.07;
     renderContext.translate(playerState.x, playerState.y);
     renderContext.scale(pulseScale, pulseScale);
-    renderContext.rotate(Math.sin(angle) * 0.045);
+    if (!animation.active) {
+      renderContext.rotate(Math.sin(angle) * 0.045);
+    }
     renderContext.shadowColor = theme.glowColor;
     renderContext.shadowBlur = 13;
 
+    drawPlayerEatEffect(renderContext, playerState, displaySize);
+
     if (spriteReady) {
+      renderContext.save();
+      if (animation.active && playerState.eatDirection === "left") {
+        renderContext.scale(-1, 1);
+      }
       renderContext.drawImage(
         sprite,
         -displaySize / 2,
@@ -2376,6 +2438,7 @@
         displaySize,
         displaySize
       );
+      renderContext.restore();
     } else {
       const fallbackSize = playerState.radius * 1.65;
       const bodyGradient = renderContext.createLinearGradient(
@@ -2395,6 +2458,71 @@
       );
     }
     renderContext.restore();
+  }
+
+  function getPlayerAnimationFrame(playerState) {
+    if (playerState.eatAnimation <= 0) {
+      return { frame: "idle", active: false };
+    }
+
+    const duration = GAME_THEME.player.eatAnimationDuration;
+    const progress = 1 - playerState.eatAnimation / duration;
+    if (progress < 0.28 || progress > 0.82) {
+      return { frame: "eatPrepare", active: true };
+    }
+    return { frame: "eat", active: true };
+  }
+
+  function drawPlayerEatEffect(renderContext, playerState, displaySize) {
+    const effect = playerState.eatEffect;
+    if (!effect) {
+      return;
+    }
+
+    const progress = 1 - effect.life / effect.maxLife;
+    const startDistance = displaySize * 0.78;
+    const direction = DIRS[playerState.eatDirection] || DIRS.right;
+    const mouthX = playerState.eatDirection === "left"
+      ? -displaySize * 0.2
+      : displaySize * 0.2;
+    const mouthY = 0;
+    const startX = direction.x * startDistance;
+    const startY = direction.y * startDistance;
+    const x = startX + (mouthX - startX) * progress;
+    const y = startY + (mouthY - startY) * progress;
+    const size = (effect.value > 10 ? 4.6 : 2.8) * (1 - progress * 0.56);
+
+    renderContext.save();
+    renderContext.globalAlpha = clamp(1 - progress * 0.76, 0, 1);
+    renderContext.fillStyle = effect.color;
+    renderContext.shadowColor = effect.color;
+    renderContext.shadowBlur = 10;
+    if (effect.value > 10) {
+      drawPlusAtContext(renderContext, x, y, size);
+    } else {
+      drawDiamondAtContext(renderContext, x, y, size);
+    }
+    renderContext.restore();
+  }
+
+  function drawDiamondAtContext(renderContext, x, y, radius) {
+    renderContext.beginPath();
+    renderContext.moveTo(x, y - radius);
+    renderContext.lineTo(x + radius * 0.82, y);
+    renderContext.lineTo(x, y + radius);
+    renderContext.lineTo(x - radius * 0.82, y);
+    renderContext.closePath();
+    renderContext.fill();
+  }
+
+  function drawPlusAtContext(renderContext, x, y, radius) {
+    const arm = radius * 0.34;
+    renderContext.fillRect(x - arm, y - radius, arm * 2, radius * 2);
+    renderContext.fillRect(x - radius, y - arm, radius * 2, arm * 2);
+  }
+
+  function isImageReady(image) {
+    return image?.complete && image.naturalWidth > 0;
   }
 
   function directionAngle(direction) {
@@ -2421,8 +2549,9 @@
 
   function drawEnemyCharacter(renderContext, enemy, enemyIndex, enemyState) {
     const variant = enemy.visualVariant ?? enemyIndex % 4;
-    const sprite = GAME_ASSETS.enemy;
-    const spriteReady = sprite.complete && sprite.naturalWidth > 0;
+    const expression = getEnemyExpression(enemy, enemyState);
+    const sprite = GAME_ASSETS.enemies[expression] || GAME_ASSETS.enemies.idle;
+    const spriteReady = isImageReady(sprite);
     const sizeVariation = [1, 0.94, 1.04, 0.98][variant];
     const displaySize = enemy.radius * GAME_THEME.enemies.renderScale * sizeVariation;
     const direction = DIRS[enemy.direction] || DIRS.none;
@@ -2466,6 +2595,37 @@
       renderContext.stroke();
     }
     renderContext.restore();
+  }
+
+  function getEnemyExpression(enemy, enemyState) {
+    if (enemyState.spawning) {
+      return "surprised";
+    }
+
+    if (state.player?.invulnerable > 0) {
+      return "sad";
+    }
+
+    if (state.phase === "question" && state.currentEnemyId === enemy.id) {
+      return "surprised";
+    }
+
+    if (state.player) {
+      const dx = state.player.x - enemy.x;
+      const dy = state.player.y - enemy.y;
+      if (dx * dx + dy * dy < (TILE * 5.5) ** 2) {
+        return "angry";
+      }
+    }
+
+    const cycle = Math.floor((enemyState.clock + enemy.expressionOffset) / 0.72) % 6;
+    if (cycle === 2 || cycle === 3) {
+      return "angry";
+    }
+    if (cycle === 5) {
+      return "surprised";
+    }
+    return "idle";
   }
 
   function drawParticles() {

@@ -6,14 +6,15 @@
   <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
   <meta http-equiv="Pragma" content="no-cache">
   <meta http-equiv="Expires" content="0">
-  <title>פאקמן מתמטי</title>
+  <title>מבוך החשבון</title>
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' fill='%230f776f'/%3E%3Cpath d='M16 29h13V16h6v13h13v6H35v13h-6V35H16z' fill='%23ecfffc'/%3E%3C/svg%3E">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@500;700;800&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=20260617-2">
+  <link rel="stylesheet" href="styles.css?v=20260619-1">
 </head>
 <body>
-  <main class="game-shell" aria-label="פאקמן מתמטי">
+  <main class="game-shell" aria-label="מבוך החשבון">
     <div class="hud" aria-live="polite">
       <div class="hud-group hud-group-main">
         <div class="metric">
@@ -62,7 +63,7 @@
 
       <div id="question-dialog" class="dialog" role="dialog" aria-modal="true" aria-labelledby="question-title" hidden>
         <div class="dialog-inner">
-          <span id="question-status" class="dialog-kicker">רוח נתפסה</span>
+          <span id="question-status" class="dialog-kicker">יריב נתפס</span>
           <div id="question-timer" class="question-timer" hidden>
             <span>זמן</span>
             <strong id="question-time">25</strong>
@@ -78,16 +79,16 @@
 
       <div id="start-screen" class="screen screen-visible">
         <div class="screen-panel">
-          <p class="eyebrow">פאקמן מתמטי</p>
+          <p class="eyebrow">מבוך החשבון</p>
           <div class="start-graphic" aria-hidden="true">
-            <span class="start-graphic-pacman"></span>
-            <span class="start-graphic-dot"></span>
-            <span class="start-graphic-dot"></span>
-            <span class="start-graphic-dot"></span>
-            <span class="start-graphic-ghost start-graphic-ghost-a"></span>
-            <span class="start-graphic-ghost start-graphic-ghost-b"></span>
+            <span class="start-graphic-player"></span>
+            <span class="start-graphic-collectible"></span>
+            <span class="start-graphic-collectible"></span>
+            <span class="start-graphic-collectible"></span>
+            <span class="start-graphic-enemy start-graphic-enemy-a"></span>
+            <span class="start-graphic-enemy start-graphic-enemy-b"></span>
           </div>
-          <h1>רוחות הכפל מחכות</h1>
+          <h1>אתגרי הכפל מחכים</h1>
           <div class="screen-stats">
             <span>שיא: <strong id="best-score">0</strong></span>
             <span>יעד: <strong>100</strong></span>
@@ -152,6 +153,6 @@
     </div>
   </main>
 
-  <script src="game.js?v=20260617-2"></script>
+  <script src="game.js?v=20260619-1"></script>
 </body>
 </html>

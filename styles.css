@@ -439,53 +439,83 @@ button {
   transform: translateY(-48%);
 }
 
-.start-graphic-pacman {
+.start-graphic-player {
+  position: relative;
   width: 48px;
   height: 48px;
-  border-radius: 50%;
-  background: conic-gradient(from 35deg, transparent 0 74deg, var(--gold) 75deg 360deg);
-  box-shadow: 0 0 28px rgba(255, 216, 74, 0.46);
+  border: 3px solid #b8fff4;
+  background: linear-gradient(135deg, #0f776f, #35c9b8);
+  box-shadow: 0 0 28px rgba(53, 201, 184, 0.42);
+  transform: rotate(45deg) scale(0.78);
 }
 
-.start-graphic-dot {
+.start-graphic-player::before,
+.start-graphic-player::after {
+  content: "";
+  position: absolute;
+  background: #ecfffc;
+}
+
+.start-graphic-player::before {
+  left: 50%;
+  top: 18%;
+  width: 3px;
+  height: 64%;
+  transform: translateX(-50%);
+}
+
+.start-graphic-player::after {
+  left: 18%;
+  top: 50%;
+  width: 64%;
+  height: 3px;
+  transform: translateY(-50%);
+}
+
+.start-graphic-collectible {
   width: 9px;
   height: 9px;
-  border-radius: 50%;
   background: #f7fbff;
   box-shadow: 0 0 12px rgba(247, 251, 255, 0.66);
+  transform: rotate(45deg);
 }
 
-.start-graphic-ghost {
+.start-graphic-enemy {
   position: relative;
   width: 38px;
   height: 42px;
-  border-radius: 18px 18px 9px 9px;
-  background: var(--pink);
-  box-shadow: 0 0 22px rgba(255, 95, 159, 0.38);
+  border: 2px solid #d8cdfc;
+  background: #6f5ca8;
+  box-shadow: 0 0 22px rgba(111, 92, 168, 0.38);
+  clip-path: polygon(50% 0, 100% 28%, 84% 100%, 16% 100%, 0 28%);
 }
 
-.start-graphic-ghost::before,
-.start-graphic-ghost::after {
+.start-graphic-enemy::before,
+.start-graphic-enemy::after {
   content: "";
   position: absolute;
-  top: 13px;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #f7fbff;
+  background: rgba(255, 255, 255, 0.72);
 }
 
-.start-graphic-ghost::before {
-  left: 9px;
+.start-graphic-enemy::before {
+  left: 8px;
+  top: 17px;
+  width: 22px;
+  height: 3px;
 }
 
-.start-graphic-ghost::after {
-  right: 9px;
+.start-graphic-enemy::after {
+  left: 17px;
+  top: 8px;
+  width: 3px;
+  height: 22px;
 }
 
-.start-graphic-ghost-b {
-  background: var(--line-hot);
-  box-shadow: 0 0 22px rgba(104, 231, 255, 0.36);
+.start-graphic-enemy-b {
+  border-color: #d7e8b5;
+  background: #657a3d;
+  box-shadow: 0 0 22px rgba(101, 122, 61, 0.36);
+  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
 }
 
 #answer-form {
@@ -832,34 +862,33 @@ button {
     font-size: 19px;
   }
 
-  .start-graphic-pacman {
+  .start-graphic-player {
     width: 38px;
     height: 38px;
   }
 
-  .start-graphic-dot {
+  .start-graphic-collectible {
     width: 7px;
     height: 7px;
   }
 
-  .start-graphic-ghost {
+  .start-graphic-enemy {
     width: 30px;
     height: 33px;
   }
 
-  .start-graphic-ghost::before,
-  .start-graphic-ghost::after {
-    top: 10px;
-    width: 6px;
-    height: 6px;
+  .start-graphic-enemy::before {
+    left: 6px;
+    top: 13px;
+    width: 18px;
+    height: 3px;
   }
 
-  .start-graphic-ghost::before {
-    left: 8px;
-  }
-
-  .start-graphic-ghost::after {
-    right: 8px;
+  .start-graphic-enemy::after {
+    left: 13px;
+    top: 6px;
+    width: 3px;
+    height: 18px;
   }
 
   .screen-stats {

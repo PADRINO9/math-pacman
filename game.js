@@ -9,11 +9,37 @@
   const PLAYER_START = { x: 2, y: 2 };
   const CENTER_CELL = { x: Math.floor(COLS / 2), y: Math.floor(ROWS / 2) };
 
+  const GAME_THEME = {
+    title: "Math Maze",
+    hebrewTitle: "מבוך החשבון",
+    player: {
+      primaryColor: "#35c9b8",
+      secondaryColor: "#0f776f",
+      detailColor: "#ecfffc",
+      trailColor: "53, 201, 184",
+      glowColor: "rgba(53, 201, 184, 0.58)"
+    },
+    enemies: {
+      outlineColor: "rgba(255, 255, 255, 0.64)",
+      detailColor: "rgba(255, 255, 255, 0.72)",
+      palettes: [
+        ["#7b68a6", "#628b72", "#8c7d5b", "#546b92", "#6f7f4f"],
+        ["#786b98", "#6e835c", "#8d7761", "#536f78", "#71658a"],
+        ["#7f7258", "#668075", "#776792", "#8a805f", "#5f7288"],
+        ["#68598d", "#58786a", "#827252", "#586987", "#758158"]
+      ]
+    },
+    collectibles: {
+      regularShape: "diamond",
+      bonusShape: "plus"
+    }
+  };
+
   const CONFIG = {
     targetCorrect: 100,
     answersPerLevel: 25,
     initialLives: 3,
-    minGhosts: 10,
+    minEnemies: 10,
     missionBonus: 420,
     adaptiveQuestionChance: 0.3,
     recentQuestionMemory: 3,
@@ -24,13 +50,20 @@
     },
     speed: {
       player: 184,
-      ghostBase: 108,
-      ghostTierEveryAnswers: 6,
-      ghostTierStep: 3,
-      ghostTierMax: 42,
-      ghostIndexStep: 5
+      enemyBase: 108,
+      enemyTierEveryAnswers: 6,
+      enemyTierStep: 3,
+      enemyTierMax: 42,
+      enemyIndexStep: 5
     },
     storageKeys: {
+      bestScore: "mathMazeBest",
+      sound: "mathMazeSound",
+      difficulty: "mathMazeDifficulty",
+      timeLimit: "mathMazeTimeLimit",
+      factStats: "mathMazeFactStats"
+    },
+    legacyStorageKeys: {
       bestScore: "mathPacmanBest",
       sound: "mathPacmanSound",
       difficulty: "mathPacmanDifficulty",
@@ -40,29 +73,29 @@
     difficulty: {
       easy: {
         label: "קל",
-        ghostCount: 8,
-        ghostSpeedMultiplier: 0.9,
+        enemyCount: 8,
+        enemySpeedMultiplier: 0.9,
         questionMode: "table",
         adaptiveQuestionChance: 0.3
       },
       medium: {
         label: "בינוני",
-        ghostCount: 10,
-        ghostSpeedMultiplier: 1,
+        enemyCount: 10,
+        enemySpeedMultiplier: 1,
         questionMode: "filteredTable",
         adaptiveQuestionChance: 0.3
       },
       hard: {
         label: "קשה",
-        ghostCount: 11,
-        ghostSpeedMultiplier: 1.1,
+        enemyCount: 11,
+        enemySpeedMultiplier: 1.1,
         questionMode: "twoByOne",
         adaptiveQuestionChance: 0
       },
       veryHard: {
         label: "קשה מאוד",
-        ghostCount: 12,
-        ghostSpeedMultiplier: 1.18,
+        enemyCount: 12,
+        enemySpeedMultiplier: 1.18,
         questionMode: "twoByTwo",
         adaptiveQuestionChance: 0
       }
@@ -72,77 +105,77 @@
         name: "עולם הקרח",
         shortName: "קרח",
         intro: "שלב 1: עולם הקרח",
-        ghostStyle: "ice",
+        enemyVisualStyle: "ice",
         decor: "snow",
-        ghostCountBonus: 0,
-        ghostSpeedMultiplier: 1,
+        enemyCountBonus: 0,
+        enemySpeedMultiplier: 1,
         wallStops: ["#0d5d9c", "#52dff7", "#d7fbff"],
         backgroundStops: ["#06131f", "#0b2a3d", "#04101d"],
         gridColor: "rgba(170, 244, 255, 0.1)",
         wallGlow: "rgba(146, 240, 255, 0.72)",
         wallStroke: "rgba(232, 253, 255, 0.38)",
-        pelletColor: "#e9fdff",
-        powerPelletColor: "#9ef7ff",
+        collectibleColor: "#e9fdff",
+        bonusCollectibleColor: "#9ef7ff",
         accent: "#9ef7ff",
         decorRgb: "224, 253, 255",
-        ghostColors: ["#bdf8ff", "#71e7ff", "#d9feff", "#7dc9ff", "#b7f1ff"]
+        enemyColors: GAME_THEME.enemies.palettes[0]
       },
       {
         name: "עולם הלבה",
         shortName: "לבה",
         intro: "שלב 2: עולם הלבה",
-        ghostStyle: "lava",
+        enemyVisualStyle: "lava",
         decor: "embers",
-        ghostCountBonus: 1,
-        ghostSpeedMultiplier: 1.08,
+        enemyCountBonus: 1,
+        enemySpeedMultiplier: 1.08,
         wallStops: ["#7f1d14", "#f97316", "#ffd166"],
         backgroundStops: ["#160506", "#3a0d09", "#090305"],
         gridColor: "rgba(255, 145, 77, 0.1)",
         wallGlow: "rgba(255, 111, 55, 0.78)",
         wallStroke: "rgba(255, 231, 170, 0.34)",
-        pelletColor: "#fff2cf",
-        powerPelletColor: "#ff9f1c",
+        collectibleColor: "#fff2cf",
+        bonusCollectibleColor: "#ff9f1c",
         accent: "#ffb340",
         decorRgb: "255, 144, 66",
-        ghostColors: ["#ff4c1f", "#ff8a2a", "#ffd166", "#ff3864", "#ffb340"]
+        enemyColors: GAME_THEME.enemies.palettes[1]
       },
       {
         name: "עולם העתיקות",
         shortName: "עתיקות",
         intro: "שלב 3: עולם העתיקות",
-        ghostStyle: "ancient",
+        enemyVisualStyle: "ancient",
         decor: "runes",
-        ghostCountBonus: 2,
-        ghostSpeedMultiplier: 1.16,
+        enemyCountBonus: 2,
+        enemySpeedMultiplier: 1.16,
         wallStops: ["#6b5734", "#c2a36a", "#1fb6a6"],
         backgroundStops: ["#100d08", "#241b0e", "#071714"],
         gridColor: "rgba(230, 198, 128, 0.09)",
         wallGlow: "rgba(230, 198, 128, 0.58)",
         wallStroke: "rgba(255, 240, 196, 0.3)",
-        pelletColor: "#ffe8a3",
-        powerPelletColor: "#27e0c3",
+        collectibleColor: "#ffe8a3",
+        bonusCollectibleColor: "#27e0c3",
         accent: "#27e0c3",
         decorRgb: "230, 198, 128",
-        ghostColors: ["#d6bd82", "#c59f5d", "#27e0c3", "#f1d391", "#a88a4b"]
+        enemyColors: GAME_THEME.enemies.palettes[2]
       },
       {
         name: "עולם היהלומים",
         shortName: "יהלומים",
         intro: "שלב 4: עולם היהלומים",
-        ghostStyle: "diamond",
+        enemyVisualStyle: "diamond",
         decor: "diamonds",
-        ghostCountBonus: 3,
-        ghostSpeedMultiplier: 1.25,
+        enemyCountBonus: 3,
+        enemySpeedMultiplier: 1.25,
         wallStops: ["#1836a3", "#55ffd6", "#ff5fd7"],
         backgroundStops: ["#050817", "#101b45", "#070611"],
         gridColor: "rgba(122, 255, 231, 0.1)",
         wallGlow: "rgba(85, 255, 214, 0.7)",
         wallStroke: "rgba(255, 255, 255, 0.36)",
-        pelletColor: "#f8ffff",
-        powerPelletColor: "#ff5fd7",
+        collectibleColor: "#f8ffff",
+        bonusCollectibleColor: "#ff5fd7",
         accent: "#55ffd6",
         decorRgb: "143, 255, 239",
-        ghostColors: ["#55ffd6", "#73a7ff", "#ff5fd7", "#f8ffff", "#9d7cff"]
+        enemyColors: GAME_THEME.enemies.palettes[3]
       }
     ],
     missions: [
@@ -150,7 +183,7 @@
       { type: "combo", target: 5, label: "צבור רצף של 5" },
       { type: "score", target: 200, label: "אסוף 200 נקודות" },
       { type: "safeCorrect", target: 3, label: "ענה נכון על 3 שאלות בלי לאבד חיים" },
-      { type: "ghosts", target: 5, label: "נצח 5 רוחות" }
+      { type: "enemies", target: 5, label: "נצח 5 יריבים" }
     ],
     positiveFeedback: ["נכון!", "מעולה!", "יפה מאוד!", "אלוף!", "בול!", "איזה רצף!", "עבודה חכמה!"],
     supportFeedback: [
@@ -206,18 +239,7 @@
     3: "down"
   };
 
-  const GHOST_COLORS = [
-    "#ff4c5f",
-    "#42d9ff",
-    "#ffb340",
-    "#ff5fd7",
-    "#67f08b",
-    "#8a7dff",
-    "#f7f06a",
-    "#ff7a4d",
-    "#55ffd6",
-    "#c77dff"
-  ];
+  const ENEMY_COLORS = GAME_THEME.enemies.palettes[0];
 
   const AMBUSH_CELLS = [
     { x: 8, y: 2 },
@@ -293,6 +315,20 @@
       } catch {
         // Storage can be unavailable in some private browser contexts.
       }
+    },
+    getMigrated(key, legacyKey, fallback) {
+      const current = this.get(key, null);
+      if (current !== null) {
+        return current;
+      }
+
+      const legacy = this.get(legacyKey, null);
+      if (legacy !== null) {
+        this.set(key, legacy);
+        return legacy;
+      }
+
+      return fallback;
     }
   };
 
@@ -314,10 +350,10 @@
     return CONFIG.levels[state.levelIndex] || CONFIG.levels[0];
   }
 
-  function getRequiredGhostCount() {
+  function getRequiredEnemyCount() {
     const difficulty = getDifficultySettings();
     const level = getCurrentLevel();
-    return (difficulty.ghostCount || CONFIG.minGhosts) + (level.ghostCountBonus || 0);
+    return (difficulty.enemyCount || CONFIG.minEnemies) + (level.enemyCountBonus || 0);
   }
 
   function getAdaptiveQuestionChance() {
@@ -329,7 +365,11 @@
 
   function loadFactStats() {
     try {
-      const parsed = JSON.parse(storage.get(CONFIG.storageKeys.factStats, "{}"));
+      const parsed = JSON.parse(storage.getMigrated(
+        CONFIG.storageKeys.factStats,
+        CONFIG.legacyStorageKeys.factStats,
+        "{}"
+      ));
       if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
         return {};
       }
@@ -353,9 +393,9 @@
     maze: [],
     reachable: new Set(),
     reachableList: [],
-    pellets: new Map(),
+    collectibles: new Map(),
     player: null,
-    ghosts: [],
+    enemies: [],
     particles: [],
     floatingTexts: [],
     pendingSpawns: [],
@@ -366,10 +406,22 @@
     combo: 0,
     lives: CONFIG.initialLives,
     correctAnswers: 0,
-    bestScore: Number(storage.get(CONFIG.storageKeys.bestScore, "0")) || 0,
+    bestScore: Number(storage.getMigrated(
+      CONFIG.storageKeys.bestScore,
+      CONFIG.legacyStorageKeys.bestScore,
+      "0"
+    )) || 0,
     playerName: "",
-    difficulty: normalizeDifficulty(storage.get(CONFIG.storageKeys.difficulty, "medium")),
-    timeLimitEnabled: storage.get(CONFIG.storageKeys.timeLimit, "off") === "on",
+    difficulty: normalizeDifficulty(storage.getMigrated(
+      CONFIG.storageKeys.difficulty,
+      CONFIG.legacyStorageKeys.difficulty,
+      "medium"
+    )),
+    timeLimitEnabled: storage.getMigrated(
+      CONFIG.storageKeys.timeLimit,
+      CONFIG.legacyStorageKeys.timeLimit,
+      "off"
+    ) === "on",
     factStats: loadFactStats(),
     recentQuestionKeys: [],
     mission: null,
@@ -377,10 +429,14 @@
     questionTimeRemaining: null,
     questionDeadline: null,
     questionFeedbackTimerId: null,
-    currentGhostId: null,
+    currentEnemyId: null,
     answerLocked: false,
-    nextGhostId: 1,
-    soundEnabled: storage.get(CONFIG.storageKeys.sound, "on") !== "off",
+    nextEnemyId: 1,
+    soundEnabled: storage.getMigrated(
+      CONFIG.storageKeys.sound,
+      CONFIG.legacyStorageKeys.sound,
+      "on"
+    ) !== "off",
     audioContext: null,
     shake: 0,
     fireworkTimer: 0
@@ -597,8 +653,8 @@
     };
   }
 
-  function seedPellets() {
-    state.pellets.clear();
+  function seedCollectibles() {
+    state.collectibles.clear();
     for (const cell of state.reachableList) {
       const nearPlayer = distanceCells(cell, PLAYER_START) <= 2;
       const nearCenter = distanceCells(cell, CENTER_CELL) <= 2;
@@ -608,7 +664,7 @@
 
       if ((cell.x + cell.y) % 2 === 0 || Math.random() < 0.32) {
         const pos = centerOfCell(cell.x, cell.y);
-        state.pellets.set(cellKey(cell.x, cell.y), {
+        state.collectibles.set(cellKey(cell.x, cell.y), {
           x: pos.x,
           y: pos.y,
           phase: Math.random() * Math.PI * 2,
@@ -619,20 +675,20 @@
     }
   }
 
-  function refillPellets() {
-    if (state.pellets.size > 60) {
+  function refillCollectibles() {
+    if (state.collectibles.size > 60) {
       return;
     }
 
     const playerCell = toCell(state.player.x, state.player.y);
     const candidates = shuffle(state.reachableList).filter((cell) => {
       const key = cellKey(cell.x, cell.y);
-      return !state.pellets.has(key) && distanceCells(cell, playerCell) > 3 && distanceCells(cell, CENTER_CELL) > 2;
+      return !state.collectibles.has(key) && distanceCells(cell, playerCell) > 3 && distanceCells(cell, CENTER_CELL) > 2;
     });
 
     for (const cell of candidates.slice(0, 90)) {
       const pos = centerOfCell(cell.x, cell.y);
-      state.pellets.set(cellKey(cell.x, cell.y), {
+      state.collectibles.set(cellKey(cell.x, cell.y), {
         x: pos.x,
         y: pos.y,
         phase: Math.random() * Math.PI * 2,
@@ -652,38 +708,39 @@
       direction: "right",
       desiredDirection: "right",
       directionRequestTime: 0,
-      mouth: 0.25,
+      visualPulse: 0.25,
       invulnerable: 0,
       trail: []
     };
   }
 
-  function createGhost(index) {
-    const cell = chooseGhostSpawnCell(index);
+  function createEnemy(index) {
+    const cell = chooseEnemySpawnCell(index);
     const pos = centerOfCell(cell.x, cell.y);
     const direction = randomItem(DIR_NAMES);
     const difficulty = getDifficultySettings();
     const level = getCurrentLevel();
-    const ghostColors = level.ghostColors || GHOST_COLORS;
+    const enemyColors = level.enemyColors || ENEMY_COLORS;
     const speedTier = Math.min(
-      CONFIG.speed.ghostTierMax,
-      Math.floor(state.correctAnswers / CONFIG.speed.ghostTierEveryAnswers) * CONFIG.speed.ghostTierStep
+      CONFIG.speed.enemyTierMax,
+      Math.floor(state.correctAnswers / CONFIG.speed.enemyTierEveryAnswers) * CONFIG.speed.enemyTierStep
     );
     const speed = (
-      CONFIG.speed.ghostBase +
+      CONFIG.speed.enemyBase +
       speedTier +
-      (index % 4) * CONFIG.speed.ghostIndexStep
-    ) * difficulty.ghostSpeedMultiplier * (level.ghostSpeedMultiplier || 1);
+      (index % 4) * CONFIG.speed.enemyIndexStep
+    ) * difficulty.enemySpeedMultiplier * (level.enemySpeedMultiplier || 1);
 
     return {
-      id: state.nextGhostId,
+      id: state.nextEnemyId,
       x: pos.x,
       y: pos.y,
       radius: 10.4,
       speed,
       direction,
-      color: ghostColors[index % ghostColors.length],
-      style: level.ghostStyle || "classic",
+      color: enemyColors[index % enemyColors.length],
+      visualStyle: level.enemyVisualStyle || "neutral",
+      visualVariant: index % 4,
       scatter: scatterCornerFor(index),
       personality: index % 4,
       pathCooldown: 0,
@@ -702,7 +759,7 @@
     return corners[index % corners.length];
   }
 
-  function chooseGhostSpawnCell(index) {
+  function chooseEnemySpawnCell(index) {
     const playerCell = state.player ? toCell(state.player.x, state.player.y) : PLAYER_START;
     const centerOptions = [
       CENTER_CELL,
@@ -731,26 +788,26 @@
     return randomItem(farCells.length ? farCells : state.reachableList);
   }
 
-  function scheduleGhostSpawn(delay) {
+  function scheduleEnemySpawn(delay) {
     state.pendingSpawns.push({
       delay,
-      index: state.nextGhostId
+      index: state.nextEnemyId
     });
   }
 
-  function ensureGhostCount() {
-    const minGhosts = getRequiredGhostCount();
-    const totalIncoming = state.ghosts.length + state.pendingSpawns.length;
-    for (let i = totalIncoming; i < minGhosts; i += 1) {
-      scheduleGhostSpawn(0.25 + i * 0.08);
+  function ensureEnemyCount() {
+    const minEnemies = getRequiredEnemyCount();
+    const totalIncoming = state.enemies.length + state.pendingSpawns.length;
+    for (let i = totalIncoming; i < minEnemies; i += 1) {
+      scheduleEnemySpawn(0.25 + i * 0.08);
     }
   }
 
-  function spawnGhost(index) {
-    const ghost = createGhost(index);
-    state.nextGhostId += 1;
-    state.ghosts.push(ghost);
-    addBurst(ghost.x, ghost.y, ghost.color, 18, 90);
+  function spawnEnemy(index) {
+    const enemy = createEnemy(index);
+    state.nextEnemyId += 1;
+    state.enemies.push(enemy);
+    addBurst(enemy.x, enemy.y, enemy.color, 18, 90);
   }
 
   function enterLevel(levelIndex, options = {}) {
@@ -760,16 +817,16 @@
     state.reachable = reachability.reachable;
     state.reachableList = reachability.list;
     state.player = createPlayer();
-    state.ghosts = [];
+    state.enemies = [];
     state.pendingSpawns = [];
     state.particles = [];
     state.floatingTexts = [];
-    seedPellets();
+    seedCollectibles();
     seedBackdrop();
 
-    const minGhosts = getRequiredGhostCount();
-    for (let i = 0; i < minGhosts; i += 1) {
-      spawnGhost(i);
+    const minEnemies = getRequiredEnemyCount();
+    for (let i = 0; i < minEnemies; i += 1) {
+      spawnEnemy(i);
     }
 
     if (options.announce) {
@@ -798,9 +855,9 @@
     state.question = null;
     state.questionTimeRemaining = null;
     state.questionDeadline = null;
-    state.currentGhostId = null;
+    state.currentEnemyId = null;
     state.answerLocked = false;
-    state.nextGhostId = 1;
+    state.nextEnemyId = 1;
     state.shake = 0;
     state.fireworkTimer = 0;
     assignMission();
@@ -1119,7 +1176,7 @@
       state.mission.progress += amount;
     }
 
-    if (eventName === "ghostDefeated" && state.mission.type === "ghosts") {
+    if (eventName === "enemyDefeated" && state.mission.type === "enemies") {
       state.mission.progress += amount;
     }
 
@@ -1178,18 +1235,18 @@
   function updatePlaying(dt) {
     updateSpawns(dt);
     updatePlayer(dt);
-    eatPellets();
-    updateGhosts(dt);
-    checkGhostCollision();
-    refillPellets();
+    collectItems();
+    updateEnemies(dt);
+    checkEnemyCollision();
+    refillCollectibles();
     updateParticles(dt);
     updateFloatingTexts(dt);
-    ensureGhostCount();
+    ensureEnemyCount();
   }
 
   function updateAmbient(dt) {
     if (state.player) {
-      state.player.mouth = 0.24 + Math.abs(Math.sin(state.clock * 8)) * 0.32;
+      state.player.visualPulse = 0.24 + Math.abs(Math.sin(state.clock * 8)) * 0.32;
     }
 
     if (state.phase === "ended") {
@@ -1205,7 +1262,7 @@
       const pending = state.pendingSpawns[i];
       pending.delay -= dt;
       if (pending.delay <= 0) {
-        spawnGhost(pending.index);
+        spawnEnemy(pending.index);
         state.pendingSpawns.splice(i, 1);
       }
     }
@@ -1214,7 +1271,7 @@
   function updatePlayer(dt) {
     const player = state.player;
     player.invulnerable = Math.max(0, player.invulnerable - dt);
-    player.mouth = 0.24 + Math.abs(Math.sin(state.clock * 10)) * 0.34;
+    player.visualPulse = 0.24 + Math.abs(Math.sin(state.clock * 10)) * 0.34;
 
     const hasFreshDirection = state.clock - player.directionRequestTime <= INPUT_BUFFER_SECONDS;
 
@@ -1346,76 +1403,76 @@
     return result;
   }
 
-  function eatPellets() {
+  function collectItems() {
     const player = state.player;
-    let eaten = 0;
+    let collected = 0;
 
-    for (const [key, pellet] of state.pellets) {
-      const dx = pellet.x - player.x;
-      const dy = pellet.y - player.y;
-      const hitRadius = player.radius + pellet.radius + 1.4;
+    for (const [key, collectible] of state.collectibles) {
+      const dx = collectible.x - player.x;
+      const dy = collectible.y - player.y;
+      const hitRadius = player.radius + collectible.radius + 1.4;
       if (dx * dx + dy * dy <= hitRadius * hitRadius) {
-        state.pellets.delete(key);
-        state.score += pellet.value;
-        eaten += 1;
-        if (pellet.value > 10) {
-          addBurst(pellet.x, pellet.y, "#ffd84a", 12, 70);
-          addFloatingText(pellet.x, pellet.y - 12, `+${pellet.value}`, "#ffd84a");
+        state.collectibles.delete(key);
+        state.score += collectible.value;
+        collected += 1;
+        if (collectible.value > 10) {
+          addBurst(collectible.x, collectible.y, "#ffd84a", 12, 70);
+          addFloatingText(collectible.x, collectible.y - 12, `+${collectible.value}`, "#ffd84a");
         } else if (Math.random() < 0.2) {
-          addBurst(pellet.x, pellet.y, "#f7fbff", 4, 42);
+          addBurst(collectible.x, collectible.y, "#f7fbff", 4, 42);
         }
       }
     }
 
-    if (eaten > 0) {
-      playTone(620 + Math.min(eaten, 4) * 40, 0.035, "square", 0.012);
+    if (collected > 0) {
+      playTone(620 + Math.min(collected, 4) * 40, 0.035, "square", 0.012);
       updateMission("score");
       updateHud();
     }
   }
 
-  function updateGhosts(dt) {
+  function updateEnemies(dt) {
     const playerCell = toCell(state.player.x, state.player.y);
-    for (const ghost of state.ghosts) {
-      ghost.pathCooldown -= dt;
-      ghost.spawnFlash = Math.max(0, ghost.spawnFlash - dt);
-      ghost.wobble += dt * 4;
+    for (const enemy of state.enemies) {
+      enemy.pathCooldown -= dt;
+      enemy.spawnFlash = Math.max(0, enemy.spawnFlash - dt);
+      enemy.wobble += dt * 4;
 
-      const cell = toCell(ghost.x, ghost.y);
+      const cell = toCell(enemy.x, enemy.y);
       const center = centerOfCell(cell.x, cell.y);
-      const nearCenter = Math.abs(ghost.x - center.x) < 2.6 && Math.abs(ghost.y - center.y) < 2.6;
-      const blocked = !canMove(ghost, ghost.direction, 3.2);
+      const nearCenter = Math.abs(enemy.x - center.x) < 2.6 && Math.abs(enemy.y - center.y) < 2.6;
+      const blocked = !canMove(enemy, enemy.direction, 3.2);
 
-      if (nearCenter || blocked || ghost.pathCooldown <= 0) {
-        ghost.x = nearCenter ? center.x : ghost.x;
-        ghost.y = nearCenter ? center.y : ghost.y;
-        const target = getGhostTarget(ghost, playerCell);
-        ghost.direction = findNextDirection(cell, target, ghost.direction);
-        ghost.pathCooldown = 0.18 + Math.random() * 0.16;
+      if (nearCenter || blocked || enemy.pathCooldown <= 0) {
+        enemy.x = nearCenter ? center.x : enemy.x;
+        enemy.y = nearCenter ? center.y : enemy.y;
+        const target = getEnemyTarget(enemy, playerCell);
+        enemy.direction = findNextDirection(cell, target, enemy.direction);
+        enemy.pathCooldown = 0.18 + Math.random() * 0.16;
       }
 
-      moveActor(ghost, ghost.direction, ghost.speed * dt);
+      moveActor(enemy, enemy.direction, enemy.speed * dt);
     }
   }
 
-  function getGhostTarget(ghost, playerCell) {
+  function getEnemyTarget(enemy, playerCell) {
     const player = state.player;
     const playerDir = DIRS[player.direction] || DIRS.right;
     const cycle = state.clock % 24;
     const scatterWindow = state.clock > 10 && cycle > 18;
 
     if (player.invulnerable > 0 || scatterWindow) {
-      return normalizeTargetCell(ghost.scatter);
+      return normalizeTargetCell(enemy.scatter);
     }
 
-    if (ghost.personality === 1) {
+    if (enemy.personality === 1) {
       return normalizeTargetCell({
         x: playerCell.x + playerDir.x * 4,
         y: playerCell.y + playerDir.y * 4
       });
     }
 
-    if (ghost.personality === 2) {
+    if (enemy.personality === 2) {
       const side = state.clock % 6 < 3 ? { x: playerDir.y, y: -playerDir.x } : { x: -playerDir.y, y: playerDir.x };
       return normalizeTargetCell({
         x: playerCell.x + side.x * 5,
@@ -1423,8 +1480,8 @@
       });
     }
 
-    if (ghost.personality === 3 && distanceCells(toCell(ghost.x, ghost.y), playerCell) < 7) {
-      return normalizeTargetCell(ghost.scatter);
+    if (enemy.personality === 3 && distanceCells(toCell(enemy.x, enemy.y), playerCell) < 7) {
+      return normalizeTargetCell(enemy.scatter);
     }
 
     return normalizeTargetCell(playerCell);
@@ -1514,21 +1571,21 @@
     return fallback;
   }
 
-  function checkGhostCollision() {
+  function checkEnemyCollision() {
     if (state.player.invulnerable > 0 || state.phase !== "playing") {
       return;
     }
 
     const player = state.player;
-    const ghost = state.ghosts.find((candidate) => {
+    const enemy = state.enemies.find((candidate) => {
       const dx = candidate.x - player.x;
       const dy = candidate.y - player.y;
       const radius = candidate.radius + player.radius - 1.5;
       return dx * dx + dy * dy < radius * radius;
     });
 
-    if (ghost) {
-      openQuestion(ghost);
+    if (enemy) {
+      openQuestion(enemy);
     }
   }
 
@@ -1707,14 +1764,14 @@
     return `נגמר הזמן. התשובה היא ${answer}`;
   }
 
-  function openQuestion(ghost) {
+  function openQuestion(enemy) {
     clearQuestionFeedbackTimer();
     state.phase = "question";
     resetJoystick();
     state.question = generateQuestion();
-    state.currentGhostId = ghost.id;
+    state.currentEnemyId = enemy.id;
     state.answerLocked = false;
-    els.questionStatus.textContent = `רוח ${state.combo > 2 ? "ברצף" : "נתפסה"}`;
+    els.questionStatus.textContent = `יריב ${state.combo > 2 ? "ברצף" : "נתפס"}`;
     els.questionTitle.dir = "ltr";
     els.questionTitle.textContent = state.question.text;
     els.questionFeedback.textContent = "";
@@ -1830,7 +1887,7 @@
   }
 
   function applyCorrectAnswer() {
-    const ghost = state.ghosts.find((candidate) => candidate.id === state.currentGhostId);
+    const enemy = state.enemies.find((candidate) => candidate.id === state.currentEnemyId);
     const previousLevelIndex = state.levelIndex;
     state.correctAnswers += 1;
     state.combo += 1;
@@ -1840,12 +1897,12 @@
     playCorrectSound();
     pulseElement(els.progressWrap, "progress-pulse");
 
-    if (ghost) {
-      addBurst(ghost.x, ghost.y, ghost.color, 36, 150);
-      addFloatingText(ghost.x, ghost.y - 24, `+${260 + comboBonus}`, "#67f08b");
-      state.ghosts = state.ghosts.filter((candidate) => candidate.id !== ghost.id);
-      scheduleGhostSpawn(0.9);
-      updateMission("ghostDefeated");
+    if (enemy) {
+      addBurst(enemy.x, enemy.y, enemy.color, 36, 150);
+      addFloatingText(enemy.x, enemy.y - 24, `+${260 + comboBonus}`, "#67f08b");
+      state.enemies = state.enemies.filter((candidate) => candidate.id !== enemy.id);
+      scheduleEnemySpawn(0.9);
+      updateMission("enemyDefeated");
     }
 
     if (state.player) {
@@ -1868,7 +1925,7 @@
 
     const nextLevelIndex = getLevelIndexForAnswers(state.correctAnswers);
     state.phase = "playing";
-    state.currentGhostId = null;
+    state.currentEnemyId = null;
     state.question = null;
 
     if (nextLevelIndex !== previousLevelIndex) {
@@ -1876,7 +1933,7 @@
       return;
     }
 
-    ensureGhostCount();
+    ensureEnemyCount();
   }
 
   function applyWrongAnswer() {
@@ -1899,7 +1956,7 @@
     resetPositionsAfterHit();
     state.player.invulnerable = 2.6;
     state.phase = "playing";
-    state.currentGhostId = null;
+    state.currentEnemyId = null;
     state.question = null;
   }
 
@@ -1912,14 +1969,14 @@
     state.player.directionRequestTime = state.clock;
     state.player.trail = [];
 
-    state.ghosts.forEach((ghost, index) => {
-      const cell = chooseGhostSpawnCell(index);
+    state.enemies.forEach((enemy, index) => {
+      const cell = chooseEnemySpawnCell(index);
       const pos = centerOfCell(cell.x, cell.y);
-      ghost.x = pos.x;
-      ghost.y = pos.y;
-      ghost.direction = randomItem(DIR_NAMES);
-      ghost.pathCooldown = 0;
-      ghost.spawnFlash = 0.8;
+      enemy.x = pos.x;
+      enemy.y = pos.y;
+      enemy.direction = randomItem(DIR_NAMES);
+      enemy.pathCooldown = 0;
+      enemy.spawnFlash = 0.8;
     });
   }
 
@@ -1927,7 +1984,7 @@
     const playerName = state.playerName || "שחקן";
     state.phase = "ended";
     resetJoystick();
-    state.currentGhostId = null;
+    state.currentEnemyId = null;
     state.question = null;
     els.questionDialog.hidden = true;
     els.endScreen.hidden = false;
@@ -1979,7 +2036,7 @@
 
   function spawnFirework(x, y) {
     const level = getCurrentLevel();
-    const color = randomItem([level.accent, level.powerPelletColor, "#ffd84a", "#67f08b", "#ff5f9f"]);
+    const color = randomItem([level.accent, level.bonusCollectibleColor, "#ffd84a", "#67f08b", "#ff5f9f"]);
     addBurst(x, y, color, 58, 210);
     playTone(560 + Math.random() * 260, 0.08, "triangle", 0.018);
   }
@@ -2025,9 +2082,9 @@
 
     drawBackdrop();
     drawMaze();
-    drawPellets();
-    drawPlayer();
-    drawGhosts();
+    drawCollectibles();
+    drawPlayerCharacter(ctx, state.player);
+    drawEnemies();
     drawParticles();
     drawFloatingTexts();
     drawLevelBanner();
@@ -2171,18 +2228,18 @@
     ctx.fillStyle = level.accent;
     ctx.lineWidth = 1.4;
 
-    if (level.ghostStyle === "ice") {
+    if (level.enemyVisualStyle === "ice") {
       ctx.beginPath();
       ctx.moveTo(x - 5, y);
       ctx.lineTo(x + 5, y);
       ctx.moveTo(x, y - 5);
       ctx.lineTo(x, y + 5);
       ctx.stroke();
-    } else if (level.ghostStyle === "lava") {
+    } else if (level.enemyVisualStyle === "lava") {
       ctx.beginPath();
       ctx.arc(x, y, 3, 0, Math.PI * 2);
       ctx.fill();
-    } else if (level.ghostStyle === "ancient") {
+    } else if (level.enemyVisualStyle === "ancient") {
       ctx.beginPath();
       ctx.moveTo(x - 5, y + 4);
       ctx.lineTo(x, y - 5);
@@ -2210,43 +2267,34 @@
     ctx.closePath();
   }
 
-  function drawPellets() {
+  function drawCollectibles() {
     const level = getCurrentLevel();
     ctx.save();
-    ctx.shadowColor = level.powerPelletColor || "rgba(255, 216, 74, 0.6)";
+    ctx.shadowColor = level.bonusCollectibleColor || "rgba(255, 216, 74, 0.6)";
     ctx.shadowBlur = 8;
-    for (const pellet of state.pellets.values()) {
-      const pulse = 1 + Math.sin(state.clock * 5 + pellet.phase) * 0.18;
-      const radius = pellet.radius * pulse;
-      ctx.fillStyle = pellet.value > 10 ? level.powerPelletColor : level.pelletColor;
+    for (const collectible of state.collectibles.values()) {
+      const pulse = 1 + Math.sin(state.clock * 5 + collectible.phase) * 0.18;
+      const radius = collectible.radius * pulse;
+      ctx.fillStyle = collectible.value > 10 ? level.bonusCollectibleColor : level.collectibleColor;
 
-      if (pellet.value > 10) {
-        drawStar(pellet.x, pellet.y, 5, radius + 2, radius * 0.48, state.clock + pellet.phase);
-        ctx.fill();
+      if (collectible.value > 10) {
+        drawPlusSymbol(collectible.x, collectible.y, radius + 2, state.clock + collectible.phase);
       } else {
-        ctx.beginPath();
-        ctx.arc(pellet.x, pellet.y, radius, 0, Math.PI * 2);
+        drawDiamond(collectible.x, collectible.y, radius * 1.15);
         ctx.fill();
       }
     }
     ctx.restore();
   }
 
-  function drawStar(cx, cy, spikes, outerRadius, innerRadius, rotation = -Math.PI / 2) {
-    let rot = rotation;
-    const step = Math.PI / spikes;
-
-    ctx.beginPath();
-    ctx.moveTo(cx + Math.cos(rot) * outerRadius, cy + Math.sin(rot) * outerRadius);
-
-    for (let i = 0; i < spikes; i += 1) {
-      rot += step;
-      ctx.lineTo(cx + Math.cos(rot) * innerRadius, cy + Math.sin(rot) * innerRadius);
-      rot += step;
-      ctx.lineTo(cx + Math.cos(rot) * outerRadius, cy + Math.sin(rot) * outerRadius);
-    }
-
-    ctx.closePath();
+  function drawPlusSymbol(cx, cy, radius, rotation = 0) {
+    const arm = radius * 0.34;
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(rotation * 0.18);
+    ctx.fillRect(-arm, -radius, arm * 2, radius * 2);
+    ctx.fillRect(-radius, -arm, radius * 2, arm * 2);
+    ctx.restore();
   }
 
   function drawDiamond(cx, cy, radius) {
@@ -2258,55 +2306,66 @@
     ctx.closePath();
   }
 
-  function drawPlayer() {
-    const player = state.player;
-    if (!player) {
+  function drawPlayerCharacter(renderContext, playerState) {
+    if (!playerState) {
       return;
     }
 
-    ctx.save();
-    for (const point of player.trail) {
+    const theme = GAME_THEME.player;
+    renderContext.save();
+    for (const point of playerState.trail) {
       const alpha = Math.max(0, point.life / 0.28) * 0.24;
-      ctx.fillStyle = `rgba(255, 216, 74, ${alpha})`;
-      ctx.beginPath();
-      ctx.arc(point.x, point.y, player.radius * (0.7 + alpha), 0, Math.PI * 2);
-      ctx.fill();
+      const size = playerState.radius * (0.72 + alpha);
+      renderContext.fillStyle = `rgba(${theme.trailColor}, ${alpha})`;
+      renderContext.save();
+      renderContext.translate(point.x, point.y);
+      renderContext.rotate(Math.PI / 4);
+      renderContext.fillRect(-size * 0.5, -size * 0.5, size, size);
+      renderContext.restore();
     }
 
-    const flicker = player.invulnerable > 0 && Math.floor(state.clock * 16) % 2 === 0;
+    const flicker = playerState.invulnerable > 0 && Math.floor(state.clock * 16) % 2 === 0;
     if (flicker) {
-      ctx.globalAlpha = 0.55;
+      renderContext.globalAlpha = 0.55;
     }
 
-    const angle = directionAngle(player.direction);
-    const mouth = player.mouth;
-    const bodyGradient = ctx.createRadialGradient(player.x - 4, player.y - 6, 2, player.x, player.y, player.radius + 5);
-    bodyGradient.addColorStop(0, "#fff9a2");
-    bodyGradient.addColorStop(0.45, "#ffd84a");
-    bodyGradient.addColorStop(1, "#f1a900");
-
-    ctx.shadowColor = "rgba(255, 216, 74, 0.62)";
-    ctx.shadowBlur = 18;
-    ctx.fillStyle = bodyGradient;
-    ctx.beginPath();
-    ctx.moveTo(player.x, player.y);
-    ctx.arc(player.x, player.y, player.radius, angle + mouth, angle + Math.PI * 2 - mouth, false);
-    ctx.closePath();
-    ctx.fill();
-
-    const eyeAngle = player.direction === "left" ? angle + 0.9 : angle - 0.9;
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = "#191400";
-    ctx.beginPath();
-    ctx.arc(
-      player.x + Math.cos(eyeAngle) * player.radius * 0.48,
-      player.y + Math.sin(eyeAngle) * player.radius * 0.48,
-      1.8,
-      0,
-      Math.PI * 2
+    const angle = directionAngle(playerState.direction);
+    const pulseScale = 0.96 + playerState.visualPulse * 0.07;
+    const bodySize = playerState.radius * 1.42;
+    const bodyGradient = renderContext.createLinearGradient(
+      -bodySize,
+      -bodySize,
+      bodySize,
+      bodySize
     );
-    ctx.fill();
-    ctx.restore();
+    bodyGradient.addColorStop(0, theme.primaryColor);
+    bodyGradient.addColorStop(1, theme.secondaryColor);
+
+    renderContext.translate(playerState.x, playerState.y);
+    renderContext.scale(pulseScale, pulseScale);
+    renderContext.shadowColor = theme.glowColor;
+    renderContext.shadowBlur = 16;
+    renderContext.fillStyle = bodyGradient;
+    renderContext.strokeStyle = theme.detailColor;
+    renderContext.lineWidth = 1.6;
+    renderContext.save();
+    renderContext.rotate(Math.PI / 4);
+    renderContext.fillRect(-bodySize * 0.5, -bodySize * 0.5, bodySize, bodySize);
+    renderContext.strokeRect(-bodySize * 0.5, -bodySize * 0.5, bodySize, bodySize);
+    renderContext.restore();
+
+    renderContext.shadowBlur = 0;
+    renderContext.fillStyle = theme.detailColor;
+    renderContext.rotate(angle);
+    const markerLength = playerState.radius * 0.72;
+    const markerWidth = Math.max(1.8, playerState.radius * 0.16);
+    renderContext.fillRect(
+      bodySize * 0.08,
+      -markerWidth * 0.5,
+      markerLength,
+      markerWidth
+    );
+    renderContext.restore();
   }
 
   function directionAngle(direction) {
@@ -2322,168 +2381,99 @@
     return 0;
   }
 
-  function drawGhosts() {
-    const player = state.player;
-    for (const ghost of state.ghosts) {
-      ctx.save();
-      const flashAlpha = ghost.spawnFlash > 0 ? 0.48 + Math.sin(state.clock * 24) * 0.22 : 1;
-      ctx.globalAlpha = clamp(flashAlpha, 0.28, 1);
-      ctx.shadowColor = ghost.color;
-      ctx.shadowBlur = 16;
-      ctx.fillStyle = ghost.color;
+  function drawEnemies() {
+    state.enemies.forEach((enemy, enemyIndex) => {
+      drawEnemyCharacter(ctx, enemy, enemyIndex, {
+        clock: state.clock,
+        spawning: enemy.spawnFlash > 0
+      });
+    });
+  }
 
-      const wobble = Math.sin(ghost.wobble) * 1.5;
-      const x = ghost.x;
-      const y = ghost.y + wobble;
-      const r = ghost.radius;
+  function drawEnemyCharacter(renderContext, enemy, enemyIndex, enemyState) {
+    const variant = enemy.visualVariant ?? enemyIndex % 4;
+    const sides = [6, 4, 5, 8][variant];
+    const baseRotation = [Math.PI / 6, Math.PI / 4, -Math.PI / 2, Math.PI / 8][variant];
+    const motionRotation = Math.sin(enemy.wobble) * 0.07;
+    const radius = enemy.radius * [1, 0.96, 1.04, 0.98][variant];
 
-      drawThemedGhostBody(ghost, x, y, r);
+    renderContext.save();
+    renderContext.translate(enemy.x, enemy.y);
+    renderContext.rotate(baseRotation + motionRotation);
+    renderContext.shadowColor = enemy.color;
+    renderContext.shadowBlur = 14;
+    renderContext.fillStyle = enemy.color;
+    renderContext.strokeStyle = GAME_THEME.enemies.outlineColor;
+    renderContext.lineWidth = 1.35;
+    drawContextPolygon(renderContext, sides, radius);
+    renderContext.fill();
+    renderContext.stroke();
 
-      ctx.shadowBlur = 0;
-      const look = player
-        ? {
-          x: clamp((player.x - ghost.x) / 140, -1, 1),
-          y: clamp((player.y - ghost.y) / 140, -1, 1)
-        }
-        : DIRS[ghost.direction];
+    renderContext.shadowBlur = 0;
+    renderContext.strokeStyle = GAME_THEME.enemies.detailColor;
+    renderContext.lineWidth = Math.max(1.4, radius * 0.14);
+    drawEnemyMarker(renderContext, variant, radius, enemy.visualStyle);
 
-      drawGhostEye(x - r * 0.36, y - r * 0.16, r, look);
-      drawGhostEye(x + r * 0.36, y - r * 0.16, r, look);
-      ctx.restore();
+    if (enemyState.spawning) {
+      const progress = clamp(enemy.spawnFlash / 0.8, 0, 1);
+      renderContext.globalAlpha = progress * 0.7;
+      renderContext.strokeStyle = enemy.color;
+      renderContext.lineWidth = 1.4;
+      drawContextPolygon(renderContext, sides, radius * (1.15 + (1 - progress) * 0.45));
+      renderContext.stroke();
     }
+    renderContext.restore();
   }
 
-  function drawThemedGhostBody(ghost, x, y, r) {
-    const style = ghost.style || "classic";
-
-    if (style === "diamond") {
-      drawDiamondGhostBody(ghost, x, y, r);
-      return;
+  function drawContextPolygon(renderContext, sides, radius) {
+    renderContext.beginPath();
+    for (let i = 0; i < sides; i += 1) {
+      const angle = -Math.PI / 2 + i * Math.PI * 2 / sides;
+      const x = Math.cos(angle) * radius;
+      const y = Math.sin(angle) * radius;
+      if (i === 0) {
+        renderContext.moveTo(x, y);
+      } else {
+        renderContext.lineTo(x, y);
+      }
     }
+    renderContext.closePath();
+  }
 
-    drawClassicGhostBody(x, y, r);
+  function drawEnemyMarker(renderContext, variant, radius, visualStyle) {
+    const extent = radius * 0.46;
+    renderContext.beginPath();
 
-    if (style === "ice") {
-      drawIceGhostDetails(x, y, r);
-    } else if (style === "lava") {
-      drawLavaGhostDetails(x, y, r);
-    } else if (style === "ancient") {
-      drawAncientGhostDetails(x, y, r);
+    if (variant === 0) {
+      renderContext.moveTo(-extent, 0);
+      renderContext.lineTo(extent, 0);
+      renderContext.moveTo(0, -extent);
+      renderContext.lineTo(0, extent);
+    } else if (variant === 1) {
+      renderContext.moveTo(-extent, -extent);
+      renderContext.lineTo(extent, extent);
+      renderContext.moveTo(extent, -extent);
+      renderContext.lineTo(-extent, extent);
+    } else if (variant === 2) {
+      renderContext.moveTo(-extent, -extent * 0.55);
+      renderContext.lineTo(extent, -extent * 0.55);
+      renderContext.moveTo(-extent, extent * 0.55);
+      renderContext.lineTo(extent, extent * 0.55);
+    } else {
+      renderContext.moveTo(-extent, extent * 0.75);
+      renderContext.lineTo(0, -extent);
+      renderContext.lineTo(extent, extent * 0.75);
     }
-  }
+    renderContext.stroke();
 
-  function drawClassicGhostBody(x, y, r) {
-    ctx.beginPath();
-    ctx.moveTo(x - r, y + r);
-    ctx.lineTo(x - r, y);
-    ctx.arc(x, y, r, Math.PI, 0, false);
-    ctx.lineTo(x + r, y + r);
-
-    for (let i = 0; i < 4; i += 1) {
-      const waveX = x + r - (i + 0.5) * (r * 2 / 4);
-      const nextX = x + r - (i + 1) * (r * 2 / 4);
-      ctx.quadraticCurveTo(waveX, y + r - 5, nextX, y + r);
+    if (visualStyle === "diamond") {
+      renderContext.save();
+      renderContext.globalAlpha = 0.52;
+      renderContext.lineWidth = 1;
+      drawContextPolygon(renderContext, 4, radius * 0.7);
+      renderContext.stroke();
+      renderContext.restore();
     }
-
-    ctx.closePath();
-    ctx.fill();
-  }
-
-  function drawIceGhostDetails(x, y, r) {
-    ctx.save();
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = "rgba(255, 255, 255, 0.62)";
-    for (let i = 0; i < 3; i += 1) {
-      const spikeX = x - r * 0.58 + i * r * 0.58;
-      ctx.beginPath();
-      ctx.moveTo(spikeX - 3.2, y + r * 0.78);
-      ctx.lineTo(spikeX + 3.2, y + r * 0.78);
-      ctx.lineTo(spikeX, y + r * 1.22);
-      ctx.closePath();
-      ctx.fill();
-    }
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.7)";
-    ctx.beginPath();
-    ctx.arc(x - r * 0.24, y - r * 0.45, r * 0.2, 0, Math.PI * 1.4);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  function drawLavaGhostDetails(x, y, r) {
-    ctx.save();
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = "rgba(255, 230, 128, 0.75)";
-    ctx.beginPath();
-    ctx.moveTo(x - r * 0.34, y - r * 0.2);
-    ctx.quadraticCurveTo(x - r * 0.12, y - r * 0.95, x + r * 0.05, y - r * 0.18);
-    ctx.quadraticCurveTo(x + r * 0.3, y - r * 0.75, x + r * 0.42, y - r * 0.06);
-    ctx.quadraticCurveTo(x + r * 0.08, y + r * 0.04, x - r * 0.34, y - r * 0.2);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(80, 12, 8, 0.45)";
-    ctx.beginPath();
-    ctx.moveTo(x - r * 0.7, y + r * 0.46);
-    ctx.lineTo(x + r * 0.64, y + r * 0.18);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  function drawAncientGhostDetails(x, y, r) {
-    ctx.save();
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = "rgba(255, 244, 205, 0.62)";
-    ctx.lineWidth = 2;
-    for (let i = 0; i < 3; i += 1) {
-      const yy = y - r * 0.42 + i * r * 0.42;
-      ctx.beginPath();
-      ctx.moveTo(x - r * 0.82, yy);
-      ctx.lineTo(x + r * 0.72, yy + (i % 2 === 0 ? 3 : -3));
-      ctx.stroke();
-    }
-    ctx.fillStyle = "rgba(39, 224, 195, 0.55)";
-    ctx.fillRect(x - 2, y + r * 0.52, 4, 4);
-    ctx.restore();
-  }
-
-  function drawDiamondGhostBody(ghost, x, y, r) {
-    const gradient = ctx.createLinearGradient(x - r, y - r, x + r, y + r);
-    gradient.addColorStop(0, "#f8ffff");
-    gradient.addColorStop(0.4, ghost.color);
-    gradient.addColorStop(1, "#302c9c");
-    ctx.fillStyle = gradient;
-    ctx.beginPath();
-    ctx.moveTo(x, y - r * 1.08);
-    ctx.lineTo(x + r * 0.94, y - r * 0.22);
-    ctx.lineTo(x + r * 0.72, y + r * 0.9);
-    ctx.lineTo(x, y + r * 1.22);
-    ctx.lineTo(x - r * 0.72, y + r * 0.9);
-    ctx.lineTo(x - r * 0.94, y - r * 0.22);
-    ctx.closePath();
-    ctx.fill();
-
-    ctx.save();
-    ctx.shadowBlur = 0;
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.46)";
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x, y - r * 1.02);
-    ctx.lineTo(x, y + r * 1.14);
-    ctx.moveTo(x - r * 0.82, y - r * 0.16);
-    ctx.lineTo(x + r * 0.82, y - r * 0.16);
-    ctx.moveTo(x - r * 0.58, y + r * 0.82);
-    ctx.lineTo(x + r * 0.58, y + r * 0.82);
-    ctx.stroke();
-    ctx.restore();
-  }
-
-  function drawGhostEye(x, y, radius, look) {
-    ctx.fillStyle = "#f7fbff";
-    ctx.beginPath();
-    ctx.ellipse(x, y, radius * 0.27, radius * 0.34, 0, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.fillStyle = "#08111f";
-    ctx.beginPath();
-    ctx.arc(x + look.x * radius * 0.11, y + look.y * radius * 0.11, radius * 0.12, 0, Math.PI * 2);
-    ctx.fill();
   }
 
   function drawParticles() {

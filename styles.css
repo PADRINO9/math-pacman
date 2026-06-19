@@ -10,6 +10,9 @@
   --pink: #ff5f9f;
   --violet: #9d7cff;
   --red: #ff4c5f;
+  --bifly-cyan: #55edf0;
+  --bifly-navy: #06164f;
+  --bifly-pink: #ff77d6;
   --ink: #f7fbff;
   --muted: #93a6bd;
   --shadow: 0 24px 70px rgba(0, 0, 0, 0.5);
@@ -404,10 +407,17 @@ button {
   letter-spacing: 0;
 }
 
+#start-screen h1 {
+  color: #9af8fb;
+  text-shadow:
+    0 0 24px rgba(85, 237, 240, 0.5),
+    0 0 44px rgba(255, 119, 214, 0.16);
+}
+
 .start-graphic {
   position: relative;
   display: grid;
-  grid-template-columns: 58px repeat(3, 12px) 42px 42px;
+  grid-template-columns: 58px repeat(3, 12px) 46px 46px;
   align-items: center;
   justify-content: center;
   gap: 12px;
@@ -440,36 +450,17 @@ button {
 }
 
 .start-graphic-player {
-  position: relative;
-  width: 48px;
-  height: 48px;
-  border: 3px solid #b8fff4;
-  background: linear-gradient(135deg, #0f776f, #35c9b8);
-  box-shadow: 0 0 28px rgba(53, 201, 184, 0.42);
-  transform: rotate(45deg) scale(0.78);
+  width: 54px;
+  height: 54px;
+  background: url("assets/bifly-player.png") center / contain no-repeat;
+  filter:
+    drop-shadow(0 0 10px rgba(85, 237, 240, 0.58))
+    drop-shadow(0 0 14px rgba(255, 119, 214, 0.2));
 }
 
 .start-graphic-player::before,
 .start-graphic-player::after {
-  content: "";
-  position: absolute;
-  background: #ecfffc;
-}
-
-.start-graphic-player::before {
-  left: 50%;
-  top: 18%;
-  width: 3px;
-  height: 64%;
-  transform: translateX(-50%);
-}
-
-.start-graphic-player::after {
-  left: 18%;
-  top: 50%;
-  width: 64%;
-  height: 3px;
-  transform: translateY(-50%);
+  content: none;
 }
 
 .start-graphic-collectible {
@@ -481,41 +472,25 @@ button {
 }
 
 .start-graphic-enemy {
-  position: relative;
-  width: 38px;
-  height: 42px;
-  border: 2px solid #d8cdfc;
-  background: #6f5ca8;
-  box-shadow: 0 0 22px rgba(111, 92, 168, 0.38);
-  clip-path: polygon(50% 0, 100% 28%, 84% 100%, 16% 100%, 0 28%);
+  width: 46px;
+  height: 46px;
+  background: url("assets/dark-enemy.png") center / contain no-repeat;
+  filter:
+    drop-shadow(0 0 9px rgba(131, 91, 255, 0.72))
+    drop-shadow(0 0 15px rgba(77, 40, 190, 0.38));
 }
 
 .start-graphic-enemy::before,
 .start-graphic-enemy::after {
-  content: "";
-  position: absolute;
-  background: rgba(255, 255, 255, 0.72);
-}
-
-.start-graphic-enemy::before {
-  left: 8px;
-  top: 17px;
-  width: 22px;
-  height: 3px;
-}
-
-.start-graphic-enemy::after {
-  left: 17px;
-  top: 8px;
-  width: 3px;
-  height: 22px;
+  content: none;
 }
 
 .start-graphic-enemy-b {
-  border-color: #d7e8b5;
-  background: #657a3d;
-  box-shadow: 0 0 22px rgba(101, 122, 61, 0.36);
-  clip-path: polygon(50% 0, 100% 50%, 50% 100%, 0 50%);
+  opacity: 0.78;
+  transform: scale(0.88);
+  filter:
+    drop-shadow(0 0 8px rgba(85, 237, 240, 0.52))
+    drop-shadow(0 0 13px rgba(77, 40, 190, 0.34));
 }
 
 #answer-form {
@@ -846,7 +821,7 @@ button {
   }
 
   .start-graphic {
-    grid-template-columns: 46px repeat(3, 9px) 34px 34px;
+    grid-template-columns: 46px repeat(3, 9px) 36px 36px;
     gap: 9px;
     height: 52px;
     margin: 6px auto 2px;
@@ -863,8 +838,8 @@ button {
   }
 
   .start-graphic-player {
-    width: 38px;
-    height: 38px;
+    width: 42px;
+    height: 42px;
   }
 
   .start-graphic-collectible {
@@ -873,22 +848,8 @@ button {
   }
 
   .start-graphic-enemy {
-    width: 30px;
-    height: 33px;
-  }
-
-  .start-graphic-enemy::before {
-    left: 6px;
-    top: 13px;
-    width: 18px;
-    height: 3px;
-  }
-
-  .start-graphic-enemy::after {
-    left: 13px;
-    top: 6px;
-    width: 3px;
-    height: 18px;
+    width: 36px;
+    height: 36px;
   }
 
   .screen-stats {

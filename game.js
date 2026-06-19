@@ -11,8 +11,11 @@
 
   const GAME_THEME = {
     title: "Math Maze",
-    hebrewTitle: "מבוך החשבון",
+    hebrewTitle: "מבוך הכפל",
     player: {
+      name: "Bifly",
+      spriteSrc: "assets/bifly-player.png",
+      renderScale: 2.55,
       primaryColor: "#35c9b8",
       secondaryColor: "#0f776f",
       detailColor: "#ecfffc",
@@ -20,6 +23,8 @@
       glowColor: "rgba(53, 201, 184, 0.58)"
     },
     enemies: {
+      spriteSrc: "assets/dark-enemy.png",
+      renderScale: 3.05,
       outlineColor: "rgba(255, 255, 255, 0.64)",
       detailColor: "rgba(255, 255, 255, 0.72)",
       palettes: [
@@ -34,6 +39,15 @@
       bonusShape: "plus"
     }
   };
+
+  const GAME_ASSETS = {
+    player: new Image(),
+    enemy: new Image()
+  };
+  GAME_ASSETS.player.decoding = "async";
+  GAME_ASSETS.player.src = GAME_THEME.player.spriteSrc;
+  GAME_ASSETS.enemy.decoding = "async";
+  GAME_ASSETS.enemy.src = GAME_THEME.enemies.spriteSrc;
 
   const CONFIG = {
     targetCorrect: 100,
@@ -2312,18 +2326,35 @@
     }
 
     const theme = GAME_THEME.player;
+    const sprite = GAME_ASSETS.player;
+    const spriteReady = sprite.complete && sprite.naturalWidth > 0;
+    const displaySize = playerState.radius * theme.renderScale;
     renderContext.save();
-    for (const point of playerState.trail) {
+    for (let index = 0; index < playerState.trail.length; index += 3) {
+      const point = playerState.trail[index];
       const alpha = Math.max(0, point.life / 0.28) * 0.24;
-      const size = playerState.radius * (0.72 + alpha);
-      renderContext.fillStyle = `rgba(${theme.trailColor}, ${alpha})`;
-      renderContext.save();
-      renderContext.translate(point.x, point.y);
-      renderContext.rotate(Math.PI / 4);
-      renderContext.fillRect(-size * 0.5, -size * 0.5, size, size);
-      renderContext.restore();
+      const trailSize = displaySize * (0.68 + alpha);
+      renderContext.globalAlpha = alpha;
+      if (spriteReady) {
+        renderContext.drawImage(
+          sprite,
+          point.x - trailSize / 2,
+          point.y - trailSize / 2,
+          trailSize,
+          trailSize
+        );
+      } else {
+        renderContext.fillStyle = `rgba(${theme.trailColor}, ${alpha})`;
+        renderContext.fillRect(
+          point.x - trailSize * 0.34,
+          point.y - trailSize * 0.34,
+          trailSize * 0.68,
+          trailSize * 0.68
+        );
+      }
     }
 
+    renderContext.globalAlpha = 1;
     const flicker = playerState.invulnerable > 0 && Math.floor(state.clock * 16) % 2 === 0;
     if (flicker) {
       renderContext.globalAlpha = 0.55;
@@ -2331,40 +2362,38 @@
 
     const angle = directionAngle(playerState.direction);
     const pulseScale = 0.96 + playerState.visualPulse * 0.07;
-    const bodySize = playerState.radius * 1.42;
-    const bodyGradient = renderContext.createLinearGradient(
-      -bodySize,
-      -bodySize,
-      bodySize,
-      bodySize
-    );
-    bodyGradient.addColorStop(0, theme.primaryColor);
-    bodyGradient.addColorStop(1, theme.secondaryColor);
-
     renderContext.translate(playerState.x, playerState.y);
     renderContext.scale(pulseScale, pulseScale);
+    renderContext.rotate(Math.sin(angle) * 0.045);
     renderContext.shadowColor = theme.glowColor;
-    renderContext.shadowBlur = 16;
-    renderContext.fillStyle = bodyGradient;
-    renderContext.strokeStyle = theme.detailColor;
-    renderContext.lineWidth = 1.6;
-    renderContext.save();
-    renderContext.rotate(Math.PI / 4);
-    renderContext.fillRect(-bodySize * 0.5, -bodySize * 0.5, bodySize, bodySize);
-    renderContext.strokeRect(-bodySize * 0.5, -bodySize * 0.5, bodySize, bodySize);
-    renderContext.restore();
+    renderContext.shadowBlur = 13;
 
-    renderContext.shadowBlur = 0;
-    renderContext.fillStyle = theme.detailColor;
-    renderContext.rotate(angle);
-    const markerLength = playerState.radius * 0.72;
-    const markerWidth = Math.max(1.8, playerState.radius * 0.16);
-    renderContext.fillRect(
-      bodySize * 0.08,
-      -markerWidth * 0.5,
-      markerLength,
-      markerWidth
-    );
+    if (spriteReady) {
+      renderContext.drawImage(
+        sprite,
+        -displaySize / 2,
+        -displaySize / 2,
+        displaySize,
+        displaySize
+      );
+    } else {
+      const fallbackSize = playerState.radius * 1.65;
+      const bodyGradient = renderContext.createLinearGradient(
+        -fallbackSize,
+        -fallbackSize,
+        fallbackSize,
+        fallbackSize
+      );
+      bodyGradient.addColorStop(0, theme.primaryColor);
+      bodyGradient.addColorStop(1, theme.secondaryColor);
+      renderContext.fillStyle = bodyGradient;
+      renderContext.fillRect(
+        -fallbackSize / 2,
+        -fallbackSize / 2,
+        fallbackSize,
+        fallbackSize
+      );
+    }
     renderContext.restore();
   }
 
@@ -2392,88 +2421,51 @@
 
   function drawEnemyCharacter(renderContext, enemy, enemyIndex, enemyState) {
     const variant = enemy.visualVariant ?? enemyIndex % 4;
-    const sides = [6, 4, 5, 8][variant];
-    const baseRotation = [Math.PI / 6, Math.PI / 4, -Math.PI / 2, Math.PI / 8][variant];
-    const motionRotation = Math.sin(enemy.wobble) * 0.07;
-    const radius = enemy.radius * [1, 0.96, 1.04, 0.98][variant];
+    const sprite = GAME_ASSETS.enemy;
+    const spriteReady = sprite.complete && sprite.naturalWidth > 0;
+    const sizeVariation = [1, 0.94, 1.04, 0.98][variant];
+    const displaySize = enemy.radius * GAME_THEME.enemies.renderScale * sizeVariation;
+    const direction = DIRS[enemy.direction] || DIRS.none;
+    const bob = Math.sin(enemy.wobble) * 1.25;
+    const lean = direction.x * 0.075 + Math.sin(enemy.wobble * 0.55) * 0.025;
 
     renderContext.save();
-    renderContext.translate(enemy.x, enemy.y);
-    renderContext.rotate(baseRotation + motionRotation);
+    renderContext.translate(enemy.x, enemy.y + bob);
+    renderContext.rotate(lean);
     renderContext.shadowColor = enemy.color;
-    renderContext.shadowBlur = 14;
-    renderContext.fillStyle = enemy.color;
-    renderContext.strokeStyle = GAME_THEME.enemies.outlineColor;
-    renderContext.lineWidth = 1.35;
-    drawContextPolygon(renderContext, sides, radius);
-    renderContext.fill();
-    renderContext.stroke();
+    renderContext.shadowBlur = 15;
 
-    renderContext.shadowBlur = 0;
-    renderContext.strokeStyle = GAME_THEME.enemies.detailColor;
-    renderContext.lineWidth = Math.max(1.4, radius * 0.14);
-    drawEnemyMarker(renderContext, variant, radius, enemy.visualStyle);
+    if (spriteReady) {
+      renderContext.drawImage(
+        sprite,
+        -displaySize / 2,
+        -displaySize / 2,
+        displaySize,
+        displaySize
+      );
+    } else {
+      renderContext.fillStyle = enemy.color;
+      renderContext.beginPath();
+      renderContext.arc(0, 0, enemy.radius, 0, Math.PI * 2);
+      renderContext.fill();
+    }
 
     if (enemyState.spawning) {
       const progress = clamp(enemy.spawnFlash / 0.8, 0, 1);
       renderContext.globalAlpha = progress * 0.7;
       renderContext.strokeStyle = enemy.color;
       renderContext.lineWidth = 1.4;
-      drawContextPolygon(renderContext, sides, radius * (1.15 + (1 - progress) * 0.45));
+      renderContext.beginPath();
+      renderContext.arc(
+        0,
+        0,
+        displaySize * (0.52 + (1 - progress) * 0.22),
+        0,
+        Math.PI * 2
+      );
       renderContext.stroke();
     }
     renderContext.restore();
-  }
-
-  function drawContextPolygon(renderContext, sides, radius) {
-    renderContext.beginPath();
-    for (let i = 0; i < sides; i += 1) {
-      const angle = -Math.PI / 2 + i * Math.PI * 2 / sides;
-      const x = Math.cos(angle) * radius;
-      const y = Math.sin(angle) * radius;
-      if (i === 0) {
-        renderContext.moveTo(x, y);
-      } else {
-        renderContext.lineTo(x, y);
-      }
-    }
-    renderContext.closePath();
-  }
-
-  function drawEnemyMarker(renderContext, variant, radius, visualStyle) {
-    const extent = radius * 0.46;
-    renderContext.beginPath();
-
-    if (variant === 0) {
-      renderContext.moveTo(-extent, 0);
-      renderContext.lineTo(extent, 0);
-      renderContext.moveTo(0, -extent);
-      renderContext.lineTo(0, extent);
-    } else if (variant === 1) {
-      renderContext.moveTo(-extent, -extent);
-      renderContext.lineTo(extent, extent);
-      renderContext.moveTo(extent, -extent);
-      renderContext.lineTo(-extent, extent);
-    } else if (variant === 2) {
-      renderContext.moveTo(-extent, -extent * 0.55);
-      renderContext.lineTo(extent, -extent * 0.55);
-      renderContext.moveTo(-extent, extent * 0.55);
-      renderContext.lineTo(extent, extent * 0.55);
-    } else {
-      renderContext.moveTo(-extent, extent * 0.75);
-      renderContext.lineTo(0, -extent);
-      renderContext.lineTo(extent, extent * 0.75);
-    }
-    renderContext.stroke();
-
-    if (visualStyle === "diamond") {
-      renderContext.save();
-      renderContext.globalAlpha = 0.52;
-      renderContext.lineWidth = 1;
-      drawContextPolygon(renderContext, 4, radius * 0.7);
-      renderContext.stroke();
-      renderContext.restore();
-    }
   }
 
   function drawParticles() {

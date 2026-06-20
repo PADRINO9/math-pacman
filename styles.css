@@ -1387,3 +1387,22 @@ button {
     transition-duration: 0.01ms !important;
   }
 }
+
+
+/* Mobile runtime integration */
+html[data-game-viewport="phone-portrait"] #game-canvas,
+html[data-game-viewport="phone-landscape"] #game-canvas,
+html[data-game-viewport="tablet"] #game-canvas {
+  will-change: contents;
+}
+
+@media (pointer: coarse) {
+  .metric,
+  .icon-button,
+  .dialog-inner,
+  .screen-panel,
+  .difficulty-options span,
+  .primary-button {
+    border-radius: 12px;
+  }
+}

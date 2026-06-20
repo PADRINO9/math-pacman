@@ -6,6 +6,17 @@
   const TILE = 24;
   const COLS = WIDTH / TILE;
   const ROWS = HEIGHT / TILE;
+  const MOBILE_RUNTIME = {
+    coarse: false,
+    mode: "desktop",
+    zoom: 1,
+    reducedEffects: false
+  };
+  const CAMERA = {
+    x: WIDTH / 2,
+    y: HEIGHT / 2,
+    zoom: 1
+  };
   const PLAYER_START = { x: 2, y: 2 };
   const CENTER_CELL = { x: Math.floor(COLS / 2), y: Math.floor(ROWS / 2) };
 
@@ -525,10 +536,79 @@
   }
 
   function resizeCanvas() {
-    const ratio = Math.min(window.devicePixelRatio || 1, 2);
-    canvas.width = Math.round(WIDTH * ratio);
-    canvas.height = Math.round(HEIGHT * ratio);
-    ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+    updateViewportProfile();
+    const rect = canvas.getBoundingClientRect();
+    const ratioLimit = MOBILE_RUNTIME.reducedEffects ? 1.5 : 2;
+    const ratio = Math.min(window.devicePixelRatio || 1, ratioLimit);
+    const cssWidth = Math.max(1, rect.width || WIDTH);
+    const cssHeight = Math.max(1, rect.height || HEIGHT);
+    const pixelWidth = Math.max(1, Math.round(cssWidth * ratio));
+    const pixelHeight = Math.max(1, Math.round(cssHeight * ratio));
+
+    if (canvas.width !== pixelWidth || canvas.height !== pixelHeight) {
+      canvas.width = pixelWidth;
+      canvas.height = pixelHeight;
+    }
+
+    ctx.setTransform(pixelWidth / WIDTH, 0, 0, pixelHeight / HEIGHT, 0, 0);
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = MOBILE_RUNTIME.reducedEffects ? "medium" : "high";
+  }
+
+  function updateViewportProfile() {
+    const coarse = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+    const portrait = window.innerHeight >= window.innerWidth;
+    let mode = "desktop";
+    let zoom = 1;
+
+    if (coarse && portrait && window.innerWidth <= 600) {
+      mode = "phone-portrait";
+      zoom = window.innerWidth < 390 ? 1.78 : 1.66;
+    } else if (coarse && !portrait && window.innerHeight <= 700) {
+      mode = "phone-landscape";
+      zoom = window.innerHeight < 430 ? 1.34 : 1.25;
+    } else if (coarse) {
+      mode = "tablet";
+      zoom = portrait ? 1.1 : 1.06;
+    }
+
+    MOBILE_RUNTIME.coarse = coarse;
+    MOBILE_RUNTIME.mode = mode;
+    MOBILE_RUNTIME.zoom = zoom;
+    MOBILE_RUNTIME.reducedEffects = coarse && (window.innerWidth < 900 || window.devicePixelRatio > 2);
+    document.documentElement.dataset.gameViewport = mode;
+    document.documentElement.classList.toggle("mobile-low-effects", MOBILE_RUNTIME.reducedEffects);
+  }
+
+  function updateCamera(dt) {
+    const targetZoom = MOBILE_RUNTIME.zoom;
+    const zoomEase = dt > 0 ? 1 - Math.exp(-dt * 10) : 1;
+    CAMERA.zoom += (targetZoom - CAMERA.zoom) * zoomEase;
+
+    const player = state.player;
+    const targetX = player?.x ?? WIDTH / 2;
+    const targetY = player?.y ?? HEIGHT / 2;
+    const visibleWidth = WIDTH / CAMERA.zoom;
+    const visibleHeight = HEIGHT / CAMERA.zoom;
+    const minX = visibleWidth / 2;
+    const maxX = WIDTH - visibleWidth / 2;
+    const minY = visibleHeight / 2;
+    const maxY = HEIGHT - visibleHeight / 2;
+    const clampedX = clamp(targetX, Math.min(minX, maxX), Math.max(minX, maxX));
+    const clampedY = clamp(targetY, Math.min(minY, maxY), Math.max(minY, maxY));
+    const followEase = dt > 0 ? 1 - Math.exp(-dt * 7.5) : 1;
+
+    CAMERA.x += (clampedX - CAMERA.x) * followEase;
+    CAMERA.y += (clampedY - CAMERA.y) * followEase;
+  }
+
+  function applyCameraTransform(renderContext) {
+    if (CAMERA.zoom <= 1.001) {
+      return;
+    }
+    renderContext.translate(WIDTH / 2, HEIGHT / 2);
+    renderContext.scale(CAMERA.zoom, CAMERA.zoom);
+    renderContext.translate(-CAMERA.x, -CAMERA.y);
   }
 
   function createMaze(levelIndex = 0) {
@@ -912,7 +992,7 @@
   }
 
   function seedBackdrop() {
-    state.backdropStars = Array.from({ length: 90 }, (_, index) => ({
+    state.backdropStars = Array.from({ length: MOBILE_RUNTIME.reducedEffects ? 42 : 90 }, (_, index) => ({
       x: (index * 137.31) % WIDTH,
       y: (index * 91.77) % HEIGHT,
       size: 0.6 + ((index * 17) % 10) / 13,
@@ -1260,6 +1340,7 @@
   function update(dt) {
     state.clock += dt;
     state.shake = Math.max(0, state.shake - dt);
+    updateCamera(dt);
 
     if (state.phase === "playing") {
       updatePlaying(dt);
@@ -2085,7 +2166,8 @@
   }
 
   function addBurst(x, y, color, count, speed) {
-    for (let i = 0; i < count; i += 1) {
+    const effectiveCount = MOBILE_RUNTIME.reducedEffects ? Math.max(3, Math.ceil(count * 0.45)) : count;
+    for (let i = 0; i < effectiveCount; i += 1) {
       const angle = Math.random() * Math.PI * 2;
       const velocity = speed * (0.35 + Math.random() * 0.9);
       state.particles.push({
@@ -2139,14 +2221,14 @@
   }
 
   function render() {
-    ctx.save();
     ctx.clearRect(0, 0, WIDTH, HEIGHT);
 
+    ctx.save();
     if (state.shake > 0) {
       const amount = state.shake * 12;
       ctx.translate((Math.random() - 0.5) * amount, (Math.random() - 0.5) * amount);
     }
-
+    applyCameraTransform(ctx);
     drawBackdrop();
     drawMaze();
     drawCollectibles();
@@ -2154,13 +2236,12 @@
     drawEnemies();
     drawParticles();
     drawFloatingTexts();
-    drawLevelBanner();
+    ctx.restore();
 
+    drawLevelBanner();
     if (state.phase === "paused") {
       drawPaused();
     }
-
-    ctx.restore();
   }
 
   function drawBackdrop() {
@@ -2191,8 +2272,9 @@
     }
     ctx.restore();
 
-    for (const star of state.backdropStars) {
-      drawLevelDecoration(star, level);
+    const decorationStep = MOBILE_RUNTIME.reducedEffects ? 2 : 1;
+    for (let index = 0; index < state.backdropStars.length; index += decorationStep) {
+      drawLevelDecoration(state.backdropStars[index], level);
     }
   }
 
@@ -2245,7 +2327,7 @@
     const level = getCurrentLevel();
     ctx.save();
     ctx.shadowColor = level.wallGlow || "rgba(66, 217, 255, 0.65)";
-    ctx.shadowBlur = 14;
+    ctx.shadowBlur = MOBILE_RUNTIME.reducedEffects ? 6 : 14;
 
     const wallGradient = ctx.createLinearGradient(0, 0, WIDTH, HEIGHT);
     const stops = level.wallStops || ["#1235b8", "#0b7ec3", "#6f36ff"];
@@ -2384,7 +2466,7 @@
     const spriteReady = isImageReady(sprite);
     const displaySize = playerState.radius * theme.renderScale;
     renderContext.save();
-    for (let index = 0; index < playerState.trail.length; index += 3) {
+    for (let index = 0; index < playerState.trail.length; index += MOBILE_RUNTIME.reducedEffects ? 6 : 3) {
       const point = playerState.trail[index];
       const alpha = Math.max(0, point.life / 0.28) * 0.24;
       const trailSize = displaySize * (0.68 + alpha);
@@ -2562,7 +2644,7 @@
     renderContext.translate(enemy.x, enemy.y + bob);
     renderContext.rotate(lean);
     renderContext.shadowColor = enemy.color;
-    renderContext.shadowBlur = 15;
+    renderContext.shadowBlur = MOBILE_RUNTIME.reducedEffects ? 7 : 15;
 
     if (spriteReady) {
       renderContext.drawImage(
@@ -2875,7 +2957,12 @@
   });
   els.timeLimitToggle?.addEventListener("click", toggleTimeLimit);
   els.restartButton.addEventListener("click", showStartScreen);
-  window.addEventListener("resize", resizeCanvas);
+  window.addEventListener("resize", resizeCanvas, { passive: true });
+  window.addEventListener("orientationchange", () => window.setTimeout(resizeCanvas, 120), { passive: true });
+  window.visualViewport?.addEventListener("resize", resizeCanvas, { passive: true });
+  if (typeof ResizeObserver !== "undefined") {
+    new ResizeObserver(resizeCanvas).observe(stage);
+  }
   window.addEventListener("blur", () => {
     if (state.phase === "playing") {
       togglePause();

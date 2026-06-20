@@ -1,0 +1,33 @@
+name: Validate mobile build
+
+on:
+  push:
+    branches:
+      - mobile-ui-v1
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out mobile branch
+        uses: actions/checkout@v4
+        with:
+          ref: mobile-ui-v1
+
+      - name: Validate game script
+        run: node --check game.js
+
+      - name: Validate mobile enhancement script
+        run: node --check mobile-enhancements.js
+
+      - name: Verify mobile integration
+        run: |
+          grep -q "mobile-enhancements.css" index.html
+          grep -q "dataset.gameViewport" game.js
+          git diff --check

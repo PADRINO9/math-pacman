@@ -1,4 +1,4 @@
-name: Apply mobile resolution balance
+name: Apply full mobile maze fit
 
 on:
   push:
@@ -27,15 +27,15 @@ jobs:
         with:
           python-version: "3.12"
 
-      - name: Apply balanced mobile camera
+      - name: Fit complete maze on mobile
         run: python tools/apply_mobile_resolution_balance.py
 
-      - name: Validate script
+      - name: Validate game script
         run: |
           node --check game.js
           git diff --check
 
-      - name: Commit camera balance
+      - name: Commit full mobile fit
         run: |
           if git diff --quiet; then
             echo "No camera changes were required."
@@ -44,5 +44,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add game.js
-          git commit -m "fix: balance the mobile game resolution"
+          git commit -m "fix: show the complete maze on mobile"
           git push origin HEAD:main

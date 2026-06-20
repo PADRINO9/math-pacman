@@ -40,13 +40,8 @@ jobs:
       - name: Apply deterministic patch
         run: python tools/apply_mobile_upgrade.py
 
-      - name: Validate JavaScript and diff
-        run: |
-          node --check game.js
-          node --check mobile-enhancements.js
-          git diff --check
-          grep -q 'mobile-enhancements.css' index.html
-          grep -q 'data-game-viewport' game.js
+      - name: Check patch formatting
+        run: git diff --check
 
       - name: Commit upgraded sources
         run: |
@@ -59,3 +54,10 @@ jobs:
           git add index.html styles.css game.js
           git commit -m "feat: deliver responsive mobile and tablet experience"
           git push origin HEAD:mobile-ui-v1
+
+      - name: Validate upgraded JavaScript
+        run: |
+          node --check game.js
+          node --check mobile-enhancements.js
+          grep -q 'mobile-enhancements.css' index.html
+          grep -q 'data-game-viewport' game.js

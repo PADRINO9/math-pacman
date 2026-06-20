@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Reduce the mobile camera zoom to a balanced, readable level."""
+"""Fit the complete maze inside mobile and tablet screens without camera zoom."""
 
 from pathlib import Path
 
@@ -19,24 +19,24 @@ def main() -> None:
     text = GAME.read_text(encoding="utf-8")
     text = replace_once(
         text,
-        'zoom = window.innerWidth < 390 ? 2.0 : 1.88;',
         'zoom = window.innerWidth < 390 ? 1.32 : 1.26;',
+        'zoom = 1;',
         "phone portrait zoom",
     )
     text = replace_once(
         text,
-        'zoom = window.innerHeight < 430 ? 1.42 : 1.32;',
         'zoom = window.innerHeight < 430 ? 1.18 : 1.12;',
+        'zoom = 1;',
         "phone landscape zoom",
     )
     text = replace_once(
         text,
-        'zoom = portrait ? 1.15 : 1.08;',
         'zoom = portrait ? 1.06 : 1.03;',
+        'zoom = 1;',
         "tablet zoom",
     )
     GAME.write_text(text, encoding="utf-8")
-    print("Balanced mobile camera zoom applied.")
+    print("Mobile camera zoom removed; full maze now fits the viewport.")
 
 
 if __name__ == "__main__":

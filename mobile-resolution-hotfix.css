@@ -1,0 +1,133 @@
+/* Balanced phone resolution: moderate camera scale, compact keypad and joystick. */
+
+@media (hover: none) and (max-width: 600px) and (orientation: portrait),
+       (pointer: coarse) and (max-width: 600px) and (orientation: portrait) {
+  .game-shell {
+    --joystick-size: clamp(100px, 29vw, 116px);
+  }
+
+  .stage {
+    contain: none;
+    border-radius: 12px;
+  }
+
+  #game-canvas {
+    border-radius: inherit;
+  }
+
+  .mobile-joystick {
+    min-height: var(--joystick-size);
+    height: var(--joystick-size);
+    margin-top: 8px;
+  }
+
+  .joystick-base {
+    width: var(--joystick-size);
+    height: var(--joystick-size);
+  }
+
+  .joystick-knob {
+    width: 44%;
+    height: 44%;
+  }
+
+  html.question-open .stage {
+    overflow: visible;
+    contain: none;
+  }
+
+  html.question-open .mobile-joystick {
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+  }
+
+  html.question-open .hud {
+    opacity: 0.82;
+  }
+
+  .dialog {
+    position: fixed;
+    left: 50%;
+    top: calc(max(5px, var(--safe-top)) + 48px);
+    bottom: auto;
+    z-index: 220;
+    width: min(338px, calc(100vw - var(--safe-left) - var(--safe-right) - 18px));
+    max-height: calc(var(--visual-viewport-height) - var(--safe-top) - var(--safe-bottom) - 58px);
+    transform: translateX(-50%);
+  }
+
+  .dialog-inner {
+    max-height: none;
+    overflow: visible;
+    padding: 9px;
+    border-radius: 17px;
+  }
+
+  .dialog-kicker {
+    min-height: 20px;
+    padding: 2px 7px;
+    font-size: 10px;
+  }
+
+  .question-timer {
+    min-height: 22px;
+    font-size: 11px;
+  }
+
+  .dialog h1 {
+    margin: 3px 0 5px;
+    font-size: clamp(25px, 7.2vw, 31px);
+    line-height: 1;
+  }
+
+  #answer-form {
+    display: block;
+  }
+
+  #answer-input {
+    width: 100%;
+    height: 40px;
+    min-height: 40px;
+    padding: 4px 10px;
+    border-radius: 10px;
+    font-size: 23px;
+  }
+
+  .mobile-number-pad {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 5px;
+    margin-top: 6px;
+  }
+
+  .mobile-number-pad button {
+    min-height: 39px;
+    height: 39px;
+    padding: 0 5px;
+    border-radius: 10px;
+    font-size: 18px;
+  }
+
+  .mobile-number-pad .key-submit {
+    font-family: var(--body-font);
+    font-size: 16px;
+  }
+
+  #question-feedback {
+    min-height: 16px;
+    margin: 4px 0 0;
+    font-size: 12px;
+  }
+}
+
+@media (hover: none) and (max-width: 380px) and (orientation: portrait),
+       (pointer: coarse) and (max-width: 380px) and (orientation: portrait) {
+  .dialog {
+    width: calc(100vw - var(--safe-left) - var(--safe-right) - 14px);
+  }
+
+  .mobile-number-pad button {
+    min-height: 37px;
+    height: 37px;
+  }
+}

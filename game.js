@@ -563,13 +563,13 @@
 
     if (coarse && portrait && window.innerWidth <= 600) {
       mode = "phone-portrait";
-      zoom = window.innerWidth < 390 ? 2.0 : 1.88;
+      zoom = window.innerWidth < 390 ? 1.32 : 1.26;
     } else if (coarse && !portrait && window.innerHeight <= 700) {
       mode = "phone-landscape";
-      zoom = window.innerHeight < 430 ? 1.42 : 1.32;
+      zoom = window.innerHeight < 430 ? 1.18 : 1.12;
     } else if (coarse) {
       mode = "tablet";
-      zoom = portrait ? 1.15 : 1.08;
+      zoom = portrait ? 1.06 : 1.03;
     }
 
     MOBILE_RUNTIME.coarse = coarse;

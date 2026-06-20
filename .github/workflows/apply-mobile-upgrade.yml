@@ -60,4 +60,4 @@ jobs:
           node --check game.js
           node --check mobile-enhancements.js
           grep -q 'mobile-enhancements.css' index.html
-          grep -q 'data-game-viewport' game.js
+          grep -q 'dataset.gameViewport' game.js

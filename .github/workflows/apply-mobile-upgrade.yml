@@ -9,16 +9,24 @@ on:
       - "tools/apply_mobile_upgrade.py"
       - "mobile-enhancements.css"
       - "mobile-enhancements.js"
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 permissions:
   contents: write
+  pull-requests: read
 
 jobs:
   apply:
     if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
-      - name: Check out branch
+      - name: Check out mobile branch
         uses: actions/checkout@v4
         with:
           ref: mobile-ui-v1

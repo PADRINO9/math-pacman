@@ -29,5 +29,5 @@ jobs:
       - name: Verify mobile integration
         run: |
           grep -q "mobile-enhancements.css" index.html
-          grep -q "data-game-viewport" game.js
+          grep -q "dataset.gameViewport" game.js
           git diff --check

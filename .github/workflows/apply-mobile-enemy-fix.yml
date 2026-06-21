@@ -1,0 +1,52 @@
+name: Apply mobile enemy fix
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/workflows/apply-mobile-enemy-fix.yml"
+      - "tools/apply_mobile_enemy_and_scale_fix.py"
+
+permissions:
+  contents: write
+
+jobs:
+  fix:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Apply enemy movement and scale fix
+        run: python tools/apply_mobile_enemy_and_scale_fix.py
+
+      - name: Validate JavaScript and diff
+        run: |
+          node --check game.js
+          git diff --check
+          grep -q 'mobileCharacterScale' game.js
+          grep -q 'enemy.stuckTime' game.js
+          ! grep -q 'mobile-camera-fit-runtime.js' index.html
+
+      - name: Commit and push fixed sources
+        run: |
+          if git diff --quiet; then
+            echo "No source changes were required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add game.js index.html
+          git commit -m "fix: restore mobile enemy chasing and enlarge characters"
+          git pull --rebase origin main
+          git push origin HEAD:main

@@ -20,11 +20,10 @@
   const PLAYER_START = { x: 2, y: 2 };
   const CENTER_CELL = { x: Math.floor(COLS / 2), y: Math.floor(ROWS / 2) };
 
-  const GAME_THEME = {
-    title: "Math Maze",
-    hebrewTitle: "מבוך הכפל",
-    player: {
-      name: "Bifly",
+  const PLAYER_CHARACTERS = {
+    bifly: {
+      id: "bifly",
+      name: "ביפלי",
       spriteSources: {
         idle: "assets/bifly-player.png",
         eatPrepare: "assets/bifly-eat-prepare.png",
@@ -38,6 +37,28 @@
       trailColor: "53, 201, 184",
       glowColor: "rgba(53, 201, 184, 0.58)"
     },
+    nabatick: {
+      id: "nabatick",
+      name: "נבטיק",
+      spriteSources: {
+        idle: "assets/nabatick-idle.png",
+        eatPrepare: "assets/nabatick-eat-prepare.png",
+        eat: "assets/nabatick-eat.png"
+      },
+      renderScale: 2.65,
+      eatAnimationDuration: 0.34,
+      primaryColor: "#a9e629",
+      secondaryColor: "#4f8c0c",
+      detailColor: "#fff8cf",
+      trailColor: "173, 230, 44",
+      glowColor: "rgba(171, 240, 35, 0.62)"
+    }
+  };
+
+  const GAME_THEME = {
+    title: "Math Maze",
+    hebrewTitle: "מבוך הכפל",
+    player: PLAYER_CHARACTERS.bifly,
     enemies: {
       spriteSources: {
         idle: "assets/dark-enemy.png",
@@ -62,11 +83,14 @@
   };
 
   const GAME_ASSETS = {
-    player: {
-      idle: new Image(),
-      eatPrepare: new Image(),
-      eat: new Image()
-    },
+    players: Object.fromEntries(Object.keys(PLAYER_CHARACTERS).map((characterId) => [
+      characterId,
+      {
+        idle: new Image(),
+        eatPrepare: new Image(),
+        eat: new Image()
+      }
+    ])),
     enemies: {
       idle: new Image(),
       angry: new Image(),
@@ -74,9 +98,12 @@
       sad: new Image()
     }
   };
-  for (const [name, image] of Object.entries(GAME_ASSETS.player)) {
-    image.decoding = "async";
-    image.src = GAME_THEME.player.spriteSources[name];
+  for (const [characterId, characterAssets] of Object.entries(GAME_ASSETS.players)) {
+    const characterTheme = PLAYER_CHARACTERS[characterId];
+    for (const [name, image] of Object.entries(characterAssets)) {
+      image.decoding = "async";
+      image.src = characterTheme.spriteSources[name];
+    }
   }
   for (const [name, image] of Object.entries(GAME_ASSETS.enemies)) {
     image.decoding = "async";
@@ -108,6 +135,7 @@
       bestScore: "mathMazeBest",
       sound: "mathMazeSound",
       difficulty: "mathMazeDifficulty",
+      character: "mathMazeCharacter",
       timeLimit: "mathMazeTimeLimit",
       factStats: "mathMazeFactStats"
     },
@@ -320,6 +348,7 @@
     startScreen: document.getElementById("start-screen"),
     playerForm: document.getElementById("player-form"),
     playerNameInput: document.getElementById("player-name-input"),
+    characterInputs: Array.from(document.querySelectorAll("input[name='character']")),
     difficultyInputs: Array.from(document.querySelectorAll("input[name='difficulty']")),
     timeLimitToggle: document.getElementById("time-limit-toggle"),
     timeLimitState: document.getElementById("time-limit-state"),
@@ -383,6 +412,18 @@
   function normalizeDifficulty(value) {
     const mappedValue = LEGACY_DIFFICULTY_MAP[value] || value;
     return Object.prototype.hasOwnProperty.call(CONFIG.difficulty, mappedValue) ? mappedValue : "medium";
+  }
+
+  function normalizeCharacterId(value) {
+    return Object.prototype.hasOwnProperty.call(PLAYER_CHARACTERS, value) ? value : "bifly";
+  }
+
+  function getPlayerTheme() {
+    return PLAYER_CHARACTERS[state.characterId] || PLAYER_CHARACTERS.bifly;
+  }
+
+  function getPlayerAssets() {
+    return GAME_ASSETS.players[state.characterId] || GAME_ASSETS.players.bifly;
   }
 
   function getDifficultySettings() {
@@ -460,6 +501,7 @@
       "0"
     )) || 0,
     playerName: "",
+    characterId: normalizeCharacterId(storage.get(CONFIG.storageKeys.character, "bifly")),
     difficulty: normalizeDifficulty(storage.getMigrated(
       CONFIG.storageKeys.difficulty,
       CONFIG.legacyStorageKeys.difficulty,
@@ -1030,6 +1072,26 @@
     return value.trim().replace(/\s+/g, " ").slice(0, 18);
   }
 
+  function getSelectedCharacterId() {
+    const selected = els.characterInputs.find((input) => input.checked);
+    return normalizeCharacterId(selected?.value || state.characterId);
+  }
+
+  function setCharacter(value, persist = true) {
+    state.characterId = normalizeCharacterId(value);
+    if (persist) {
+      storage.set(CONFIG.storageKeys.character, state.characterId);
+    }
+    document.documentElement.dataset.character = state.characterId;
+    syncCharacterInputs();
+  }
+
+  function syncCharacterInputs() {
+    for (const input of els.characterInputs) {
+      input.checked = input.value === state.characterId;
+    }
+  }
+
   function getSelectedDifficulty() {
     const selected = els.difficultyInputs.find((input) => input.checked);
     return normalizeDifficulty(selected?.value || state.difficulty);
@@ -1086,6 +1148,7 @@
     }
 
     state.playerName = playerName;
+    setCharacter(getSelectedCharacterId());
     setDifficulty(getSelectedDifficulty());
     els.nameError.textContent = "";
     setupGame();
@@ -1110,6 +1173,7 @@
     els.playerNameInput.value = "";
     els.nameError.textContent = "";
     els.pause.textContent = "Ⅱ";
+    syncCharacterInputs();
     syncDifficultyInputs();
     syncTimeLimitToggle();
     setupGame();
@@ -2516,9 +2580,10 @@
       return;
     }
 
-    const theme = GAME_THEME.player;
+    const theme = getPlayerTheme();
+    const playerAssets = getPlayerAssets();
     const animation = getPlayerAnimationFrame(playerState);
-    const sprite = GAME_ASSETS.player[animation.frame] || GAME_ASSETS.player.idle;
+    const sprite = playerAssets[animation.frame] || playerAssets.idle;
     const spriteReady = isImageReady(sprite);
     const mobileCharacterScale = MOBILE_RUNTIME.coarse ? 1.12 : 1;
     const displaySize = playerState.radius * theme.renderScale * mobileCharacterScale;
@@ -2528,9 +2593,9 @@
       const alpha = Math.max(0, point.life / 0.28) * 0.24;
       const trailSize = displaySize * (0.68 + alpha);
       renderContext.globalAlpha = alpha;
-      if (isImageReady(GAME_ASSETS.player.idle)) {
+      if (isImageReady(playerAssets.idle)) {
         renderContext.drawImage(
-          GAME_ASSETS.player.idle,
+          playerAssets.idle,
           point.x - trailSize / 2,
           point.y - trailSize / 2,
           trailSize,
@@ -2604,7 +2669,7 @@
       return { frame: "idle", active: false };
     }
 
-    const duration = GAME_THEME.player.eatAnimationDuration;
+    const duration = getPlayerTheme().eatAnimationDuration;
     const progress = 1 - playerState.eatAnimation / duration;
     if (progress < 0.28 || progress > 0.82) {
       return { frame: "eatPrepare", active: true };
@@ -3010,6 +3075,9 @@
       els.answerInput.value = digitsOnly;
     }
   });
+  els.characterInputs.forEach((input) => {
+    input.addEventListener("change", () => setCharacter(input.value));
+  });
   els.difficultyInputs.forEach((input) => {
     input.addEventListener("change", () => setDifficulty(input.value));
   });
@@ -3028,6 +3096,7 @@
   });
 
   resizeCanvas();
+  setCharacter(state.characterId, false);
   syncDifficultyInputs();
   syncTimeLimitToggle();
   setupGame();

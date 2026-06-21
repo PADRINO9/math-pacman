@@ -1596,7 +1596,11 @@
       // Choose a route only at a lane center or when a wall blocks movement.
       // Re-routing in the middle of a corridor could wedge enemies on phones
       // where frame intervals are larger and less consistent.
-      if (nearCenter || blocked) {
+      // Do not snap back to the same cell center on every animation frame.
+      // On phones an enemy moves only about 1-2 logical pixels per frame, so the
+      // old unconditional nearCenter branch continuously reset its position and
+      // made it look frozen. The cooldown now lets it leave the intersection.
+      if (blocked || (nearCenter && enemy.pathCooldown <= 0)) {
         enemy.x = center.x;
         enemy.y = center.y;
         enemy.direction = findNextDirection(
@@ -1604,7 +1608,7 @@
           getEnemyTarget(enemy, playerCell),
           enemy.direction
         );
-        enemy.pathCooldown = 0.14 + Math.random() * 0.12;
+        enemy.pathCooldown = Math.max(0.12, (TILE * 0.55) / Math.max(enemy.speed, 1));
       }
 
       moveActor(enemy, enemy.direction, enemy.speed * dt);
@@ -1643,6 +1647,13 @@
 
   function getEnemyTarget(enemy, playerCell) {
     const player = state.player;
+
+    // Touch devices use a clear, direct pursuit model so every black enemy
+    // visibly hunts the main character instead of appearing to wander.
+    if (MOBILE_RUNTIME.coarse) {
+      return normalizeTargetCell(playerCell);
+    }
+
     const playerDir = DIRS[player.direction] || DIRS.right;
     const cycle = state.clock % 24;
     const scatterWindow = !MOBILE_RUNTIME.coarse && state.clock > 10 && cycle > 18;
@@ -1714,7 +1725,10 @@
     }
 
     const withoutReverse = options.filter((dir) => dir !== OPPOSITE[currentDirection]);
-    const firstMoves = shuffle(withoutReverse.length > 0 ? withoutReverse : options);
+    const candidateMoves = MOBILE_RUNTIME.coarse
+      ? options
+      : (withoutReverse.length > 0 ? withoutReverse : options);
+    const firstMoves = MOBILE_RUNTIME.coarse ? candidateMoves : shuffle(candidateMoves);
     const visited = new Set([cellKey(start.x, start.y)]);
     const queue = [];
 

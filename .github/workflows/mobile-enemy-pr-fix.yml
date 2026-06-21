@@ -32,15 +32,26 @@ jobs:
       - name: Apply mobile enemy and scale fix
         run: python tools/apply_mobile_enemy_and_scale_fix.py
 
-      - name: Validate fixed sources
-        run: |
-          node --check game.js
-          node --check mobile-native-answer.js
-          git diff --check
-          grep -q 'mobileCharacterScale' game.js
-          grep -q 'enemy.stuckTime' game.js
-          grep -q 'const scatterWindow = !MOBILE_RUNTIME.coarse' game.js
-          ! grep -q 'mobile-camera-fit-runtime.js' index.html
+      - name: Check game JavaScript syntax
+        run: node --check game.js
+
+      - name: Check mobile answer JavaScript syntax
+        run: node --check mobile-native-answer.js
+
+      - name: Check patch formatting
+        run: git diff --check
+
+      - name: Verify character scaling
+        run: grep -q 'mobileCharacterScale' game.js
+
+      - name: Verify stuck recovery
+        run: grep -q 'enemy.stuckTime' game.js
+
+      - name: Verify mobile chase mode
+        run: grep -q 'const scatterWindow = !MOBILE_RUNTIME.coarse' game.js
+
+      - name: Verify obsolete camera runtime removal
+        run: test "$(grep -c 'mobile-camera-fit-runtime.js' index.html || true)" -eq 0
 
       - name: Commit and push to PR branch
         run: |

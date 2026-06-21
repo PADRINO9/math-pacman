@@ -1,0 +1,59 @@
+name: Apply character visual fix
+
+on:
+  push:
+    branches:
+      - fix-character-visuals-v2
+    paths:
+      - ".github/workflows/apply-character-visual-fix.yml"
+      - "tools/apply_character_visual_fix.py"
+      - "character-selector.css"
+      - "assets/nabatick-*-v2.svg"
+
+permissions:
+  contents: write
+
+jobs:
+  apply-and-validate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: fix-character-visuals-v2
+          fetch-depth: 0
+
+      - name: Apply integration patch
+        run: python3 tools/apply_character_visual_fix.py
+
+      - name: Validate JavaScript and assets
+        run: |
+          node --check game.js
+          git diff --check
+          grep -q 'assets/nabatick-idle-v2.svg' game.js
+          grep -q 'assets/nabatick-eat-prepare-v2.svg' game.js
+          grep -q 'assets/nabatick-eat-v2.svg' game.js
+          grep -q 'assets/nabatick-idle-v2.svg' index.html
+          grep -q 'character-selector.css?v=20260621-2' index.html
+          grep -q 'game.js?v=20260621-11' index.html
+          test "$(grep -c 'assets/nabatick-idle.png' game.js index.html || true)" -eq 0
+          test "$(grep -c 'assets/nabatick-eat-prepare.png' game.js index.html || true)" -eq 0
+          test "$(grep -c 'assets/nabatick-eat.png' game.js index.html || true)" -eq 0
+          for file in assets/nabatick-idle-v2.svg assets/nabatick-eat-prepare-v2.svg assets/nabatick-eat-v2.svg; do
+            grep -q '<svg' "$file"
+            grep -q 'viewBox="0 0 160 160"' "$file"
+          done
+
+      - name: Commit integrated files
+        run: |
+          if git diff --quiet; then
+            echo "No integration changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add game.js index.html
+          git commit -m "fix: use seamless Nabatick artwork in game and selector"
+          git pull --rebase origin fix-character-visuals-v2
+          git push origin HEAD:fix-character-visuals-v2

@@ -50,3 +50,5 @@ jobs:
           git commit -m "fix: restore mobile enemy chasing and enlarge characters"
           git pull --rebase origin main
           git push origin HEAD:main
+
+# Triggered after the workflow became available on the default branch.

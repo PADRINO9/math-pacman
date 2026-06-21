@@ -29,6 +29,9 @@ jobs:
         with:
           python-version: "3.12"
 
+      - name: Correct empty-replacement handling
+        run: sed -i 's/if new in text:/if new and new in text:/' tools/apply_mobile_enemy_and_scale_fix.py
+
       - name: Apply mobile enemy and scale fix
         run: python tools/apply_mobile_enemy_and_scale_fix.py
 
@@ -61,7 +64,7 @@ jobs:
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add game.js index.html
+          git add game.js index.html tools/apply_mobile_enemy_and_scale_fix.py
           git commit -m "fix: restore mobile enemy chasing and enlarge characters"
           git pull --rebase origin "${{ github.head_ref }}"
           git push origin "HEAD:${{ github.head_ref }}"

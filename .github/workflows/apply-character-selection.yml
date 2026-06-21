@@ -10,9 +10,17 @@ on:
       - "tools/character-assets/**"
       - "character-selector.css"
       - "tests/character-selection.mjs"
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
 
 permissions:
   contents: write
+  pull-requests: read
 
 env:
   NODE_VERSION: "20"

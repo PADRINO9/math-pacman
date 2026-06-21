@@ -1,0 +1,119 @@
+name: Apply and test character selection
+
+on:
+  push:
+    branches:
+      - character-selection-v1
+    paths:
+      - ".github/workflows/apply-character-selection.yml"
+      - "tools/apply_character_selection.py"
+      - "tools/character-assets/**"
+      - "character-selector.css"
+      - "tests/character-selection.mjs"
+
+permissions:
+  contents: write
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  build-and-test:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+
+    steps:
+      - name: Check out feature branch
+        uses: actions/checkout@v4
+        with:
+          ref: character-selection-v1
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Decode Nabatick animation sprites
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import base64
+          import struct
+
+          mapping = {
+              "nabatick-idle.png": "nabatick-idle.png.b64",
+              "nabatick-eat-prepare.png": "nabatick-eat-prepare.png.b64",
+              "nabatick-eat.png": "nabatick-eat.png.b64",
+          }
+          source_dir = Path("tools/character-assets")
+          assets_dir = Path("assets")
+          assets_dir.mkdir(exist_ok=True)
+
+          for output_name, source_name in mapping.items():
+              encoded = (source_dir / source_name).read_text(encoding="utf-8").strip()
+              data = base64.b64decode(encoded, validate=True)
+              if data[:8] != b"\x89PNG\r\n\x1a\n":
+                  raise SystemExit(f"{output_name} is not a PNG")
+              width, height = struct.unpack(">II", data[16:24])
+              if (width, height) != (128, 128):
+                  raise SystemExit(f"{output_name} has unexpected dimensions: {width}x{height}")
+              (assets_dir / output_name).write_bytes(data)
+              print(f"decoded {output_name}: {width}x{height}, {len(data)} bytes")
+          PY
+
+      - name: Apply character-selection patch
+        run: python tools/apply_character_selection.py
+
+      - name: Validate generated sources
+        run: |
+          node --check game.js
+          git diff --check
+          grep -q 'PLAYER_CHARACTERS' game.js
+          grep -q 'name="character" value="bifly"' index.html
+          grep -q 'name="character" value="nabatick"' index.html
+          grep -q 'assets/nabatick-eat.png' game.js
+          grep -q 'character-selector.css' index.html
+          grep -q 'game.js?v=20260621-10' index.html
+
+      - name: Install Playwright
+        run: |
+          npm install --no-save playwright@1.53.0
+          npx playwright install --with-deps chromium
+
+      - name: Run mobile browser test
+        run: |
+          python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/math-maze-server.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill $SERVER_PID || true' EXIT
+          for attempt in {1..20}; do
+            if curl --fail --silent http://127.0.0.1:4173/index.html > /dev/null; then
+              break
+            fi
+            sleep 0.5
+          done
+          TEST_BASE_URL=http://127.0.0.1:4173 node tests/character-selection.mjs
+
+      - name: Commit generated assets and integrated sources
+        run: |
+          if git diff --quiet; then
+            echo "No generated changes were required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            assets/nabatick-idle.png \
+            assets/nabatick-eat-prepare.png \
+            assets/nabatick-eat.png \
+            index.html \
+            game.js
+          git commit -m "feat: add selectable Nabatick character with animations"
+          git pull --rebase origin character-selection-v1
+          git push origin HEAD:character-selection-v1

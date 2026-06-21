@@ -9,7 +9,7 @@ INDEX = ROOT / "index.html"
 
 
 def replace_once(text: str, old: str, new: str, label: str) -> str:
-    if new in text:
+    if new and new in text:
         return text
     count = text.count(old)
     if count != 1:

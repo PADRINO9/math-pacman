@@ -101,10 +101,11 @@ jobs:
 
       - name: Install Playwright
         run: |
-          npm install --no-save playwright@1.53.0
-          npx playwright install --with-deps chromium
+          npm install --no-save playwright@1.53.0 >/tmp/playwright-install.log 2>&1
+          npx playwright install --with-deps chromium >>/tmp/playwright-install.log 2>&1
 
       - name: Run mobile browser test
+        id: e2e
         run: |
           python3 -m http.server 4173 --bind 127.0.0.1 > /tmp/math-maze-server.log 2>&1 &
           SERVER_PID=$!
@@ -115,7 +116,26 @@ jobs:
             fi
             sleep 0.5
           done
-          TEST_BASE_URL=http://127.0.0.1:4173 node tests/character-selection.mjs
+          set +e
+          TEST_BASE_URL=http://127.0.0.1:4173 node tests/character-selection.mjs 2>&1 | tee /tmp/character-selection-test.log
+          STATUS=${PIPESTATUS[0]}
+          set -e
+          if [ "$STATUS" -ne 0 ]; then
+            echo "Character-selection test failed:" >&2
+            cat /tmp/character-selection-test.log >&2
+            exit "$STATUS"
+          fi
+
+      - name: Upload browser-test diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: character-selection-diagnostics
+          path: |
+            /tmp/character-selection-test.log
+            /tmp/math-maze-server.log
+          if-no-files-found: warn
+          retention-days: 3
 
       - name: Commit generated assets and integrated sources
         run: |

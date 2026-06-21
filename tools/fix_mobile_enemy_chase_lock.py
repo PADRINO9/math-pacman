@@ -97,3 +97,5 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
+
+# Workflow trigger: center-lock hotfix rerun.

@@ -16,6 +16,9 @@
   <link rel="preload" href="assets/bifly-player.png" as="image">
   <link rel="preload" href="assets/bifly-eat-prepare.png" as="image">
   <link rel="preload" href="assets/bifly-eat.png" as="image">
+  <link rel="preload" href="assets/nabatick-idle.png" as="image">
+  <link rel="preload" href="assets/nabatick-eat-prepare.png" as="image">
+  <link rel="preload" href="assets/nabatick-eat.png" as="image">
   <link rel="preload" href="assets/dark-enemy.png" as="image">
   <link rel="preload" href="assets/dark-enemy-angry.png" as="image">
   <link rel="preload" href="assets/dark-enemy-surprised.png" as="image">
@@ -31,6 +34,7 @@
   <link rel="stylesheet" href="mobile-resolution-hotfix.css?v=20260621-5">
   <link rel="stylesheet" href="mobile-native-answer.css?v=20260621-6">
   <link rel="stylesheet" href="mobile-final-layout.css?v=20260621-7">
+  <link rel="stylesheet" href="character-selector.css?v=20260621-1">
 </head>
 <body>
   <main class="game-shell" aria-label="Math Maze, מבוך הכפל">
@@ -124,6 +128,33 @@
               <label for="player-name-input">שם השחקן</label>
               <input id="player-name-input" type="text" maxlength="18" required>
               <p id="name-error" class="form-note" aria-live="assertive"></p>
+              <fieldset class="character-field">
+                <legend>בחרו דמות</legend>
+                <div class="character-options" role="radiogroup" aria-label="בחירת דמות">
+                  <label class="character-option">
+                    <input type="radio" name="character" value="bifly" checked>
+                    <span class="character-card">
+                      <img src="assets/bifly-player.png" alt="" aria-hidden="true">
+                      <span class="character-copy">
+                        <strong>ביפלי</strong>
+                        <small>הגיבור הכחול</small>
+                      </span>
+                      <span class="character-check" aria-hidden="true">✓</span>
+                    </span>
+                  </label>
+                  <label class="character-option">
+                    <input type="radio" name="character" value="nabatick">
+                    <span class="character-card">
+                      <img src="assets/nabatick-idle.png" alt="" aria-hidden="true">
+                      <span class="character-copy">
+                        <strong>נבטיק</strong>
+                        <small>גיבור הנבט הירוק</small>
+                      </span>
+                      <span class="character-check" aria-hidden="true">✓</span>
+                    </span>
+                  </label>
+                </div>
+              </fieldset>
               <fieldset class="difficulty-field">
                 <legend>רמת קושי</legend>
                 <div class="difficulty-options" role="radiogroup" aria-label="רמת קושי">
@@ -185,6 +216,6 @@
   <script src="mobile-screen-state.js?v=20260621-4"></script>
   <script src="mobile-question-state.js?v=20260621-5"></script>
   <script src="mobile-native-answer.js?v=20260621-6"></script>
-  <script src="game.js?v=20260621-9"></script>
+  <script src="game.js?v=20260621-10"></script>
 </body>
 </html>

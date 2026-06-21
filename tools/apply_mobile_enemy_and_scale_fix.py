@@ -85,33 +85,38 @@ def patch_game() -> None:
         && Math.abs(enemy.y - center.y) <= centerTolerance;
       const blocked = !canMove(enemy, enemy.direction, Math.max(3.2, enemy.speed * dt + 1));
 
-      // Only choose a new route at a cell center (or when truly blocked).
-      // The old cooldown changed direction halfway through a corridor, which
-      // could leave enemies permanently wedged on lower-frame-rate phones.
+      // Choose a route only at a lane center or when a wall blocks movement.
+      // Re-routing in the middle of a corridor could wedge enemies on phones
+      // where frame intervals are larger and less consistent.
       if (nearCenter || blocked) {
         enemy.x = center.x;
         enemy.y = center.y;
-        const target = getEnemyTarget(enemy, playerCell);
-        enemy.direction = findNextDirection(cell, target, enemy.direction);
+        enemy.direction = findNextDirection(
+          cell,
+          getEnemyTarget(enemy, playerCell),
+          enemy.direction
+        );
         enemy.pathCooldown = 0.14 + Math.random() * 0.12;
       }
 
-      let moved = moveActor(enemy, enemy.direction, enemy.speed * dt);
+      moveActor(enemy, enemy.direction, enemy.speed * dt);
 
-      // Self-healing fallback: if an enemy still cannot leave a cell, snap it
-      // to the lane center and immediately choose a valid chasing direction.
-      if (!moved) {
+      let movedDistance = Math.hypot(enemy.x - beforeX, enemy.y - beforeY);
+      if (movedDistance < 0.05) {
         const stuckCell = toCell(enemy.x, enemy.y);
         const stuckCenter = centerOfCell(stuckCell.x, stuckCell.y);
         enemy.x = stuckCenter.x;
         enemy.y = stuckCenter.y;
-        const target = getEnemyTarget(enemy, playerCell);
-        enemy.direction = findNextDirection(stuckCell, target, enemy.direction);
-        moved = moveActor(enemy, enemy.direction, Math.max(1.5, enemy.speed * dt));
+        enemy.direction = findNextDirection(
+          stuckCell,
+          getEnemyTarget(enemy, playerCell),
+          enemy.direction
+        );
+        moveActor(enemy, enemy.direction, Math.max(1.5, enemy.speed * dt));
+        movedDistance = Math.hypot(enemy.x - stuckCenter.x, enemy.y - stuckCenter.y);
       }
 
-      const movedDistance = Math.hypot(enemy.x - beforeX, enemy.y - beforeY);
-      enemy.stuckTime = movedDistance < 0.15 ? (enemy.stuckTime || 0) + dt : 0;
+      enemy.stuckTime = movedDistance < 0.05 ? (enemy.stuckTime || 0) + dt : 0;
       if (enemy.stuckTime > 0.35) {
         const stuckCell = toCell(enemy.x, enemy.y);
         const stuckCenter = centerOfCell(stuckCell.x, stuckCell.y);

@@ -1,12 +1,12 @@
-/* Character selection for the Math Maze start screen. */
+/* Polished character selector for the Math Maze start screen. */
 
 .character-field {
   display: grid;
   gap: 8px;
+  min-width: 0;
   margin: 0;
   padding: 0;
   border: 0;
-  min-width: 0;
 }
 
 .character-field legend {
@@ -23,9 +23,14 @@
 }
 
 .character-option {
+  --character-rgb: 104, 231, 255;
   position: relative;
   min-width: 0;
   cursor: pointer;
+}
+
+.character-option:last-child {
+  --character-rgb: 169, 230, 41;
 }
 
 .character-option > input {
@@ -38,21 +43,23 @@
 
 .character-card {
   position: relative;
+  isolation: isolate;
   display: grid;
-  grid-template-columns: 68px minmax(0, 1fr) 24px;
+  grid-template-columns: 92px minmax(0, 1fr) 24px;
   align-items: center;
-  gap: 9px;
-  min-height: 86px;
-  padding: 8px 10px;
+  gap: 10px;
+  min-height: 104px;
+  padding: 8px 11px 8px 7px;
   overflow: hidden;
-  border: 1px solid rgba(104, 231, 255, 0.24);
-  border-radius: 16px;
+  border: 1px solid rgba(var(--character-rgb), 0.34);
+  border-radius: 18px;
   background:
-    radial-gradient(circle at 20% 20%, rgba(104, 231, 255, 0.12), transparent 45%),
-    linear-gradient(180deg, rgba(19, 31, 55, 0.94), rgba(5, 10, 23, 0.98));
+    radial-gradient(circle at 16% 48%, rgba(var(--character-rgb), 0.22), transparent 40%),
+    linear-gradient(180deg, rgba(18, 31, 55, 0.98), rgba(5, 10, 23, 0.99));
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.06),
-    0 8px 20px rgba(0, 0, 0, 0.2);
+    inset 0 1px 0 rgba(255, 255, 255, 0.07),
+    inset 0 -18px 35px rgba(0, 0, 0, 0.18),
+    0 8px 20px rgba(0, 0, 0, 0.22);
   transition:
     transform 160ms ease,
     border-color 160ms ease,
@@ -60,19 +67,40 @@
     background 160ms ease;
 }
 
+.character-card::before {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset-inline-start: -28px;
+  top: 50%;
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--character-rgb), 0.22), transparent 68%);
+  transform: translateY(-50%);
+  filter: blur(2px);
+  pointer-events: none;
+}
+
 .character-card img {
-  width: 68px;
-  height: 68px;
+  width: 92px;
+  height: 92px;
   display: block;
+  justify-self: center;
   object-fit: contain;
-  filter: drop-shadow(0 7px 9px rgba(0, 0, 0, 0.32));
-  transform-origin: 50% 70%;
+  object-position: center;
+  image-rendering: auto;
+  filter:
+    drop-shadow(0 8px 9px rgba(0, 0, 0, 0.34))
+    drop-shadow(0 0 8px rgba(var(--character-rgb), 0.12));
+  transform: scale(1.02);
+  transform-origin: 50% 68%;
   transition: transform 180ms ease, filter 180ms ease;
 }
 
 .character-copy {
   display: grid;
-  gap: 2px;
+  gap: 3px;
   min-width: 0;
   text-align: right;
 }
@@ -80,12 +108,12 @@
 .character-copy strong {
   color: var(--ink);
   font-family: var(--display-font);
-  font-size: 18px;
-  line-height: 1.1;
+  font-size: 19px;
+  line-height: 1.05;
 }
 
 .character-copy small {
-  color: var(--muted);
+  color: rgba(222, 236, 255, 0.72);
   font-size: 12px;
   line-height: 1.2;
 }
@@ -93,63 +121,65 @@
 .character-check {
   display: grid;
   place-items: center;
-  width: 22px;
-  height: 22px;
-  border: 1px solid rgba(255, 255, 255, 0.18);
+  width: 23px;
+  height: 23px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
   border-radius: 50%;
   color: transparent;
-  background: rgba(255, 255, 255, 0.035);
+  background: rgba(255, 255, 255, 0.045);
   font-size: 14px;
   font-weight: 900;
   transition: all 160ms ease;
 }
 
 .character-option:hover .character-card {
-  transform: translateY(-1px);
-  border-color: rgba(104, 231, 255, 0.5);
+  transform: translateY(-2px);
+  border-color: rgba(var(--character-rgb), 0.7);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    inset 0 -18px 35px rgba(0, 0, 0, 0.14),
+    0 12px 28px rgba(0, 0, 0, 0.3),
+    0 0 18px rgba(var(--character-rgb), 0.1);
 }
 
 .character-option:hover .character-card img {
-  transform: scale(1.05);
+  transform: scale(1.08) translateY(-1px);
 }
 
 .character-option > input:focus-visible + .character-card {
-  outline: 3px solid rgba(255, 216, 74, 0.48);
+  outline: 3px solid rgba(255, 216, 74, 0.52);
   outline-offset: 3px;
 }
 
 .character-option > input:checked + .character-card {
-  border-color: rgba(255, 216, 74, 0.92);
+  border-color: rgba(255, 216, 74, 0.96);
   background:
-    radial-gradient(circle at 20% 20%, rgba(255, 216, 74, 0.17), transparent 48%),
-    linear-gradient(180deg, rgba(29, 39, 58, 0.98), rgba(9, 13, 25, 0.99));
+    radial-gradient(circle at 16% 48%, rgba(var(--character-rgb), 0.3), transparent 42%),
+    radial-gradient(circle at 88% 20%, rgba(255, 216, 74, 0.12), transparent 38%),
+    linear-gradient(180deg, rgba(29, 39, 58, 0.99), rgba(8, 13, 25, 1));
   box-shadow:
-    inset 0 0 22px rgba(255, 216, 74, 0.08),
+    inset 0 0 28px rgba(255, 216, 74, 0.07),
     0 0 0 2px rgba(255, 216, 74, 0.08),
-    0 10px 25px rgba(0, 0, 0, 0.28);
+    0 12px 28px rgba(0, 0, 0, 0.32),
+    0 0 18px rgba(var(--character-rgb), 0.13);
 }
 
 .character-option > input:checked + .character-card img {
-  transform: scale(1.08);
+  transform: scale(1.1) translateY(-1px);
   filter:
-    drop-shadow(0 7px 9px rgba(0, 0, 0, 0.34))
-    drop-shadow(0 0 8px rgba(255, 216, 74, 0.2));
+    drop-shadow(0 9px 10px rgba(0, 0, 0, 0.36))
+    drop-shadow(0 0 11px rgba(var(--character-rgb), 0.2));
 }
 
 .character-option > input:checked + .character-card .character-check {
   border-color: var(--gold);
   color: #071019;
   background: var(--gold);
-  box-shadow: 0 0 12px rgba(255, 216, 74, 0.34);
-}
-
-html[data-character="nabatick"] .character-option input[value="nabatick"] + .character-card {
-  --character-accent: #a9e629;
+  box-shadow: 0 0 12px rgba(255, 216, 74, 0.38);
 }
 
 @media (hover: none), (pointer: coarse) {
   .character-card {
-    min-height: 80px;
     touch-action: manipulation;
   }
 
@@ -174,16 +204,22 @@ html[data-character="nabatick"] .character-option input[value="nabatick"] + .cha
   }
 
   html.start-screen-open .character-card {
-    grid-template-columns: 48px minmax(0, 1fr) 19px;
+    grid-template-columns: 58px minmax(0, 1fr) 19px;
     gap: 6px;
-    min-height: 62px;
-    padding: 5px 7px;
-    border-radius: 12px;
+    min-height: 70px;
+    padding: 5px 7px 5px 4px;
+    border-radius: 13px;
+  }
+
+  html.start-screen-open .character-card::before {
+    inset-inline-start: -24px;
+    width: 104px;
+    height: 104px;
   }
 
   html.start-screen-open .character-card img {
-    width: 48px;
-    height: 48px;
+    width: 58px;
+    height: 58px;
   }
 
   html.start-screen-open .character-copy strong {
@@ -204,14 +240,14 @@ html[data-character="nabatick"] .character-option input[value="nabatick"] + .cha
 @media (hover: none) and (max-width: 600px) and (orientation: portrait) and (max-height: 740px),
        (pointer: coarse) and (max-width: 600px) and (orientation: portrait) and (max-height: 740px) {
   html.start-screen-open .character-card {
-    grid-template-columns: 42px minmax(0, 1fr) 18px;
-    min-height: 54px;
-    padding: 4px 6px;
+    grid-template-columns: 50px minmax(0, 1fr) 18px;
+    min-height: 60px;
+    padding: 4px 6px 4px 3px;
   }
 
   html.start-screen-open .character-card img {
-    width: 42px;
-    height: 42px;
+    width: 50px;
+    height: 50px;
   }
 
   html.start-screen-open .character-copy small {

@@ -1,0 +1,55 @@
+name: Definitive mobile chase fix
+
+on:
+  pull_request:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+permissions:
+  contents: write
+  pull-requests: read
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Apply center-lock and direct-pursuit fix
+        run: python tools/fix_mobile_enemy_chase_lock.py
+
+      - name: Validate fixed game
+        run: |
+          node --check game.js
+          git diff --check
+          grep -q 'enemy center-lock' game.js
+          grep -q 'candidateMoves = MOBILE_RUNTIME.coarse' game.js
+          grep -q 'visibly hunts the main character' game.js
+          grep -q 'game.js?v=20260621-9' index.html
+
+      - name: Commit and push fixed sources
+        run: |
+          if git diff --quiet; then
+            echo "No source changes were required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add game.js index.html
+          git commit -m "fix: restore direct mobile enemy pursuit"
+          git pull --rebase origin "${{ github.head_ref }}"
+          git push origin "HEAD:${{ github.head_ref }}"

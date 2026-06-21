@@ -18,6 +18,13 @@ async function assert(condition, message) {
   }
 }
 
+async function chooseCharacter(characterId) {
+  const input = page.locator(`input[name='character'][value='${characterId}']`);
+  const card = page.locator(`.character-option:has(input[value='${characterId}']) .character-card`);
+  await card.click();
+  await assert(await input.isChecked(), `${characterId} card did not select its radio input`);
+}
+
 try {
   const response = await page.goto(baseURL, { waitUntil: "networkidle" });
   await assert(response?.ok(), `Start page failed with ${response?.status()}`);
@@ -40,7 +47,7 @@ try {
   });
   await assert(previewsReady, "Character preview images were not ready");
 
-  await page.locator("input[name='character'][value='nabatick']").check();
+  await chooseCharacter("nabatick");
   await page.locator("#player-name-input").fill("בודק");
   await page.locator("#start-button").click();
   await page.waitForFunction(() => document.getElementById("start-screen")?.hidden === true);
@@ -68,7 +75,7 @@ try {
     "Persisted Nabatick selection was not restored"
   );
 
-  await page.locator("input[name='character'][value='bifly']").check();
+  await chooseCharacter("bifly");
   await page.locator("#player-name-input").fill("בודק");
   await page.locator("#start-button").click();
   await page.waitForFunction(() => document.documentElement.dataset.character === "bifly");

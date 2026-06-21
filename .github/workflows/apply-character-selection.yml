@@ -48,32 +48,46 @@ jobs:
         with:
           node-version: ${{ env.NODE_VERSION }}
 
+      - name: Normalize Nabatick eating source
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("tools/character-assets/nabatick-eat.png.b64")
+          text = path.read_text(encoding="utf-8")
+          corrected = text.replace("AAfinniUZ", "AAinniUZ")
+          path.write_text(corrected, encoding="utf-8")
+          PY
+
       - name: Decode Nabatick animation sprites
         run: |
           python - <<'PY'
           from pathlib import Path
           import base64
+          import hashlib
           import struct
 
           mapping = {
-              "nabatick-idle.png": "nabatick-idle.png.b64",
-              "nabatick-eat-prepare.png": "nabatick-eat-prepare.png.b64",
-              "nabatick-eat.png": "nabatick-eat.png.b64",
+              "nabatick-idle.png": ("nabatick-idle.png.b64", "eef95e15d7ea22dfe36e0c5363649a166c1ac453b1d1e8514a1330e088f15154"),
+              "nabatick-eat-prepare.png": ("nabatick-eat-prepare.png.b64", "77c4c6f23bed5ea7cec512edf5b7855ff3541d95806e937fd95538692c56c317"),
+              "nabatick-eat.png": ("nabatick-eat.png.b64", "c67b531aba32da462bd3d602d969240746c904c6d85c4bb28e9e849d6f22710d"),
           }
           source_dir = Path("tools/character-assets")
           assets_dir = Path("assets")
           assets_dir.mkdir(exist_ok=True)
 
-          for output_name, source_name in mapping.items():
+          for output_name, (source_name, expected_sha256) in mapping.items():
               encoded = "".join((source_dir / source_name).read_text(encoding="utf-8").split())
               data = base64.b64decode(encoded, validate=True)
+              digest = hashlib.sha256(data).hexdigest()
+              if digest != expected_sha256:
+                  raise SystemExit(f"{output_name} hash mismatch: {digest}")
               if data[:8] != b"\x89PNG\r\n\x1a\n":
                   raise SystemExit(f"{output_name} is not a PNG")
               width, height = struct.unpack(">II", data[16:24])
               if (width, height) != (128, 128):
                   raise SystemExit(f"{output_name} has unexpected dimensions: {width}x{height}")
               (assets_dir / output_name).write_bytes(data)
-              print(f"decoded {output_name}: {width}x{height}, {len(data)} bytes")
+              print(f"decoded {output_name}: {width}x{height}, {len(data)} bytes, sha256={digest}")
           PY
 
       - name: Apply character-selection patch
@@ -117,6 +131,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add \
+            tools/character-assets/nabatick-eat.png.b64 \
             assets/nabatick-idle.png \
             assets/nabatick-eat-prepare.png \
             assets/nabatick-eat.png \

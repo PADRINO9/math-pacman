@@ -563,13 +563,13 @@
 
     if (coarse && portrait && window.innerWidth <= 600) {
       mode = "phone-portrait";
-      zoom = window.innerWidth < 390 ? 1.32 : 1.26;
+      zoom = 1;
     } else if (coarse && !portrait && window.innerHeight <= 700) {
       mode = "phone-landscape";
-      zoom = window.innerHeight < 430 ? 1.18 : 1.12;
+      zoom = 1;
     } else if (coarse) {
       mode = "tablet";
-      zoom = portrait ? 1.06 : 1.03;
+      zoom = 1;
     }
 
     MOBILE_RUNTIME.coarse = coarse;
@@ -1584,20 +1584,60 @@
       enemy.spawnFlash = Math.max(0, enemy.spawnFlash - dt);
       enemy.wobble += dt * 4;
 
+      const beforeX = enemy.x;
+      const beforeY = enemy.y;
       const cell = toCell(enemy.x, enemy.y);
       const center = centerOfCell(cell.x, cell.y);
-      const nearCenter = Math.abs(enemy.x - center.x) < 2.6 && Math.abs(enemy.y - center.y) < 2.6;
-      const blocked = !canMove(enemy, enemy.direction, 3.2);
+      const centerTolerance = Math.max(2.6, enemy.speed * dt + 0.8);
+      const nearCenter = Math.abs(enemy.x - center.x) <= centerTolerance
+        && Math.abs(enemy.y - center.y) <= centerTolerance;
+      const blocked = !canMove(enemy, enemy.direction, Math.max(3.2, enemy.speed * dt + 1));
 
-      if (nearCenter || blocked || enemy.pathCooldown <= 0) {
-        enemy.x = nearCenter ? center.x : enemy.x;
-        enemy.y = nearCenter ? center.y : enemy.y;
-        const target = getEnemyTarget(enemy, playerCell);
-        enemy.direction = findNextDirection(cell, target, enemy.direction);
-        enemy.pathCooldown = 0.18 + Math.random() * 0.16;
+      // Choose a route only at a lane center or when a wall blocks movement.
+      // Re-routing in the middle of a corridor could wedge enemies on phones
+      // where frame intervals are larger and less consistent.
+      if (nearCenter || blocked) {
+        enemy.x = center.x;
+        enemy.y = center.y;
+        enemy.direction = findNextDirection(
+          cell,
+          getEnemyTarget(enemy, playerCell),
+          enemy.direction
+        );
+        enemy.pathCooldown = 0.14 + Math.random() * 0.12;
       }
 
       moveActor(enemy, enemy.direction, enemy.speed * dt);
+
+      let movedDistance = Math.hypot(enemy.x - beforeX, enemy.y - beforeY);
+      if (movedDistance < 0.05) {
+        const stuckCell = toCell(enemy.x, enemy.y);
+        const stuckCenter = centerOfCell(stuckCell.x, stuckCell.y);
+        enemy.x = stuckCenter.x;
+        enemy.y = stuckCenter.y;
+        enemy.direction = findNextDirection(
+          stuckCell,
+          getEnemyTarget(enemy, playerCell),
+          enemy.direction
+        );
+        moveActor(enemy, enemy.direction, Math.max(1.5, enemy.speed * dt));
+        movedDistance = Math.hypot(enemy.x - stuckCenter.x, enemy.y - stuckCenter.y);
+      }
+
+      enemy.stuckTime = movedDistance < 0.05 ? (enemy.stuckTime || 0) + dt : 0;
+      if (enemy.stuckTime > 0.35) {
+        const stuckCell = toCell(enemy.x, enemy.y);
+        const stuckCenter = centerOfCell(stuckCell.x, stuckCell.y);
+        enemy.x = stuckCenter.x;
+        enemy.y = stuckCenter.y;
+        enemy.direction = findNextDirection(
+          stuckCell,
+          getEnemyTarget(enemy, playerCell),
+          OPPOSITE[enemy.direction] || enemy.direction
+        );
+        enemy.pathCooldown = 0;
+        enemy.stuckTime = 0;
+      }
     }
   }
 
@@ -1605,7 +1645,7 @@
     const player = state.player;
     const playerDir = DIRS[player.direction] || DIRS.right;
     const cycle = state.clock % 24;
-    const scatterWindow = state.clock > 10 && cycle > 18;
+    const scatterWindow = !MOBILE_RUNTIME.coarse && state.clock > 10 && cycle > 18;
 
     if (player.invulnerable > 0 || scatterWindow) {
       return normalizeTargetCell(enemy.scatter);
@@ -1626,7 +1666,9 @@
       });
     }
 
-    if (enemy.personality === 3 && distanceCells(toCell(enemy.x, enemy.y), playerCell) < 7) {
+    if (!MOBILE_RUNTIME.coarse
+      && enemy.personality === 3
+      && distanceCells(toCell(enemy.x, enemy.y), playerCell) < 7) {
       return normalizeTargetCell(enemy.scatter);
     }
 
@@ -2464,7 +2506,8 @@
     const animation = getPlayerAnimationFrame(playerState);
     const sprite = GAME_ASSETS.player[animation.frame] || GAME_ASSETS.player.idle;
     const spriteReady = isImageReady(sprite);
-    const displaySize = playerState.radius * theme.renderScale;
+    const mobileCharacterScale = MOBILE_RUNTIME.coarse ? 1.12 : 1;
+    const displaySize = playerState.radius * theme.renderScale * mobileCharacterScale;
     renderContext.save();
     for (let index = 0; index < playerState.trail.length; index += MOBILE_RUNTIME.reducedEffects ? 6 : 3) {
       const point = playerState.trail[index];
@@ -2635,7 +2678,8 @@
     const sprite = GAME_ASSETS.enemies[expression] || GAME_ASSETS.enemies.idle;
     const spriteReady = isImageReady(sprite);
     const sizeVariation = [1, 0.94, 1.04, 0.98][variant];
-    const displaySize = enemy.radius * GAME_THEME.enemies.renderScale * sizeVariation;
+    const mobileCharacterScale = MOBILE_RUNTIME.coarse ? 1.12 : 1;
+    const displaySize = enemy.radius * GAME_THEME.enemies.renderScale * sizeVariation * mobileCharacterScale;
     const direction = DIRS[enemy.direction] || DIRS.none;
     const bob = Math.sin(enemy.wobble) * 1.25;
     const lean = direction.x * 0.075 + Math.sin(enemy.wobble * 0.55) * 0.025;

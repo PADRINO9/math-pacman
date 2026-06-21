@@ -116,41 +116,40 @@ jobs:
             fi
             sleep 0.5
           done
-          set +e
-          TEST_BASE_URL=http://127.0.0.1:4173 node tests/character-selection.mjs 2>&1 | tee /tmp/character-selection-test.log
-          STATUS=${PIPESTATUS[0]}
-          set -e
-          if [ "$STATUS" -ne 0 ]; then
-            echo "Character-selection test failed:" >&2
-            cat /tmp/character-selection-test.log >&2
-            exit "$STATUS"
-          fi
-
-      - name: Upload browser-test diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: character-selection-diagnostics
-          path: |
-            /tmp/character-selection-test.log
-            /tmp/math-maze-server.log
-          if-no-files-found: warn
-          retention-days: 3
+          TEST_BASE_URL=http://127.0.0.1:4173 node tests/character-selection.mjs
 
       - name: Commit generated assets and integrated sources
         run: |
-          if git diff --quiet; then
-            echo "No generated changes were required."
-            exit 0
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add \
+              assets/nabatick-idle.png \
+              assets/nabatick-eat-prepare.png \
+              assets/nabatick-eat.png \
+              index.html \
+              game.js
+            git commit -m "feat: add selectable Nabatick character with animations"
+            git pull --rebase origin character-selection-v1
+            git push origin HEAD:character-selection-v1
           fi
+
+      - name: Remove one-time build scaffolding
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            assets/nabatick-idle.png \
-            assets/nabatick-eat-prepare.png \
-            assets/nabatick-eat.png \
-            index.html \
-            game.js
-          git commit -m "feat: add selectable Nabatick character with animations"
-          git pull --rebase origin character-selection-v1
-          git push origin HEAD:character-selection-v1
+          rm -rf \
+            .github/workflows/apply-character-selection.yml \
+            tools/apply_character_selection.py \
+            tools/character-assets \
+            tests/character-selection.mjs \
+            character-selection-notes.md \
+            character-selection-notes-2.md \
+            character-selection-notes-3.md \
+            character-selection-ready.txt
+          git add -A
+          if ! git diff --cached --quiet; then
+            git commit -m "chore: remove character build scaffolding"
+            git pull --rebase origin character-selection-v1
+            git push origin HEAD:character-selection-v1
+          fi

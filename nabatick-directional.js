@@ -166,61 +166,70 @@
   }
   window.__keflulPosterLoaderInstalled = true;
 
-  const originalSource = poster.getAttribute("src") || "assets/math-maze-poster.png";
-  const cacheKey = "keflul-start-poster-webp-v1";
-  const partNames = [
-    "part-00.txt",
-    "part-01.txt",
-    "part-02.txt",
-    "part-03.txt",
-    "part-04a.txt",
-    "part-04b.txt",
-    "part-05.txt",
-    "part-06.txt",
-    "part-07.txt",
-    "part-08.txt"
-  ];
+  const fallbackSource = poster.getAttribute("src") || "assets/math-maze-poster.png";
+  const cacheKey = "keflul-start-poster-webp-v3";
+  const partNames = Array.from(
+    { length: 12 },
+    (_, index) => `v3-${String(index).padStart(2, "0")}.txt`
+  );
 
   const responsiveStyle = document.createElement("style");
   responsiveStyle.id = "keflul-poster-responsive-style";
   responsiveStyle.textContent = `
-    .start-poster-frame { background: #03051a; }
-    .start-poster { transition: opacity 160ms ease; }
+    #start-screen .start-poster-frame {
+      width: 100%;
+      min-height: 0;
+      height: auto;
+      max-height: none;
+      aspect-ratio: 9 / 16;
+      align-self: center;
+      justify-self: center;
+      background: #03051a;
+    }
+
+    #start-screen .start-poster {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      object-position: center;
+      transition: opacity 160ms ease;
+    }
 
     @media (hover: none) and (max-width: 600px) and (orientation: portrait),
            (pointer: coarse) and (max-width: 600px) and (orientation: portrait) {
+      html.start-screen-open #start-screen .start-layout {
+        overflow: visible;
+      }
+
       html.start-screen-open #start-screen .start-poster-frame {
-        height: clamp(280px, 42dvh, 360px);
-        min-height: 280px;
-        max-height: 360px;
+        width: 100%;
+        height: auto;
+        min-height: 0;
+        max-height: none;
+        aspect-ratio: 9 / 16;
+        flex: 0 0 auto;
+        border-radius: 17px 17px 0 0;
       }
 
       html.start-screen-open #start-screen .start-poster {
-        object-fit: cover;
-        object-position: center top;
+        object-fit: contain;
+        object-position: center;
       }
     }
 
-    @media (hover: none) and (max-width: 600px) and (orientation: portrait) and (max-height: 740px),
-           (pointer: coarse) and (max-width: 600px) and (orientation: portrait) and (max-height: 740px) {
+    @media (hover: none) and (orientation: landscape) and (max-height: 600px),
+           (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
       html.start-screen-open #start-screen .start-poster-frame {
-        height: 280px;
-        min-height: 280px;
-        max-height: 280px;
-      }
-    }
-
-    @media (hover: none) and (orientation: landscape),
-           (pointer: coarse) and (orientation: landscape) {
-      html.start-screen-open #start-screen .start-poster-frame {
-        height: clamp(150px, 34dvh, 220px);
-        min-height: 150px;
-        max-height: 220px;
+        width: auto;
+        height: min(84dvh, 520px);
+        min-height: 0;
+        max-height: min(84dvh, 520px);
+        aspect-ratio: 9 / 16;
       }
 
       html.start-screen-open #start-screen .start-poster {
-        object-fit: cover;
-        object-position: center 12%;
+        object-fit: contain;
+        object-position: center;
       }
     }
   `;
@@ -238,7 +247,7 @@
     try {
       sessionStorage.setItem(cacheKey, dataUrl);
     } catch {
-      // The image still works when session storage is unavailable or full.
+      // The poster remains usable when session storage is unavailable or full.
     }
   }
 
@@ -252,7 +261,7 @@
       poster.style.opacity = "1";
     };
     verificationImage.onerror = () => {
-      poster.src = originalSource;
+      poster.src = fallbackSource;
       poster.style.opacity = "1";
     };
     verificationImage.src = source;
@@ -276,8 +285,8 @@
         return (await response.text()).trim();
       }));
       const base64 = chunks.join("").replace(/\s+/g, "");
-      const header = atob(base64.slice(0, 16));
-      if (base64.length !== 49584 || !header.startsWith("RIFF")) {
+      const header = atob(base64.slice(0, 20));
+      if (base64.length !== 51392 || !header.startsWith("RIFF") || header.slice(8, 12) !== "WEBP") {
         throw new Error("Poster data validation failed");
       }
 
@@ -286,7 +295,7 @@
       showPoster(dataUrl);
     } catch (error) {
       console.warn("The optimized poster could not be loaded; using the original poster.", error);
-      poster.src = originalSource;
+      poster.src = fallbackSource;
       poster.style.opacity = "1";
     }
   }

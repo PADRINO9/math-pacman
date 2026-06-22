@@ -1,0 +1,457 @@
+/* Mobile start screen: every required control stays inside one viewport, without scrolling. */
+
+@media (hover: none) and (max-width: 600px) and (orientation: portrait),
+       (pointer: coarse) and (max-width: 600px) and (orientation: portrait) {
+  html.start-screen-open,
+  html.start-screen-open body {
+    width: 100%;
+    height: var(--visual-viewport-height, 100dvh) !important;
+    min-height: var(--visual-viewport-height, 100dvh) !important;
+    overflow: hidden !important;
+  }
+
+  html.start-screen-open .game-shell,
+  html.start-screen-open .stage {
+    width: 100vw !important;
+    height: var(--visual-viewport-height, 100dvh) !important;
+    min-height: var(--visual-viewport-height, 100dvh) !important;
+    overflow: hidden !important;
+  }
+
+  html.start-screen-open #start-screen {
+    position: fixed !important;
+    inset: 0 !important;
+    display: grid !important;
+    place-items: center !important;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    padding:
+      max(5px, var(--safe-top))
+      max(6px, var(--safe-right))
+      max(7px, var(--safe-bottom))
+      max(6px, var(--safe-left)) !important;
+  }
+
+  html.start-screen-open #start-screen .start-layout {
+    width: min(100%, 460px) !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    margin: 0 auto !important;
+    overflow: hidden !important;
+    border-radius: 18px !important;
+  }
+
+  html.start-screen-open #start-screen .start-poster-frame {
+    width: 100% !important;
+    height: clamp(104px, 19dvh, 154px) !important;
+    min-height: 0 !important;
+    max-height: 154px !important;
+    aspect-ratio: auto !important;
+    flex: 0 0 clamp(104px, 19dvh, 154px) !important;
+    border-radius: 17px 17px 0 0 !important;
+    box-shadow: none !important;
+  }
+
+  html.start-screen-open #start-screen .start-poster-frame::after {
+    background:
+      linear-gradient(180deg, rgba(3, 5, 18, 0.03), transparent 58%, rgba(5, 9, 26, 0.82) 100%),
+      linear-gradient(90deg, rgba(4, 8, 24, 0.08), transparent 22%, transparent 78%, rgba(4, 8, 24, 0.08)) !important;
+  }
+
+  html.start-screen-open #start-screen .start-poster {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+    object-position: center 48% !important;
+    transform: none !important;
+  }
+
+  html.start-screen-open #start-screen .screen-panel {
+    width: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    flex: 1 1 auto !important;
+    overflow: hidden !important;
+    padding: 7px 9px 9px !important;
+    border-radius: 0 0 17px 17px !important;
+    scrollbar-gutter: auto !important;
+  }
+
+  html.start-screen-open #start-screen .screen-panel::before {
+    inset: 4px !important;
+    border-radius: 13px !important;
+  }
+
+  html.start-screen-open #start-screen .start-panel-header {
+    display: block !important;
+    min-height: 0 !important;
+    padding: 0 0 4px !important;
+    border-bottom-color: rgba(92, 221, 255, 0.10) !important;
+  }
+
+  html.start-screen-open #start-screen .eyebrow,
+  html.start-screen-open #start-screen .start-intro,
+  html.start-screen-open #start-screen .screen-stats {
+    display: none !important;
+  }
+
+  html.start-screen-open #start-screen h1 {
+    max-width: none !important;
+    margin: 0 !important;
+    font-size: clamp(19px, 5.6vw, 24px) !important;
+    line-height: 1.05 !important;
+    white-space: nowrap;
+  }
+
+  html.start-screen-open #start-screen h1 span {
+    display: inline !important;
+  }
+
+  html.start-screen-open #start-screen .name-form {
+    display: grid !important;
+    gap: 4px !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+  }
+
+  html.start-screen-open #start-screen .name-form > label,
+  html.start-screen-open #start-screen .character-field legend,
+  html.start-screen-open #start-screen .difficulty-field legend {
+    font-size: 11px !important;
+    line-height: 1.05 !important;
+  }
+
+  html.start-screen-open #start-screen #player-name-input {
+    height: 39px !important;
+    min-height: 39px !important;
+    padding: 0 10px !important;
+    border-radius: 11px !important;
+    font-size: 17px !important;
+  }
+
+  html.start-screen-open #start-screen .form-note {
+    min-height: 0 !important;
+    margin: 0 !important;
+    font-size: 10px !important;
+    line-height: 1.05 !important;
+  }
+
+  html.start-screen-open #start-screen .form-note:empty {
+    display: none !important;
+  }
+
+  html.start-screen-open #start-screen .character-field,
+  html.start-screen-open #start-screen .difficulty-field {
+    gap: 3px !important;
+  }
+
+  html.start-screen-open #start-screen .character-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+  }
+
+  html.start-screen-open #start-screen .character-card {
+    grid-template-columns: 47px minmax(0, 1fr) 17px !important;
+    gap: 4px !important;
+    min-height: 53px !important;
+    padding: 3px 5px 3px 2px !important;
+    border-radius: 11px !important;
+  }
+
+  html.start-screen-open #start-screen .character-card::before {
+    width: 82px !important;
+    height: 82px !important;
+  }
+
+  html.start-screen-open #start-screen .character-card img {
+    width: 47px !important;
+    height: 47px !important;
+  }
+
+  html.start-screen-open #start-screen .character-copy {
+    gap: 0 !important;
+  }
+
+  html.start-screen-open #start-screen .character-copy strong {
+    font-size: 13px !important;
+    line-height: 1 !important;
+  }
+
+  html.start-screen-open #start-screen .character-copy small {
+    display: none !important;
+  }
+
+  html.start-screen-open #start-screen .character-check {
+    width: 17px !important;
+    height: 17px !important;
+    font-size: 10px !important;
+  }
+
+  html.start-screen-open #start-screen .difficulty-options {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 4px !important;
+  }
+
+  html.start-screen-open #start-screen .difficulty-options span {
+    min-height: 31px !important;
+    height: 31px !important;
+    padding: 0 3px !important;
+    border-radius: 9px !important;
+    font-size: 10px !important;
+    white-space: nowrap;
+  }
+
+  html.start-screen-open #start-screen .time-limit-setting {
+    min-height: 34px !important;
+    height: 34px !important;
+    grid-template-columns: minmax(0, 1fr) 30px auto !important;
+    gap: 5px !important;
+    padding: 1px 7px !important;
+    border-radius: 10px !important;
+  }
+
+  html.start-screen-open #start-screen .time-limit-title,
+  html.start-screen-open #start-screen .time-limit-state {
+    font-size: 10px !important;
+    line-height: 1 !important;
+  }
+
+  html.start-screen-open #start-screen .time-limit-state {
+    min-width: 48px !important;
+  }
+
+  html.start-screen-open #start-screen .time-limit-toggle {
+    width: 28px !important;
+    height: 28px !important;
+  }
+
+  html.start-screen-open #start-screen .clock-icon {
+    width: 15px !important;
+    height: 15px !important;
+    border-width: 2px !important;
+  }
+
+  html.start-screen-open #start-screen .clock-icon::before {
+    height: 5px !important;
+    width: 2px !important;
+  }
+
+  html.start-screen-open #start-screen .clock-icon::after {
+    height: 4px !important;
+    width: 2px !important;
+  }
+
+  html.start-screen-open #start-screen #start-button {
+    position: static !important;
+    width: 100% !important;
+    min-height: 43px !important;
+    height: 43px !important;
+    margin: 0 !important;
+    border-radius: 12px !important;
+    font-size: 16px !important;
+    box-shadow:
+      0 9px 22px rgba(54, 207, 255, 0.20),
+      0 0 18px rgba(168, 234, 69, 0.10) !important;
+  }
+}
+
+/* Short phones and the reduced visual viewport while the keyboard is open. */
+@media (hover: none) and (max-width: 600px) and (orientation: portrait) and (max-height: 700px),
+       (pointer: coarse) and (max-width: 600px) and (orientation: portrait) and (max-height: 700px) {
+  html.start-screen-open #start-screen .start-poster-frame {
+    height: 86px !important;
+    max-height: 86px !important;
+    flex-basis: 86px !important;
+  }
+
+  html.start-screen-open #start-screen .start-panel-header {
+    display: none !important;
+  }
+
+  html.start-screen-open #start-screen .screen-panel {
+    padding-top: 5px !important;
+  }
+
+  html.start-screen-open #start-screen .name-form {
+    gap: 3px !important;
+  }
+
+  html.start-screen-open #start-screen #player-name-input {
+    height: 36px !important;
+    min-height: 36px !important;
+    font-size: 16px !important;
+  }
+
+  html.start-screen-open #start-screen .character-card {
+    grid-template-columns: 42px minmax(0, 1fr) 16px !important;
+    min-height: 47px !important;
+  }
+
+  html.start-screen-open #start-screen .character-card img {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  html.start-screen-open #start-screen .difficulty-options span {
+    min-height: 29px !important;
+    height: 29px !important;
+  }
+
+  html.start-screen-open #start-screen .time-limit-setting {
+    min-height: 31px !important;
+    height: 31px !important;
+  }
+
+  html.start-screen-open #start-screen #start-button {
+    min-height: 40px !important;
+    height: 40px !important;
+  }
+}
+
+@media (hover: none) and (max-width: 600px) and (orientation: portrait) and (max-height: 540px),
+       (pointer: coarse) and (max-width: 600px) and (orientation: portrait) and (max-height: 540px) {
+  html.start-screen-open #start-screen .start-poster-frame {
+    display: none !important;
+  }
+
+  html.start-screen-open #start-screen .start-layout {
+    justify-content: center !important;
+  }
+
+  html.start-screen-open #start-screen .screen-panel {
+    flex: 0 1 auto !important;
+    border-radius: 17px !important;
+  }
+}
+
+/* Phone landscape also remains a single fixed screen. */
+@media (hover: none) and (orientation: landscape) and (max-height: 600px),
+       (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+  html.start-screen-open,
+  html.start-screen-open body,
+  html.start-screen-open .game-shell,
+  html.start-screen-open .stage {
+    height: var(--visual-viewport-height, 100dvh) !important;
+    min-height: var(--visual-viewport-height, 100dvh) !important;
+    overflow: hidden !important;
+  }
+
+  html.start-screen-open #start-screen {
+    display: grid !important;
+    place-items: center !important;
+    overflow: hidden !important;
+    padding:
+      max(4px, var(--safe-top))
+      max(6px, var(--safe-right))
+      max(4px, var(--safe-bottom))
+      max(6px, var(--safe-left)) !important;
+  }
+
+  html.start-screen-open #start-screen .start-layout {
+    width: min(100%, 980px) !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    display: grid !important;
+    grid-template-columns: auto minmax(0, 1fr) !important;
+    overflow: hidden !important;
+    border-radius: 16px !important;
+  }
+
+  html.start-screen-open #start-screen .start-poster-frame {
+    width: auto !important;
+    height: 100% !important;
+    max-height: none !important;
+    aspect-ratio: 9 / 16 !important;
+    border-radius: 15px 0 0 15px !important;
+  }
+
+  html.start-screen-open #start-screen .start-poster {
+    object-fit: cover !important;
+    object-position: center !important;
+  }
+
+  html.start-screen-open #start-screen .screen-panel {
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    padding: 6px 10px !important;
+    border-radius: 0 15px 15px 0 !important;
+  }
+
+  html.start-screen-open #start-screen .start-panel-header,
+  html.start-screen-open #start-screen .screen-stats {
+    display: none !important;
+  }
+
+  html.start-screen-open #start-screen .name-form {
+    height: 100% !important;
+    display: grid !important;
+    grid-template-columns: minmax(150px, 0.8fr) minmax(280px, 1.2fr) !important;
+    grid-template-rows: auto 38px minmax(0, 1fr) auto auto !important;
+    grid-template-areas:
+      "name-label character"
+      "name-input character"
+      "name-error character"
+      "difficulty time"
+      "difficulty start" !important;
+    align-content: stretch !important;
+    gap: 4px 8px !important;
+  }
+
+  html.start-screen-open #start-screen .name-form > label { grid-area: name-label; }
+  html.start-screen-open #start-screen #player-name-input { grid-area: name-input; height: 38px !important; min-height: 38px !important; }
+  html.start-screen-open #start-screen #name-error { grid-area: name-error; }
+  html.start-screen-open #start-screen .character-field { grid-area: character; min-height: 0 !important; }
+  html.start-screen-open #start-screen .difficulty-field { grid-area: difficulty; }
+  html.start-screen-open #start-screen .time-limit-setting { grid-area: time; }
+  html.start-screen-open #start-screen #start-button { grid-area: start; }
+
+  html.start-screen-open #start-screen .character-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 5px !important;
+  }
+
+  html.start-screen-open #start-screen .character-card {
+    grid-template-columns: 46px minmax(0, 1fr) 17px !important;
+    min-height: 52px !important;
+    padding: 3px 5px 3px 2px !important;
+  }
+
+  html.start-screen-open #start-screen .character-card img {
+    width: 46px !important;
+    height: 46px !important;
+  }
+
+  html.start-screen-open #start-screen .character-copy small {
+    display: none !important;
+  }
+
+  html.start-screen-open #start-screen .difficulty-options {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 4px !important;
+  }
+
+  html.start-screen-open #start-screen .difficulty-options span {
+    min-height: 29px !important;
+    height: 29px !important;
+    font-size: 10px !important;
+  }
+
+  html.start-screen-open #start-screen .time-limit-setting {
+    min-height: 34px !important;
+    height: 34px !important;
+    padding: 1px 7px !important;
+  }
+
+  html.start-screen-open #start-screen #start-button {
+    position: static !important;
+    min-height: 40px !important;
+    height: 40px !important;
+    margin: 0 !important;
+    font-size: 16px !important;
+  }
+}

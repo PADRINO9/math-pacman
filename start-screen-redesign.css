@@ -1,0 +1,706 @@
+/* Poster-led start screen for Keflul. Loaded last so it can unify the legacy start-screen layers. */
+
+#start-screen {
+  --home-cyan: #48dcff;
+  --home-blue: #2768ff;
+  --home-violet: #7a3cff;
+  --home-lime: #b9f126;
+  --home-gold: #ffd64a;
+  --home-panel: rgba(5, 8, 25, 0.965);
+  --home-line: rgba(91, 217, 255, 0.42);
+  padding: clamp(12px, 2.2vmin, 24px);
+  background:
+    radial-gradient(circle at 17% 18%, rgba(40, 104, 255, 0.28), transparent 31%),
+    radial-gradient(circle at 86% 76%, rgba(126, 47, 255, 0.22), transparent 34%),
+    radial-gradient(circle at 72% 12%, rgba(173, 241, 39, 0.08), transparent 25%),
+    linear-gradient(145deg, #020313 0%, #05091d 48%, #03030e 100%);
+  backdrop-filter: blur(8px);
+}
+
+#start-screen::before,
+#start-screen::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+#start-screen::before {
+  opacity: 0.3;
+  background:
+    linear-gradient(90deg, transparent 0 47px, rgba(73, 109, 255, 0.16) 48px 49px, transparent 50px),
+    linear-gradient(0deg, transparent 0 47px, rgba(92, 44, 255, 0.13) 48px 49px, transparent 50px);
+  background-size: 96px 96px;
+  mask-image: linear-gradient(180deg, transparent, #000 18%, #000 82%, transparent);
+}
+
+#start-screen::after {
+  background: radial-gradient(ellipse at center, transparent 35%, rgba(0, 0, 8, 0.64) 100%);
+}
+
+#start-screen .start-layout {
+  position: relative;
+  z-index: 1;
+  width: min(1160px, 96vw);
+  max-height: calc(100dvh - 28px);
+  grid-template-columns: minmax(292px, 420px) minmax(430px, 1fr);
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid rgba(80, 210, 255, 0.58);
+  border-radius: 28px;
+  background:
+    radial-gradient(circle at 10% 16%, rgba(37, 108, 255, 0.17), transparent 28%),
+    linear-gradient(135deg, rgba(9, 15, 45, 0.985), rgba(3, 5, 18, 0.995));
+  box-shadow:
+    0 32px 100px rgba(0, 0, 0, 0.72),
+    0 0 0 1px rgba(132, 90, 255, 0.2),
+    0 0 56px rgba(39, 104, 255, 0.2),
+    0 0 82px rgba(122, 60, 255, 0.12),
+    inset 0 0 50px rgba(73, 220, 255, 0.05);
+}
+
+#start-screen .start-layout::before {
+  inset: 6px;
+  z-index: 4;
+  border-color: rgba(185, 241, 38, 0.16);
+  border-radius: 22px;
+}
+
+#start-screen .start-poster-frame {
+  position: relative;
+  z-index: 1;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: calc(100dvh - 28px) !important;
+  aspect-ratio: 9 / 16 !important;
+  align-self: center;
+  justify-self: center;
+  overflow: hidden;
+  background: #020316;
+  box-shadow:
+    16px 0 42px rgba(2, 4, 17, 0.7),
+    inset 0 0 28px rgba(64, 60, 255, 0.16);
+}
+
+#start-screen .start-poster-frame::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  border: 1px solid rgba(99, 74, 255, 0.38);
+  pointer-events: none;
+}
+
+#start-screen .start-poster-frame::after {
+  z-index: 3;
+  background:
+    linear-gradient(90deg, transparent 67%, rgba(5, 8, 25, 0.54) 88%, rgba(5, 8, 25, 0.96) 100%),
+    linear-gradient(180deg, rgba(3, 3, 20, 0.02), transparent 72%, rgba(3, 3, 20, 0.28));
+  box-shadow: inset 0 0 34px rgba(14, 6, 58, 0.18);
+}
+
+#start-screen .start-poster {
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+  object-fit: contain !important;
+  object-position: center !important;
+  background: #020316;
+  transition: opacity 180ms ease, filter 240ms ease;
+  filter: saturate(1.03) contrast(1.02);
+}
+
+#start-screen .screen-panel {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  min-width: 0;
+  max-height: calc(100dvh - 28px);
+  padding: clamp(19px, 2.35vmin, 30px) clamp(20px, 2.8vw, 38px) clamp(20px, 2.5vmin, 32px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  background:
+    radial-gradient(circle at 88% 10%, rgba(185, 241, 38, 0.09), transparent 24%),
+    radial-gradient(circle at 10% 78%, rgba(42, 113, 255, 0.13), transparent 32%),
+    linear-gradient(160deg, rgba(8, 14, 43, 0.97), var(--home-panel));
+  box-shadow: inset 1px 0 0 rgba(84, 221, 255, 0.22);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(72, 220, 255, 0.52) rgba(255, 255, 255, 0.04);
+}
+
+#start-screen .screen-panel::after {
+  opacity: 0.24;
+  background:
+    linear-gradient(90deg, transparent 0 23px, rgba(52, 118, 255, 0.12) 24px 25px, transparent 26px),
+    linear-gradient(0deg, transparent 0 23px, rgba(109, 64, 255, 0.1) 24px 25px, transparent 26px);
+  background-size: 48px 48px;
+  mask-image: linear-gradient(180deg, #000, transparent 72%);
+}
+
+#start-screen .eyebrow {
+  min-height: 28px;
+  margin: 0;
+  padding: 5px 13px;
+  border-color: rgba(72, 220, 255, 0.55);
+  border-radius: 999px;
+  color: #bcf7ff;
+  background: linear-gradient(90deg, rgba(42, 105, 255, 0.15), rgba(185, 241, 38, 0.09));
+  font-size: 13px;
+  box-shadow:
+    inset 0 0 18px rgba(72, 220, 255, 0.08),
+    0 0 18px rgba(39, 104, 255, 0.09);
+}
+
+#start-screen .start-graphic {
+  display: none;
+}
+
+#start-screen h1 {
+  margin: 10px 0 6px;
+  color: #f3fbff;
+  font-size: clamp(30px, 4.2vw, 46px);
+  line-height: 1.04;
+  text-shadow:
+    0 0 18px rgba(72, 220, 255, 0.34),
+    0 0 38px rgba(73, 76, 255, 0.18);
+}
+
+#start-screen h1::after {
+  content: "בחרו גיבור, היכנסו למבוך ופתרו את הדרך לניצחון";
+  display: block;
+  max-width: 38ch;
+  margin: 8px auto 0;
+  color: rgba(220, 235, 255, 0.72);
+  font-family: var(--body-font);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.35;
+  text-shadow: none;
+}
+
+#start-screen .screen-stats {
+  gap: 8px;
+  margin: 12px 0 15px;
+}
+
+#start-screen .screen-stats span {
+  min-width: 112px;
+  padding: 7px 12px;
+  border-color: rgba(81, 210, 255, 0.25);
+  border-radius: 999px;
+  background: rgba(12, 22, 54, 0.74);
+  color: rgba(199, 220, 246, 0.76);
+  font-size: 13px;
+  box-shadow:
+    inset 0 0 14px rgba(72, 220, 255, 0.05),
+    0 7px 18px rgba(0, 0, 0, 0.14);
+}
+
+#start-screen .screen-stats strong {
+  color: var(--home-gold);
+}
+
+#start-screen .name-form {
+  gap: 9px;
+  margin-top: 0;
+}
+
+#start-screen .name-form > label,
+#start-screen .character-field legend,
+#start-screen .difficulty-field legend {
+  color: rgba(232, 243, 255, 0.88);
+  font-size: 14px;
+  font-weight: 800;
+  text-align: right;
+  text-shadow: 0 0 12px rgba(72, 220, 255, 0.16);
+}
+
+#start-screen #player-name-input {
+  height: 50px;
+  border-color: rgba(72, 220, 255, 0.46);
+  border-radius: 14px;
+  background:
+    linear-gradient(180deg, rgba(11, 23, 57, 0.82), rgba(3, 7, 22, 0.92));
+  font-size: 21px;
+  box-shadow:
+    inset 0 0 18px rgba(72, 220, 255, 0.07),
+    0 10px 24px rgba(0, 0, 0, 0.2);
+}
+
+#start-screen #player-name-input:focus {
+  border-color: var(--home-lime);
+  box-shadow:
+    0 0 0 3px rgba(185, 241, 38, 0.14),
+    0 0 22px rgba(72, 220, 255, 0.13),
+    inset 0 0 18px rgba(72, 220, 255, 0.08);
+}
+
+#start-screen .form-note {
+  min-height: 15px;
+  margin: 0;
+  font-size: 12px;
+}
+
+#start-screen .character-options {
+  gap: 8px;
+}
+
+#start-screen .character-card {
+  grid-template-columns: 70px minmax(0, 1fr) 22px;
+  min-height: 82px;
+  padding: 6px 9px 6px 5px;
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 14% 48%, rgba(var(--character-rgb), 0.2), transparent 41%),
+    linear-gradient(180deg, rgba(18, 31, 67, 0.92), rgba(4, 9, 28, 0.98));
+}
+
+#start-screen .character-card img {
+  width: 70px;
+  height: 70px;
+}
+
+#start-screen .character-copy strong {
+  font-size: 17px;
+}
+
+#start-screen .character-option > input:checked + .character-card {
+  border-color: rgba(185, 241, 38, 0.88);
+  box-shadow:
+    inset 0 0 24px rgba(185, 241, 38, 0.06),
+    0 0 0 2px rgba(185, 241, 38, 0.06),
+    0 10px 26px rgba(0, 0, 0, 0.28),
+    0 0 18px rgba(var(--character-rgb), 0.16);
+}
+
+#start-screen .character-option > input:checked + .character-card .character-check {
+  border-color: var(--home-lime);
+  background: var(--home-lime);
+  box-shadow: 0 0 13px rgba(185, 241, 38, 0.42);
+}
+
+#start-screen .difficulty-field {
+  gap: 6px;
+}
+
+#start-screen .difficulty-field legend {
+  transform: none;
+}
+
+#start-screen .difficulty-options {
+  gap: 6px;
+}
+
+#start-screen .difficulty-options span {
+  min-height: 39px;
+  border-color: rgba(72, 220, 255, 0.28);
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(25, 39, 76, 0.78), rgba(7, 13, 36, 0.94));
+  font-size: 13px;
+}
+
+#start-screen .difficulty-options input:checked + span {
+  border-color: rgba(185, 241, 38, 0.78);
+  color: #dfff76;
+  background:
+    linear-gradient(180deg, rgba(185, 241, 38, 0.17), rgba(61, 103, 34, 0.08)),
+    rgba(7, 13, 36, 0.94);
+  box-shadow:
+    0 0 0 2px rgba(185, 241, 38, 0.06),
+    inset 0 0 18px rgba(185, 241, 38, 0.08);
+}
+
+#start-screen .time-limit-setting {
+  width: 100%;
+  min-height: 46px;
+  grid-template-columns: minmax(0, 1fr) 44px auto;
+  align-items: center;
+  justify-items: stretch;
+  gap: 9px;
+  margin: 0;
+  padding: 4px 10px;
+  border: 1px solid rgba(72, 220, 255, 0.2);
+  border-radius: 14px;
+  background: rgba(8, 16, 43, 0.68);
+}
+
+#start-screen .time-limit-title {
+  color: rgba(224, 238, 255, 0.82);
+  text-align: right;
+}
+
+#start-screen .time-limit-toggle {
+  width: 40px;
+  height: 40px;
+  border-color: rgba(72, 220, 255, 0.38);
+  box-shadow: inset 0 0 16px rgba(72, 220, 255, 0.08);
+}
+
+#start-screen .clock-icon {
+  width: 21px;
+  height: 21px;
+  border-width: 2px;
+}
+
+#start-screen .time-limit-state {
+  min-width: 58px;
+  min-height: 0;
+  text-align: left;
+}
+
+#start-screen #start-button {
+  width: 100%;
+  min-height: 52px;
+  margin-top: 2px;
+  border: 1px solid rgba(217, 255, 145, 0.68);
+  border-radius: 16px;
+  background:
+    linear-gradient(105deg, #20bfff 0%, #4de6dc 45%, #b9f126 100%);
+  color: #03121b;
+  font-size: 19px;
+  letter-spacing: 0;
+  box-shadow:
+    0 13px 32px rgba(21, 197, 220, 0.24),
+    0 0 22px rgba(185, 241, 38, 0.13),
+    inset 0 1px 0 rgba(255, 255, 255, 0.55);
+}
+
+#start-screen #start-button:hover,
+#start-screen #start-button:focus-visible {
+  filter: brightness(1.07) saturate(1.06);
+  transform: translateY(-1px);
+  box-shadow:
+    0 0 0 3px rgba(72, 220, 255, 0.15),
+    0 16px 38px rgba(21, 197, 220, 0.3),
+    0 0 28px rgba(185, 241, 38, 0.18);
+}
+
+@media (max-width: 920px) and (min-width: 601px) {
+  #start-screen .start-layout {
+    width: min(760px, 96vw);
+    grid-template-columns: minmax(250px, 340px) minmax(380px, 1fr);
+  }
+
+  #start-screen .screen-panel {
+    padding-inline: 20px;
+  }
+
+  #start-screen h1 {
+    font-size: 31px;
+  }
+
+  #start-screen h1::after {
+    font-size: 12px;
+  }
+
+  #start-screen .character-card {
+    grid-template-columns: 58px minmax(0, 1fr) 20px;
+    min-height: 68px;
+  }
+
+  #start-screen .character-card img {
+    width: 58px;
+    height: 58px;
+  }
+
+  #start-screen .character-copy small {
+    display: none;
+  }
+}
+
+@media (hover: none) and (max-width: 600px) and (orientation: portrait),
+       (pointer: coarse) and (max-width: 600px) and (orientation: portrait) {
+  html.start-screen-open,
+  html.start-screen-open body {
+    height: var(--visual-viewport-height);
+    min-height: var(--visual-viewport-height);
+    overflow: hidden;
+    background: #020313;
+  }
+
+  html.start-screen-open #start-screen {
+    display: block;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding:
+      max(7px, var(--safe-top))
+      max(7px, var(--safe-right))
+      max(10px, var(--safe-bottom))
+      max(7px, var(--safe-left));
+    background:
+      radial-gradient(circle at 50% 7%, rgba(39, 104, 255, 0.24), transparent 30%),
+      linear-gradient(180deg, #020313, #040719 62%, #02030e);
+  }
+
+  html.start-screen-open #start-screen .start-layout {
+    width: min(100%, 470px);
+    max-height: none;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 20px;
+    box-shadow:
+      0 20px 58px rgba(0, 0, 0, 0.62),
+      0 0 34px rgba(49, 103, 255, 0.16);
+  }
+
+  html.start-screen-open #start-screen .start-layout::before {
+    inset: 4px;
+    border-radius: 16px;
+  }
+
+  html.start-screen-open #start-screen .start-poster-frame {
+    width: 100% !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: none !important;
+    aspect-ratio: 9 / 16 !important;
+    flex: 0 0 auto;
+    border-radius: 19px 19px 0 0;
+    box-shadow: none;
+  }
+
+  html.start-screen-open #start-screen .start-poster-frame::after {
+    background: linear-gradient(180deg, transparent 82%, rgba(4, 7, 24, 0.72) 96%, #050819 100%);
+  }
+
+  html.start-screen-open #start-screen .start-poster {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+    object-position: center !important;
+  }
+
+  html.start-screen-open #start-screen .screen-panel {
+    width: 100%;
+    max-height: none;
+    margin-top: -22px;
+    padding: 24px 11px 12px;
+    overflow: visible;
+    border-radius: 22px 22px 0 0;
+    background:
+      radial-gradient(circle at 50% 0%, rgba(48, 121, 255, 0.16), transparent 27%),
+      linear-gradient(180deg, rgba(8, 14, 42, 0.99), rgba(4, 7, 23, 0.995));
+    box-shadow:
+      0 -1px 0 rgba(90, 219, 255, 0.36),
+      0 -16px 32px rgba(2, 4, 17, 0.38);
+  }
+
+  html.start-screen-open #start-screen .eyebrow,
+  html.start-screen-open #start-screen h1,
+  html.start-screen-open #start-screen .start-graphic {
+    display: none;
+  }
+
+  html.start-screen-open #start-screen .screen-stats {
+    gap: 6px;
+    margin: 0 0 8px;
+  }
+
+  html.start-screen-open #start-screen .screen-stats span {
+    min-width: 0;
+    flex: 1 1 0;
+    padding: 5px 8px;
+    font-size: 11px;
+  }
+
+  html.start-screen-open #start-screen .name-form {
+    gap: 6px;
+  }
+
+  html.start-screen-open #start-screen .name-form > label,
+  html.start-screen-open #start-screen .character-field legend,
+  html.start-screen-open #start-screen .difficulty-field legend {
+    font-size: 12px;
+  }
+
+  html.start-screen-open #start-screen #player-name-input {
+    height: 44px;
+    min-height: 44px;
+    border-radius: 12px;
+    font-size: 18px;
+  }
+
+  html.start-screen-open #start-screen .character-field {
+    gap: 4px;
+  }
+
+  html.start-screen-open #start-screen .character-options {
+    gap: 6px;
+  }
+
+  html.start-screen-open #start-screen .character-card {
+    grid-template-columns: 57px minmax(0, 1fr) 18px;
+    gap: 5px;
+    min-height: 66px;
+    padding: 4px 6px 4px 3px;
+    border-radius: 13px;
+  }
+
+  html.start-screen-open #start-screen .character-card img {
+    width: 57px;
+    height: 57px;
+  }
+
+  html.start-screen-open #start-screen .character-copy strong {
+    font-size: 14px;
+  }
+
+  html.start-screen-open #start-screen .character-copy small {
+    font-size: 9px;
+  }
+
+  html.start-screen-open #start-screen .difficulty-options {
+    gap: 5px;
+  }
+
+  html.start-screen-open #start-screen .difficulty-options span {
+    min-height: 35px;
+    height: 35px;
+    padding: 0 4px;
+    border-radius: 10px;
+    font-size: 11px;
+  }
+
+  html.start-screen-open #start-screen .time-limit-setting {
+    min-height: 40px;
+    grid-template-columns: minmax(0, 1fr) 36px auto;
+    gap: 6px;
+    padding: 2px 7px;
+    border-radius: 12px;
+  }
+
+  html.start-screen-open #start-screen .time-limit-title,
+  html.start-screen-open #start-screen .time-limit-state {
+    font-size: 11px;
+  }
+
+  html.start-screen-open #start-screen .time-limit-toggle {
+    width: 34px;
+    height: 34px;
+  }
+
+  html.start-screen-open #start-screen .clock-icon {
+    width: 18px;
+    height: 18px;
+  }
+
+  html.start-screen-open #start-screen #start-button {
+    position: sticky;
+    bottom: max(0px, var(--safe-bottom));
+    z-index: 7;
+    min-height: 49px;
+    margin-top: 1px;
+    border-radius: 14px;
+    font-size: 17px;
+    box-shadow:
+      0 -10px 20px rgba(4, 7, 23, 0.9),
+      0 11px 28px rgba(17, 190, 217, 0.25);
+  }
+}
+
+@media (hover: none) and (max-width: 600px) and (orientation: portrait) and (max-height: 740px),
+       (pointer: coarse) and (max-width: 600px) and (orientation: portrait) and (max-height: 740px) {
+  html.start-screen-open #start-screen .screen-stats {
+    display: flex;
+  }
+
+  html.start-screen-open #start-screen .character-card {
+    grid-template-columns: 50px minmax(0, 1fr) 17px;
+    min-height: 58px;
+  }
+
+  html.start-screen-open #start-screen .character-card img {
+    width: 50px;
+    height: 50px;
+  }
+
+  html.start-screen-open #start-screen .character-copy small {
+    display: none;
+  }
+}
+
+@media (hover: none) and (orientation: landscape) and (max-height: 600px),
+       (pointer: coarse) and (orientation: landscape) and (max-height: 600px) {
+  html.start-screen-open #start-screen {
+    padding:
+      max(6px, var(--safe-top))
+      max(8px, var(--safe-right))
+      max(6px, var(--safe-bottom))
+      max(8px, var(--safe-left));
+  }
+
+  html.start-screen-open #start-screen .start-layout {
+    width: min(100%, 980px);
+    height: calc(var(--visual-viewport-height) - max(12px, var(--safe-top)) - max(12px, var(--safe-bottom)));
+    max-height: calc(var(--visual-viewport-height) - max(12px, var(--safe-top)) - max(12px, var(--safe-bottom)));
+    display: grid;
+    grid-template-columns: auto minmax(390px, 1fr);
+    border-radius: 20px;
+  }
+
+  html.start-screen-open #start-screen .start-poster-frame {
+    width: auto !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    aspect-ratio: 9 / 16 !important;
+  }
+
+  html.start-screen-open #start-screen .screen-panel {
+    max-height: 100%;
+    padding: 10px 16px;
+  }
+
+  html.start-screen-open #start-screen .eyebrow,
+  html.start-screen-open #start-screen h1,
+  html.start-screen-open #start-screen .screen-stats {
+    display: none;
+  }
+
+  html.start-screen-open #start-screen .name-form {
+    gap: 5px;
+  }
+
+  html.start-screen-open #start-screen .character-card {
+    grid-template-columns: 50px minmax(0, 1fr) 18px;
+    min-height: 56px;
+  }
+
+  html.start-screen-open #start-screen .character-card img {
+    width: 50px;
+    height: 50px;
+  }
+
+  html.start-screen-open #start-screen .character-copy small {
+    display: none;
+  }
+
+  html.start-screen-open #start-screen #player-name-input {
+    height: 38px;
+    min-height: 38px;
+    font-size: 17px;
+  }
+
+  html.start-screen-open #start-screen .difficulty-options span {
+    min-height: 32px;
+    height: 32px;
+  }
+
+  html.start-screen-open #start-screen .time-limit-setting {
+    min-height: 36px;
+  }
+
+  html.start-screen-open #start-screen #start-button {
+    min-height: 42px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #start-screen .start-poster,
+  #start-screen #start-button {
+    transition: none;
+  }
+}

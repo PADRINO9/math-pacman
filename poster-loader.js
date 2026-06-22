@@ -5,6 +5,8 @@
   if (!poster) return;
 
   const fallbackSrc = poster.currentSrc || poster.getAttribute('src');
+  poster.style.objectFit = 'contain';
+  poster.style.objectPosition = 'center';
 
   const sourceParts = [
     'assets/poster-source/chunk-00.txt',

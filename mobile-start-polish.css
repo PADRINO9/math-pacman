@@ -1,0 +1,13 @@
+@media (hover: none) and (max-width: 600px) and (orientation: portrait),
+       (pointer: coarse) and (max-width: 600px) and (orientation: portrait) {
+  html.start-screen-open #start-screen .form-note:empty {
+    display: block !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  html.start-screen-open #start-screen #start-button {
+    position: relative !important;
+  }
+}

@@ -35,6 +35,10 @@
       }
 
       const binary = atob(base64);
+      if (binary.length !== 22568 || binary.slice(0, 4) !== 'RIFF' || binary.slice(8, 12) !== 'WEBP') {
+        throw new Error('Poster binary failed validation');
+      }
+
       const bytes = new Uint8Array(binary.length);
       for (let index = 0; index < binary.length; index += 1) {
         bytes[index] = binary.charCodeAt(index);

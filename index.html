@@ -37,6 +37,7 @@
   <link rel="stylesheet" href="mobile-native-answer.css?v=20260621-6">
   <link rel="stylesheet" href="mobile-final-layout.css?v=20260621-7">
   <link rel="stylesheet" href="character-selector.css?v=20260621-2">
+  <link rel="stylesheet" href="start-screen-redesign.css?v=20260622-2">
 </head>
 <body>
   <main class="game-shell" aria-label="כפלול, משחק לוח הכפל">
@@ -106,22 +107,20 @@
         <div class="start-layout">
           <figure class="start-poster-frame">
             <img
-              class="start-poster"
+              id="start-poster-image"
+              class="start-poster poster-loading"
               src="assets/math-maze-poster.png"
-              alt="פוסטר המשחק כפלול"
+              alt="פוסטר המשחק כפלול: ביפלי ונבטיק במרדף בתוך מבוך הכפל"
+              width="320"
+              height="569"
             >
           </figure>
           <div class="screen-panel">
-            <p class="eyebrow">כפלול</p>
-            <div class="start-graphic" aria-hidden="true">
-              <span class="start-graphic-player"></span>
-              <span class="start-graphic-collectible"></span>
-              <span class="start-graphic-collectible"></span>
-              <span class="start-graphic-collectible"></span>
-              <span class="start-graphic-enemy start-graphic-enemy-a"></span>
-              <span class="start-graphic-enemy start-graphic-enemy-b"></span>
-            </div>
-            <h1>אתגרי הכפל מחכים</h1>
+            <header class="start-panel-header">
+              <p class="eyebrow">כפלול • מבוך הכפל</p>
+              <h1>בחרו גיבור ו<span>צאו למרדף</span></h1>
+              <p class="start-intro">אוספים נקודות, מתחמקים מהרוחות ופותרים תרגילי כפל כדי לנצח.</p>
+            </header>
             <div class="screen-stats">
               <span>שיא: <strong id="best-score">0</strong></span>
               <span>יעד: <strong>100</strong></span>
@@ -214,6 +213,7 @@
     </div>
   </main>
 
+  <script src="poster-loader.js?v=20260622-2"></script>
   <script src="mobile-enhancements.js?v=20260621-1"></script>
   <script src="mobile-screen-state.js?v=20260621-4"></script>
   <script src="mobile-question-state.js?v=20260621-5"></script>

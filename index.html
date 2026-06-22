@@ -38,10 +38,10 @@
   <link rel="stylesheet" href="mobile-final-layout.css?v=20260621-7">
   <link rel="stylesheet" href="character-selector.css?v=20260621-2">
   <link rel="stylesheet" href="start-screen-redesign.css?v=20260622-2">
-  <link rel="stylesheet" href="mobile-start-one-screen.css?v=20260622-1">
   <link rel="stylesheet" href="start-screen-poster-fit.css?v=20260622-3">
   <link rel="stylesheet" href="start-screen-poster-mobile.css?v=20260622-3">
   <link rel="stylesheet" href="start-screen-poster-compact.css?v=20260622-3">
+  <link rel="stylesheet" href="mobile-start-one-screen.css?v=20260622-4">
 </head>
 <body>
   <main class="game-shell" aria-label="כפלול, משחק לוח הכפל">
@@ -134,10 +134,10 @@
             </div>
             <form id="player-form" class="name-form" autocomplete="off" novalidate>
               <label for="player-name-input">שם השחקן</label>
-              <input id="player-name-input" type="text" maxlength="18" required>
+              <input id="player-name-input" type="text" maxlength="18" placeholder="הכניסו שם..." autocomplete="nickname" required>
               <p id="name-error" class="form-note" aria-live="assertive"></p>
               <fieldset class="character-field">
-                <legend>בחרו דמות</legend>
+                <legend>בחרו גיבור</legend>
                 <div class="character-options" role="radiogroup" aria-label="בחירת דמות">
                   <label class="character-option">
                     <input type="radio" name="character" value="bifly" checked>
@@ -164,7 +164,7 @@
                 </div>
               </fieldset>
               <fieldset class="difficulty-field">
-                <legend>רמת קושי</legend>
+                <legend>בחרו רמת קושי</legend>
                 <div class="difficulty-options" role="radiogroup" aria-label="רמת קושי">
                   <label>
                     <input type="radio" name="difficulty" value="easy">

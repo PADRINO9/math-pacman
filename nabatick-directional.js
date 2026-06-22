@@ -155,3 +155,141 @@
     writable: false
   });
 })();
+
+(() => {
+  "use strict";
+
+  const poster = document.querySelector(".start-poster");
+  const posterFrame = document.querySelector(".start-poster-frame");
+  if (!poster || !posterFrame || window.__keflulPosterLoaderInstalled) {
+    return;
+  }
+  window.__keflulPosterLoaderInstalled = true;
+
+  const originalSource = poster.getAttribute("src") || "assets/math-maze-poster.png";
+  const cacheKey = "keflul-start-poster-webp-v1";
+  const partNames = [
+    "part-00.txt",
+    "part-01.txt",
+    "part-02.txt",
+    "part-03.txt",
+    "part-04a.txt",
+    "part-04b.txt",
+    "part-05.txt",
+    "part-06.txt",
+    "part-07.txt",
+    "part-08.txt"
+  ];
+
+  const responsiveStyle = document.createElement("style");
+  responsiveStyle.id = "keflul-poster-responsive-style";
+  responsiveStyle.textContent = `
+    .start-poster-frame { background: #03051a; }
+    .start-poster { transition: opacity 160ms ease; }
+
+    @media (hover: none) and (max-width: 600px) and (orientation: portrait),
+           (pointer: coarse) and (max-width: 600px) and (orientation: portrait) {
+      html.start-screen-open #start-screen .start-poster-frame {
+        height: clamp(280px, 42dvh, 360px);
+        min-height: 280px;
+        max-height: 360px;
+      }
+
+      html.start-screen-open #start-screen .start-poster {
+        object-fit: cover;
+        object-position: center top;
+      }
+    }
+
+    @media (hover: none) and (max-width: 600px) and (orientation: portrait) and (max-height: 740px),
+           (pointer: coarse) and (max-width: 600px) and (orientation: portrait) and (max-height: 740px) {
+      html.start-screen-open #start-screen .start-poster-frame {
+        height: 280px;
+        min-height: 280px;
+        max-height: 280px;
+      }
+    }
+
+    @media (hover: none) and (orientation: landscape),
+           (pointer: coarse) and (orientation: landscape) {
+      html.start-screen-open #start-screen .start-poster-frame {
+        height: clamp(150px, 34dvh, 220px);
+        min-height: 150px;
+        max-height: 220px;
+      }
+
+      html.start-screen-open #start-screen .start-poster {
+        object-fit: cover;
+        object-position: center 12%;
+      }
+    }
+  `;
+  document.head.appendChild(responsiveStyle);
+
+  function readCachedPoster() {
+    try {
+      return sessionStorage.getItem(cacheKey);
+    } catch {
+      return null;
+    }
+  }
+
+  function cachePoster(dataUrl) {
+    try {
+      sessionStorage.setItem(cacheKey, dataUrl);
+    } catch {
+      // The image still works when session storage is unavailable or full.
+    }
+  }
+
+  function showPoster(source) {
+    const verificationImage = new Image();
+    verificationImage.decoding = "async";
+    verificationImage.onload = () => {
+      poster.width = 320;
+      poster.height = 569;
+      poster.src = source;
+      poster.style.opacity = "1";
+    };
+    verificationImage.onerror = () => {
+      poster.src = originalSource;
+      poster.style.opacity = "1";
+    };
+    verificationImage.src = source;
+  }
+
+  async function assemblePoster() {
+    poster.style.opacity = "0";
+
+    const cachedPoster = readCachedPoster();
+    if (cachedPoster?.startsWith("data:image/webp;base64,UklG")) {
+      showPoster(cachedPoster);
+      return;
+    }
+
+    try {
+      const chunks = await Promise.all(partNames.map(async (partName) => {
+        const response = await fetch(`assets/poster-parts/${partName}`, { cache: "force-cache" });
+        if (!response.ok) {
+          throw new Error(`Poster part failed: ${partName}`);
+        }
+        return (await response.text()).trim();
+      }));
+      const base64 = chunks.join("").replace(/\s+/g, "");
+      const header = atob(base64.slice(0, 16));
+      if (base64.length !== 49584 || !header.startsWith("RIFF")) {
+        throw new Error("Poster data validation failed");
+      }
+
+      const dataUrl = `data:image/webp;base64,${base64}`;
+      cachePoster(dataUrl);
+      showPoster(dataUrl);
+    } catch (error) {
+      console.warn("The optimized poster could not be loaded; using the original poster.", error);
+      poster.src = originalSource;
+      poster.style.opacity = "1";
+    }
+  }
+
+  assemblePoster();
+})();

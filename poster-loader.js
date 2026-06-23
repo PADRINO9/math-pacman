@@ -1,122 +1,67 @@
 (() => {
-  'use strict';
+  "use strict";
 
-  const root = document.documentElement;
-  const startScreen = document.getElementById('start-screen');
-  const poster = document.getElementById('start-poster-image');
-
-  /*
-   * The redesigned start screen uses several responsive rules with !important.
-   * On some browsers those rules can override the native [hidden] behavior,
-   * leaving the poster above the running game. Enforce the state explicitly.
-   */
-  const visibilityGuard = document.createElement('style');
-  visibilityGuard.textContent = `
-    #start-screen[hidden],
-    #end-screen[hidden],
-    #question-dialog[hidden],
-    #leaderboard-dialog[hidden],
-    #publish-score-panel[hidden],
-    #winner-trophy[hidden] {
-      display: none !important;
-      visibility: hidden !important;
-      pointer-events: none !important;
-    }
-  `;
-  document.head.appendChild(visibilityGuard);
-
-  const syncStartScreenState = () => {
-    if (!startScreen) return;
-
-    const isOpen = !startScreen.hidden;
-    root.classList.toggle('start-screen-open', isOpen);
-    startScreen.setAttribute('aria-hidden', String(!isOpen));
-
-    if (!isOpen) {
-      startScreen.classList.remove('screen-visible');
-      startScreen.style.removeProperty('display');
-      startScreen.style.removeProperty('visibility');
-      startScreen.style.removeProperty('pointer-events');
-    }
-  };
-
-  if (startScreen) {
-    new MutationObserver(syncStartScreenState).observe(startScreen, {
-      attributes: true,
-      attributeFilter: ['hidden', 'class', 'style']
-    });
-
-    document.getElementById('player-form')?.addEventListener('submit', () => {
-      queueMicrotask(syncStartScreenState);
-      requestAnimationFrame(syncStartScreenState);
-    });
-
-    document.getElementById('restart-button')?.addEventListener('click', () => {
-      queueMicrotask(syncStartScreenState);
-      requestAnimationFrame(syncStartScreenState);
-    });
-
-    window.addEventListener('pageshow', syncStartScreenState);
-    window.addEventListener('orientationchange', () => window.setTimeout(syncStartScreenState, 120), { passive: true });
-    syncStartScreenState();
+  const poster = document.getElementById("start-poster-image");
+  if (!poster) {
+    return;
   }
 
-  if (!poster) return;
+  // Block the obsolete loader that used to live in nabatick-directional.js.
+  window.__keflulPosterLoaderInstalled = true;
 
-  const fallbackSrc = poster.currentSrc || poster.getAttribute('src');
+  try {
+    sessionStorage.removeItem("keflul-start-poster-webp-v3");
+  } catch {
+    // Session storage may be unavailable in private browsing.
+  }
+
   const sourceParts = Array.from(
     { length: 8 },
-    (_, index) => `assets/poster-source/keflul-mobile-${String(index).padStart(2, '0')}.txt`
+    (_, index) => `assets/poster-source/keflul-mobile-${String(index).padStart(2, "0")}.txt`
   );
 
-  const revealFallback = () => {
-    poster.classList.remove('poster-loading');
-    poster.classList.add('poster-fallback');
+  const showReadyPoster = (source) => {
+    const verificationImage = new Image();
+    verificationImage.decoding = "async";
+    verificationImage.onload = () => {
+      poster.src = source;
+      poster.classList.remove("poster-loading", "poster-fallback", "poster-error");
+      poster.classList.add("poster-ready");
+    };
+    verificationImage.onerror = () => {
+      poster.classList.remove("poster-loading", "poster-ready", "poster-fallback");
+      poster.classList.add("poster-error");
+      poster.removeAttribute("src");
+    };
+    verificationImage.src = source;
   };
 
   Promise.all(
-    sourceParts.map((path) =>
-      fetch(`${path}?v=20260623-1`, { cache: 'no-store' }).then((response) => {
-        if (!response.ok) throw new Error(`Poster source failed: ${response.status}`);
-        return response.text();
-      })
-    )
+    sourceParts.map(async (path) => {
+      const response = await fetch(`${path}?v=20260623-2`, { cache: "reload" });
+      if (!response.ok) {
+        throw new Error(`Poster source failed: ${response.status}`);
+      }
+      return response.text();
+    })
   )
     .then((parts) => {
-      const base64 = parts.join('').replace(/\s+/g, '');
-      if (base64.length !== 80144 || !base64.startsWith('UklGR')) {
-        throw new Error('Poster source is incomplete');
+      const base64 = parts.join("").replace(/\s+/g, "");
+      if (base64.length !== 80144 || !base64.startsWith("UklGR")) {
+        throw new Error("Poster source is incomplete");
       }
 
       const binary = atob(base64);
-      if (binary.length !== 60108 || binary.slice(0, 4) !== 'RIFF' || binary.slice(8, 12) !== 'WEBP') {
-        throw new Error('Poster binary failed validation');
+      if (binary.length !== 60108 || binary.slice(0, 4) !== "RIFF" || binary.slice(8, 12) !== "WEBP") {
+        throw new Error("Poster binary failed validation");
       }
 
-      const bytes = new Uint8Array(binary.length);
-      for (let index = 0; index < binary.length; index += 1) {
-        bytes[index] = binary.charCodeAt(index);
-      }
-
-      const objectUrl = URL.createObjectURL(new Blob([bytes], { type: 'image/webp' }));
-      const revoke = () => URL.revokeObjectURL(objectUrl);
-
-      poster.addEventListener('load', () => {
-        poster.classList.remove('poster-loading', 'poster-fallback');
-        poster.classList.add('poster-ready');
-        window.setTimeout(revoke, 1500);
-      }, { once: true });
-
-      poster.addEventListener('error', () => {
-        revoke();
-        if (fallbackSrc) poster.src = fallbackSrc;
-        revealFallback();
-      }, { once: true });
-
-      poster.src = objectUrl;
+      showReadyPoster(`data:image/webp;base64,${base64}`);
     })
     .catch((error) => {
-      console.warn('The new start poster could not be loaded.', error);
-      revealFallback();
+      console.error("The current Keflul poster could not be loaded.", error);
+      poster.classList.remove("poster-loading", "poster-ready", "poster-fallback");
+      poster.classList.add("poster-error");
+      poster.removeAttribute("src");
     });
 })();

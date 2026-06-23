@@ -3,10 +3,16 @@
 
   const root = document.documentElement;
   const startScreen = document.getElementById("start-screen");
+  const endScreen = document.getElementById("end-screen");
+  const playerForm = document.getElementById("player-form");
+  const playerNameInput = document.getElementById("player-name-input");
+  const pauseButton = document.getElementById("pause-button");
   const poster = document.getElementById("start-poster-image");
+  let startupGuardUntil = 0;
+  let startupRecoveryScheduled = false;
 
-  // start-screen-poster-fit.css intentionally uses display:grid!important.
-  // This more-specific rule restores the native hidden state when gameplay starts.
+  // Some responsive start-screen rules intentionally use !important. Restore
+  // the native hidden state explicitly so the poster cannot cover the game.
   const stateStyle = document.createElement("style");
   stateStyle.id = "game-screen-state-fix";
   stateStyle.textContent = `
@@ -23,13 +29,48 @@
   `;
   document.head.appendChild(stateStyle);
 
+  const gameScreenIsOpen = () => Boolean(
+    startScreen?.hidden
+    && (!endScreen || endScreen.hidden)
+  );
+
+  const gameLooksPaused = () => pauseButton?.textContent.trim() === "▶";
+
+  const resumeFalseStartupPause = () => {
+    if (
+      performance.now() >= startupGuardUntil
+      || document.visibilityState !== "visible"
+      || !gameScreenIsOpen()
+      || !gameLooksPaused()
+    ) {
+      return;
+    }
+
+    pauseButton.click();
+  };
+
+  const scheduleStartupRecovery = () => {
+    if (startupRecoveryScheduled) {
+      return;
+    }
+
+    startupRecoveryScheduled = true;
+    requestAnimationFrame(() => {
+      startupRecoveryScheduled = false;
+      resumeFalseStartupPause();
+    });
+  };
+
   const syncStartScreenState = () => {
     if (!startScreen) {
       return;
     }
 
     const isOpen = !startScreen.hidden;
-    root.classList.toggle("start-screen-open", isOpen && window.matchMedia("(hover: none), (pointer: coarse)").matches);
+    root.classList.toggle(
+      "start-screen-open",
+      isOpen && window.matchMedia("(hover: none), (pointer: coarse)").matches
+    );
     startScreen.setAttribute("aria-hidden", String(!isOpen));
 
     if (isOpen) {
@@ -41,6 +82,7 @@
       startScreen.style.setProperty("display", "none", "important");
       startScreen.style.setProperty("visibility", "hidden", "important");
       startScreen.style.setProperty("pointer-events", "none", "important");
+      scheduleStartupRecovery();
     }
   };
 
@@ -50,8 +92,50 @@
       attributeFilter: ["hidden", "class"]
     });
     window.addEventListener("pageshow", syncStartScreenState);
-    window.addEventListener("orientationchange", () => window.setTimeout(syncStartScreenState, 120), { passive: true });
+    window.addEventListener(
+      "orientationchange",
+      () => window.setTimeout(syncStartScreenState, 120),
+      { passive: true }
+    );
     syncStartScreenState();
+  }
+
+  // game.js historically paused on every window blur. Submitting the start form
+  // can briefly blur the window while the name keyboard closes or focus moves to
+  // the canvas, so the first playable frame was immediately changed to "paused".
+  // This capture listener runs before game.js and blocks only visible-page blur
+  // events during the launch transition. Real tab/app backgrounding is handled
+  // below with the Page Visibility API.
+  window.addEventListener("blur", (event) => {
+    if (
+      performance.now() < startupGuardUntil
+      && document.visibilityState === "visible"
+    ) {
+      event.stopImmediatePropagation();
+      scheduleStartupRecovery();
+    }
+  }, true);
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      scheduleStartupRecovery();
+    }
+  }, true);
+
+  window.addEventListener("focus", scheduleStartupRecovery, true);
+
+  if (playerForm) {
+    playerForm.addEventListener("submit", () => {
+      // Do not arm the recovery guard for an invalid empty-name submission.
+      if (!playerNameInput?.value.trim()) {
+        return;
+      }
+
+      startupGuardUntil = performance.now() + 2200;
+      [0, 40, 120, 260, 520, 900, 1500, 2100].forEach((delay) => {
+        window.setTimeout(resumeFalseStartupPause, delay);
+      });
+    }, true);
   }
 
   if (!poster) {
@@ -90,7 +174,7 @@
 
   Promise.all(
     sourceParts.map(async (path) => {
-      const response = await fetch(`${path}?v=20260623-2`, { cache: "reload" });
+      const response = await fetch(`${path}?v=20260623-5`, { cache: "reload" });
       if (!response.ok) {
         throw new Error(`Poster source failed: ${response.status}`);
       }

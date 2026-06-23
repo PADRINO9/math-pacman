@@ -43,7 +43,6 @@
   <link rel="stylesheet" href="start-screen-poster-compact.css?v=20260622-3">
   <link rel="stylesheet" href="mobile-start-one-screen.css?v=20260622-4">
   <link rel="stylesheet" href="mobile-start-polish.css?v=20260622-1">
-  <link rel="stylesheet" href="leaderboard.css?v=20260622-1">
 </head>
 <body>
   <main class="game-shell" aria-label="כפלול, משחק לוח הכפל">
@@ -110,18 +109,15 @@
       </div>
 
       <div id="start-screen" class="screen screen-visible">
-        <button id="leaderboard-open" class="leaderboard-open-button" type="button">
-          אלוף האלופים
-        </button>
         <div class="start-layout">
           <figure class="start-poster-frame">
             <img
               id="start-poster-image"
               class="start-poster poster-loading"
               src="assets/math-maze-poster.png"
-              alt="זירת מבוך צבעונית עם גיבורי המשחק ורוחות הכפל"
-              width="1448"
-              height="1086"
+              alt="פוסטר המשחק כפלול: ביפלי ונבטיק במרדף בתוך מבוך הכפל"
+              width="720"
+              height="857"
               loading="eager"
               decoding="async"
               fetchpriority="high"
@@ -200,38 +196,6 @@
             </form>
           </div>
         </div>
-
-        <div id="leaderboard-dialog" class="leaderboard-dialog" role="dialog" aria-modal="true" aria-labelledby="leaderboard-title" hidden>
-          <section class="leaderboard-panel">
-            <div class="leaderboard-header">
-              <div>
-                <p class="leaderboard-kicker">אלוף האלופים</p>
-                <h2 id="leaderboard-title">טבלת השיאים</h2>
-              </div>
-              <div class="leaderboard-actions">
-                <button
-                  id="leaderboard-refresh"
-                  class="leaderboard-icon-button"
-                  type="button"
-                  aria-label="רענון טבלת השיאים"
-                  title="רענון טבלת השיאים"
-                >↻</button>
-                <button
-                  id="leaderboard-close"
-                  class="leaderboard-icon-button"
-                  type="button"
-                  aria-label="סגירת טבלת השיאים"
-                  title="סגירת טבלת השיאים"
-                >×</button>
-              </div>
-            </div>
-            <p class="leaderboard-copy">השחקנים שעברו לפחות את השלב הראשון ופרסמו את השיא שלהם.</p>
-            <ol id="leaderboard-list" class="leaderboard-list" aria-live="polite">
-              <li class="leaderboard-placeholder">טוען את אלופי הכפל...</li>
-            </ol>
-            <p id="leaderboard-status" class="leaderboard-status" aria-live="polite"></p>
-          </section>
-        </div>
       </div>
 
       <div id="end-screen" class="screen" hidden>
@@ -243,12 +207,6 @@
           <div class="screen-stats">
             <span>ניקוד: <strong id="final-score">0</strong></span>
             <span>תשובות: <strong id="final-correct">0</strong></span>
-          </div>
-          <div id="publish-score-panel" class="publish-score-panel" hidden>
-            <strong>מקום בטבלת אלוף האלופים מחכה לך</strong>
-            <p>עברת את השלב הראשון, ולכן אפשר לפרסם את השיא הזה לכל השחקנים.</p>
-            <button id="publish-score-button" class="secondary-button" type="button">פרסם את השיא</button>
-            <p id="publish-score-status" class="publish-score-status" aria-live="polite"></p>
           </div>
           <button id="restart-button" class="primary-button" type="button">שחק שוב</button>
         </div>
@@ -270,6 +228,6 @@
   <script src="mobile-native-answer.js?v=20260621-6"></script>
   <script src="nabatick-directional.js?v=20260622-1"></script>
   <script src="maze-enhancements.js?v=20260622-1"></script>
-  <script src="game.js?v=20260622-1"></script>
+  <script src="game.js?v=20260621-11"></script>
 </body>
 </html>

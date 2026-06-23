@@ -119,12 +119,6 @@
     adaptiveQuestionChance: 0.3,
     recentQuestionMemory: 3,
     questionTimeLimit: 25,
-    leaderboard: {
-      endpoint: "/api/champions",
-      minimumCorrectAnswers: 25,
-      limit: 10,
-      requestTimeoutMs: 7000
-    },
     questionFeedbackDelay: {
       correct: 650,
       wrong: 900
@@ -143,8 +137,7 @@
       difficulty: "mathMazeDifficulty",
       character: "mathMazeCharacter",
       timeLimit: "mathMazeTimeLimit",
-      factStats: "mathMazeFactStats",
-      playerId: "mathMazePlayerId"
+      factStats: "mathMazeFactStats"
     },
     legacyStorageKeys: {
       bestScore: "mathPacmanBest",
@@ -380,16 +373,7 @@
     submitAnswer: document.getElementById("submit-answer"),
     questionFeedback: document.getElementById("question-feedback"),
     joystick: document.getElementById("movement-joystick"),
-    joystickKnob: document.querySelector(".joystick-knob"),
-    leaderboardOpen: document.getElementById("leaderboard-open"),
-    leaderboardDialog: document.getElementById("leaderboard-dialog"),
-    leaderboardClose: document.getElementById("leaderboard-close"),
-    leaderboardList: document.getElementById("leaderboard-list"),
-    leaderboardStatus: document.getElementById("leaderboard-status"),
-    leaderboardRefresh: document.getElementById("leaderboard-refresh"),
-    publishScorePanel: document.getElementById("publish-score-panel"),
-    publishScoreButton: document.getElementById("publish-score-button"),
-    publishScoreStatus: document.getElementById("publish-score-status")
+    joystickKnob: document.querySelector(".joystick-knob")
   };
 
   const numberFormat = new Intl.NumberFormat("he-IL");
@@ -424,36 +408,6 @@
       return fallback;
     }
   };
-
-  function createPlayerId() {
-    if (window.crypto?.randomUUID) {
-      return window.crypto.randomUUID();
-    }
-
-    const bytes = new Uint8Array(16);
-    if (window.crypto?.getRandomValues) {
-      window.crypto.getRandomValues(bytes);
-    } else {
-      for (let index = 0; index < bytes.length; index += 1) {
-        bytes[index] = Math.floor(Math.random() * 256);
-      }
-    }
-    bytes[6] = (bytes[6] & 0x0f) | 0x40;
-    bytes[8] = (bytes[8] & 0x3f) | 0x80;
-    const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
-    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
-  }
-
-  function getOrCreatePlayerId() {
-    const storedId = storage.get(CONFIG.storageKeys.playerId, "");
-    if (/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(storedId)) {
-      return storedId;
-    }
-
-    const playerId = createPlayerId();
-    storage.set(CONFIG.storageKeys.playerId, playerId);
-    return playerId;
-  }
 
   function normalizeDifficulty(value) {
     const mappedValue = LEGACY_DIFFICULTY_MAP[value] || value;
@@ -548,7 +502,6 @@
     )) || 0,
     playerName: "",
     characterId: normalizeCharacterId(storage.get(CONFIG.storageKeys.character, "bifly")),
-    playerId: getOrCreatePlayerId(),
     difficulty: normalizeDifficulty(storage.getMigrated(
       CONFIG.storageKeys.difficulty,
       CONFIG.legacyStorageKeys.difficulty,
@@ -576,9 +529,7 @@
     ) !== "off",
     audioContext: null,
     shake: 0,
-    fireworkTimer: 0,
-    leaderboardLoading: false,
-    scorePublishing: false
+    fireworkTimer: 0
   };
 
   function cellKey(x, y) {
@@ -1003,7 +954,7 @@
   function scheduleEnemySpawn(delay) {
     state.pendingSpawns.push({
       delay,
-      index: state.nextEnemyId + state.pendingSpawns.length
+      index: state.nextEnemyId
     });
   }
 
@@ -1186,193 +1137,6 @@
     els.timeLimitState.textContent = enabled ? "25 שניות" : "ללא זמן";
   }
 
-  function setLeaderboardStatus(message, isError = false) {
-    if (!els.leaderboardStatus) {
-      return;
-    }
-
-    els.leaderboardStatus.textContent = message;
-    els.leaderboardStatus.style.color = isError ? "var(--red)" : "";
-  }
-
-  function openLeaderboard() {
-    if (!els.leaderboardDialog) {
-      return;
-    }
-
-    els.leaderboardDialog.hidden = false;
-    loadLeaderboard();
-    window.setTimeout(() => els.leaderboardClose?.focus(), 0);
-  }
-
-  function closeLeaderboard() {
-    if (!els.leaderboardDialog) {
-      return;
-    }
-
-    els.leaderboardDialog.hidden = true;
-    els.leaderboardOpen?.focus();
-  }
-
-  function renderLeaderboard(scores) {
-    if (!els.leaderboardList) {
-      return;
-    }
-
-    els.leaderboardList.replaceChildren();
-    if (!Array.isArray(scores) || scores.length === 0) {
-      const empty = document.createElement("li");
-      empty.className = "leaderboard-placeholder";
-      empty.textContent = "עדיין אין שיאים. אפשר להיות הראשון בטבלה.";
-      els.leaderboardList.append(empty);
-      return;
-    }
-
-    scores.slice(0, CONFIG.leaderboard.limit).forEach((entry, index) => {
-      const item = document.createElement("li");
-      const rank = document.createElement("span");
-      const player = document.createElement("span");
-      const details = document.createElement("small");
-      const score = document.createElement("strong");
-      const difficultyLabel = CONFIG.difficulty[entry.difficulty]?.label || "בינוני";
-
-      rank.className = "leaderboard-rank";
-      rank.textContent = String(index + 1);
-      player.className = "leaderboard-player";
-      player.textContent = entry.playerName;
-      details.textContent = `שלב ${entry.levelReached} · ${difficultyLabel}`;
-      score.className = "leaderboard-score";
-      score.textContent = numberFormat.format(entry.score);
-
-      player.append(details);
-      item.append(rank, player, score);
-      els.leaderboardList.append(item);
-    });
-  }
-
-  async function leaderboardRequest(options = {}) {
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(() => controller.abort(), CONFIG.leaderboard.requestTimeoutMs);
-
-    try {
-      const response = await fetch(CONFIG.leaderboard.endpoint, {
-        ...options,
-        headers: {
-          Accept: "application/json",
-          ...(options.headers || {})
-        },
-        signal: controller.signal
-      });
-      const payload = await response.json().catch(() => null);
-      if (!response.ok) {
-        const error = new Error(payload?.message || "Leaderboard request failed");
-        error.code = payload?.code || "leaderboard_request_failed";
-        throw error;
-      }
-      return payload;
-    } finally {
-      window.clearTimeout(timeoutId);
-    }
-  }
-
-  async function loadLeaderboard() {
-    if (!els.leaderboardList || state.leaderboardLoading) {
-      return;
-    }
-
-    state.leaderboardLoading = true;
-    if (els.leaderboardRefresh) {
-      els.leaderboardRefresh.disabled = true;
-    }
-    setLeaderboardStatus("מעדכן את טבלת השיאים...");
-
-    try {
-      const payload = await leaderboardRequest();
-      renderLeaderboard(payload?.scores || []);
-      setLeaderboardStatus(payload?.scores?.length ? "הטבלה מעודכנת." : "");
-    } catch (error) {
-      if (error?.code === "leaderboard_not_configured") {
-        setLeaderboardStatus("טבלת השיאים תופעל לאחר הגדרת מסד הנתונים החינמי.", true);
-      } else if (error?.name === "AbortError") {
-        setLeaderboardStatus("טעינת הטבלה ארכה יותר מדי. אפשר לנסות שוב.", true);
-      } else {
-        setLeaderboardStatus("לא הצלחנו לטעון את טבלת השיאים כרגע.", true);
-      }
-    } finally {
-      state.leaderboardLoading = false;
-      if (els.leaderboardRefresh) {
-        els.leaderboardRefresh.disabled = false;
-      }
-    }
-  }
-
-  function updatePublishScorePanel() {
-    if (!els.publishScorePanel || !els.publishScoreButton || !els.publishScoreStatus) {
-      return;
-    }
-
-    const eligible = state.correctAnswers >= CONFIG.leaderboard.minimumCorrectAnswers;
-    els.publishScorePanel.hidden = !eligible;
-    els.publishScoreButton.disabled = false;
-    els.publishScoreButton.textContent = "פרסם את השיא";
-    els.publishScoreStatus.textContent = "";
-    els.publishScoreStatus.style.color = "";
-  }
-
-  async function publishScore() {
-    if (
-      state.scorePublishing
-      || state.phase !== "ended"
-      || state.correctAnswers < CONFIG.leaderboard.minimumCorrectAnswers
-    ) {
-      return;
-    }
-
-    state.scorePublishing = true;
-    els.publishScoreButton.disabled = true;
-    els.publishScoreButton.textContent = "מפרסם...";
-    els.publishScoreStatus.textContent = "שומר את השיא בטבלה הציבורית...";
-    els.publishScoreStatus.style.color = "";
-
-    try {
-      const payload = await leaderboardRequest({
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          playerId: state.playerId,
-          playerName: state.playerName,
-          score: state.score,
-          correctAnswers: state.correctAnswers,
-          levelReached: getLevelIndexForAnswers(state.correctAnswers) + 1,
-          difficulty: state.difficulty,
-          timeLimitEnabled: state.timeLimitEnabled
-        })
-      });
-
-      els.publishScoreButton.textContent = "השיא פורסם";
-      els.publishScoreStatus.textContent = payload?.improved === false
-        ? "השיא הקודם שלך בטבלה עדיין גבוה יותר."
-        : "השיא נשמר בהצלחה באלוף האלופים.";
-      els.publishScoreStatus.style.color = "var(--green)";
-      await loadLeaderboard();
-    } catch (error) {
-      els.publishScoreButton.disabled = false;
-      els.publishScoreButton.textContent = "נסה לפרסם שוב";
-      if (error?.code === "leaderboard_not_configured") {
-        els.publishScoreStatus.textContent = "מסד הנתונים עדיין לא הוגדר ב־Vercel.";
-      } else if (error?.code === "rate_limited") {
-        els.publishScoreStatus.textContent = "כבר ניסית לפרסם עכשיו. חכה כמה שניות ונסה שוב.";
-      } else {
-        els.publishScoreStatus.textContent = "לא הצלחנו לפרסם את השיא כרגע.";
-      }
-      els.publishScoreStatus.style.color = "var(--red)";
-    } finally {
-      state.scorePublishing = false;
-    }
-  }
-
   function startGame(event) {
     event?.preventDefault();
     const playerName = normalizePlayerName(els.playerNameInput.value);
@@ -1392,9 +1156,6 @@
     els.startScreen.hidden = true;
     els.startScreen.classList.remove("screen-visible");
     els.endScreen.hidden = true;
-    if (els.publishScorePanel) {
-      els.publishScorePanel.hidden = true;
-    }
     els.pause.textContent = "Ⅱ";
     stage.focus({ preventScroll: true });
     resumeAudio();
@@ -2316,40 +2077,6 @@
     }
   }
 
-  function suspendQuestionTimer() {
-    if (
-      state.phase !== "question"
-      || !state.timeLimitEnabled
-      || state.answerLocked
-      || state.questionDeadline === null
-    ) {
-      return;
-    }
-
-    state.questionTimeRemaining = getQuestionTimeRemaining();
-    state.questionDeadline = null;
-  }
-
-  function resumeQuestionTimer() {
-    if (
-      state.phase !== "question"
-      || !state.timeLimitEnabled
-      || state.answerLocked
-      || state.questionDeadline !== null
-      || state.questionTimeRemaining === null
-    ) {
-      return;
-    }
-
-    if (state.questionTimeRemaining <= 0) {
-      expireQuestionTimer();
-      return;
-    }
-
-    state.questionDeadline = performance.now() + state.questionTimeRemaining * 1000;
-    updateQuestionTimerDisplay();
-  }
-
   function getQuestionTimeRemaining() {
     if (state.questionDeadline === null) {
       return null;
@@ -2541,8 +2268,6 @@
       storage.set(CONFIG.storageKeys.bestScore, String(state.bestScore));
       els.bestScore.textContent = numberFormat.format(state.bestScore);
     }
-
-    updatePublishScorePanel();
 
     if (won) {
       state.fireworkTimer = 0;
@@ -3190,12 +2915,6 @@
   }
 
   document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape" && els.leaderboardDialog && !els.leaderboardDialog.hidden) {
-      event.preventDefault();
-      closeLeaderboard();
-      return;
-    }
-
     if (state.phase === "question") {
       return;
     }
@@ -3363,15 +3082,6 @@
     input.addEventListener("change", () => setDifficulty(input.value));
   });
   els.timeLimitToggle?.addEventListener("click", toggleTimeLimit);
-  els.leaderboardOpen?.addEventListener("click", openLeaderboard);
-  els.leaderboardClose?.addEventListener("click", closeLeaderboard);
-  els.leaderboardDialog?.addEventListener("click", (event) => {
-    if (event.target === els.leaderboardDialog) {
-      closeLeaderboard();
-    }
-  });
-  els.leaderboardRefresh?.addEventListener("click", loadLeaderboard);
-  els.publishScoreButton?.addEventListener("click", publishScore);
   els.restartButton.addEventListener("click", showStartScreen);
   window.addEventListener("resize", resizeCanvas, { passive: true });
   window.addEventListener("orientationchange", () => window.setTimeout(resizeCanvas, 120), { passive: true });
@@ -3383,18 +3093,6 @@
     if (state.phase === "playing") {
       togglePause();
     }
-  });
-  document.addEventListener("visibilitychange", () => {
-    if (document.hidden) {
-      if (state.phase === "playing") {
-        togglePause();
-      } else {
-        suspendQuestionTimer();
-      }
-      return;
-    }
-
-    resumeQuestionTimer();
   });
 
   resizeCanvas();

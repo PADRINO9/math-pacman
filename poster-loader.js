@@ -1,14 +1,66 @@
 (() => {
   "use strict";
 
+  const root = document.documentElement;
+  const startScreen = document.getElementById("start-screen");
   const poster = document.getElementById("start-poster-image");
+
+  // start-screen-poster-fit.css intentionally uses display:grid!important.
+  // This more-specific rule restores the native hidden state when gameplay starts.
+  const stateStyle = document.createElement("style");
+  stateStyle.id = "game-screen-state-fix";
+  stateStyle.textContent = `
+    html #start-screen[hidden],
+    html #end-screen[hidden],
+    html #question-dialog[hidden],
+    html #leaderboard-dialog[hidden],
+    html #publish-score-panel[hidden],
+    html #winner-trophy[hidden] {
+      display: none !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+  `;
+  document.head.appendChild(stateStyle);
+
+  const syncStartScreenState = () => {
+    if (!startScreen) {
+      return;
+    }
+
+    const isOpen = !startScreen.hidden;
+    root.classList.toggle("start-screen-open", isOpen && window.matchMedia("(hover: none), (pointer: coarse)").matches);
+    startScreen.setAttribute("aria-hidden", String(!isOpen));
+
+    if (isOpen) {
+      startScreen.style.removeProperty("display");
+      startScreen.style.removeProperty("visibility");
+      startScreen.style.removeProperty("pointer-events");
+    } else {
+      startScreen.classList.remove("screen-visible");
+      startScreen.style.setProperty("display", "none", "important");
+      startScreen.style.setProperty("visibility", "hidden", "important");
+      startScreen.style.setProperty("pointer-events", "none", "important");
+    }
+  };
+
+  if (startScreen) {
+    new MutationObserver(syncStartScreenState).observe(startScreen, {
+      attributes: true,
+      attributeFilter: ["hidden", "class"]
+    });
+    window.addEventListener("pageshow", syncStartScreenState);
+    window.addEventListener("orientationchange", () => window.setTimeout(syncStartScreenState, 120), { passive: true });
+    syncStartScreenState();
+  }
+
   if (!poster) {
     return;
   }
 
-  // Block the obsolete loader that used to live in nabatick-directional.js.
+  // Block and invalidate the obsolete poster loader that used to be bundled
+  // into nabatick-directional.js and could restore the old poster from storage.
   window.__keflulPosterLoaderInstalled = true;
-
   try {
     sessionStorage.removeItem("keflul-start-poster-webp-v3");
   } catch {

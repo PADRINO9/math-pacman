@@ -3,7 +3,10 @@
 
   const root = document.documentElement;
   const startScreen = document.getElementById("start-screen");
+  const playerForm = document.getElementById("player-form");
+  const pauseButton = document.getElementById("pause-button");
   const poster = document.getElementById("start-poster-image");
+  let startupGuardUntil = 0;
 
   // start-screen-poster-fit.css intentionally uses display:grid!important.
   // This more-specific rule restores the native hidden state when gameplay starts.
@@ -54,6 +57,51 @@
     syncStartScreenState();
   }
 
+  const resumeIfStartupWasPaused = () => {
+    if (!startScreen || !pauseButton || performance.now() >= startupGuardUntil) {
+      return;
+    }
+
+    const gameHasStarted = startScreen.hidden;
+    const pausedImmediately = pauseButton.textContent.trim() === "▶";
+    if (gameHasStarted && pausedImmediately && document.visibilityState === "visible") {
+      pauseButton.click();
+    }
+  };
+
+  // game.js pauses on every window blur. Closing the mobile keyboard or moving
+  // focus from the name field to the game can emit a transient blur while the
+  // page is still visible, causing the first frame to open already paused.
+  // Intercept only that short startup blur; real backgrounding is still handled
+  // by game.js through the visibilitychange event.
+  window.addEventListener("blur", (event) => {
+    if (performance.now() < startupGuardUntil && document.visibilityState === "visible") {
+      event.stopImmediatePropagation();
+    }
+  }, true);
+
+  window.addEventListener("focus", () => {
+    window.setTimeout(resumeIfStartupWasPaused, 0);
+  }, true);
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      window.setTimeout(resumeIfStartupWasPaused, 0);
+    }
+  }, true);
+
+  if (playerForm && pauseButton && startScreen) {
+    playerForm.addEventListener("submit", () => {
+      startupGuardUntil = performance.now() + 2200;
+
+      // Repair any browser-specific focus event that still managed to pause
+      // gameplay. These checks run only during the initial launch window.
+      [60, 180, 420, 900, 1600].forEach((delay) => {
+        window.setTimeout(resumeIfStartupWasPaused, delay);
+      });
+    }, true);
+  }
+
   if (!poster) {
     return;
   }
@@ -90,7 +138,7 @@
 
   Promise.all(
     sourceParts.map(async (path) => {
-      const response = await fetch(`${path}?v=20260623-2`, { cache: "reload" });
+      const response = await fetch(`${path}?v=20260623-4`, { cache: "reload" });
       if (!response.ok) {
         throw new Error(`Poster source failed: ${response.status}`);
       }

@@ -1,7 +1,66 @@
 (() => {
   'use strict';
 
+  const root = document.documentElement;
+  const startScreen = document.getElementById('start-screen');
   const poster = document.getElementById('start-poster-image');
+
+  /*
+   * The redesigned start screen uses several responsive rules with !important.
+   * On some browsers those rules can override the native [hidden] behavior,
+   * leaving the poster above the running game. Enforce the state explicitly.
+   */
+  const visibilityGuard = document.createElement('style');
+  visibilityGuard.textContent = `
+    #start-screen[hidden],
+    #end-screen[hidden],
+    #question-dialog[hidden],
+    #leaderboard-dialog[hidden],
+    #publish-score-panel[hidden],
+    #winner-trophy[hidden] {
+      display: none !important;
+      visibility: hidden !important;
+      pointer-events: none !important;
+    }
+  `;
+  document.head.appendChild(visibilityGuard);
+
+  const syncStartScreenState = () => {
+    if (!startScreen) return;
+
+    const isOpen = !startScreen.hidden;
+    root.classList.toggle('start-screen-open', isOpen);
+    startScreen.setAttribute('aria-hidden', String(!isOpen));
+
+    if (!isOpen) {
+      startScreen.classList.remove('screen-visible');
+      startScreen.style.removeProperty('display');
+      startScreen.style.removeProperty('visibility');
+      startScreen.style.removeProperty('pointer-events');
+    }
+  };
+
+  if (startScreen) {
+    new MutationObserver(syncStartScreenState).observe(startScreen, {
+      attributes: true,
+      attributeFilter: ['hidden', 'class', 'style']
+    });
+
+    document.getElementById('player-form')?.addEventListener('submit', () => {
+      queueMicrotask(syncStartScreenState);
+      requestAnimationFrame(syncStartScreenState);
+    });
+
+    document.getElementById('restart-button')?.addEventListener('click', () => {
+      queueMicrotask(syncStartScreenState);
+      requestAnimationFrame(syncStartScreenState);
+    });
+
+    window.addEventListener('pageshow', syncStartScreenState);
+    window.addEventListener('orientationchange', () => window.setTimeout(syncStartScreenState, 120), { passive: true });
+    syncStartScreenState();
+  }
+
   if (!poster) return;
 
   const fallbackSrc = poster.currentSrc || poster.getAttribute('src');
@@ -17,7 +76,7 @@
 
   Promise.all(
     sourceParts.map((path) =>
-      fetch(`${path}?v=20260622-3`, { cache: 'force-cache' }).then((response) => {
+      fetch(`${path}?v=20260623-1`, { cache: 'no-store' }).then((response) => {
         if (!response.ok) throw new Error(`Poster source failed: ${response.status}`);
         return response.text();
       })

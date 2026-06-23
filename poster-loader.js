@@ -57,6 +57,18 @@
     syncStartScreenState();
   }
 
+  const resumeIfStartupWasPaused = () => {
+    if (!startScreen || !pauseButton || performance.now() >= startupGuardUntil) {
+      return;
+    }
+
+    const gameHasStarted = startScreen.hidden;
+    const pausedImmediately = pauseButton.textContent.trim() === "▶";
+    if (gameHasStarted && pausedImmediately && document.visibilityState === "visible") {
+      pauseButton.click();
+    }
+  };
+
   // game.js pauses on every window blur. Closing the mobile keyboard or moving
   // focus from the name field to the game can emit a transient blur while the
   // page is still visible, causing the first frame to open already paused.
@@ -68,20 +80,24 @@
     }
   }, true);
 
+  window.addEventListener("focus", () => {
+    window.setTimeout(resumeIfStartupWasPaused, 0);
+  }, true);
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") {
+      window.setTimeout(resumeIfStartupWasPaused, 0);
+    }
+  }, true);
+
   if (playerForm && pauseButton && startScreen) {
     playerForm.addEventListener("submit", () => {
-      startupGuardUntil = performance.now() + 1800;
+      startupGuardUntil = performance.now() + 2200;
 
-      // A second safeguard repairs browsers that delivered blur before the
-      // capture listener could suppress it. It runs only during initial launch.
-      [60, 180, 420].forEach((delay) => {
-        window.setTimeout(() => {
-          const gameHasStarted = startScreen.hidden;
-          const pausedImmediately = pauseButton.textContent.trim() === "▶";
-          if (gameHasStarted && pausedImmediately && document.visibilityState === "visible") {
-            pauseButton.click();
-          }
-        }, delay);
+      // Repair any browser-specific focus event that still managed to pause
+      // gameplay. These checks run only during the initial launch window.
+      [60, 180, 420, 900, 1600].forEach((delay) => {
+        window.setTimeout(resumeIfStartupWasPaused, delay);
       });
     }, true);
   }
@@ -122,7 +138,7 @@
 
   Promise.all(
     sourceParts.map(async (path) => {
-      const response = await fetch(`${path}?v=20260623-3`, { cache: "reload" });
+      const response = await fetch(`${path}?v=20260623-4`, { cache: "reload" });
       if (!response.ok) {
         throw new Error(`Poster source failed: ${response.status}`);
       }

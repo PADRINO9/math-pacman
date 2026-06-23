@@ -3,7 +3,10 @@
 
   const root = document.documentElement;
   const startScreen = document.getElementById("start-screen");
+  const playerForm = document.getElementById("player-form");
+  const pauseButton = document.getElementById("pause-button");
   const poster = document.getElementById("start-poster-image");
+  let startupGuardUntil = 0;
 
   // start-screen-poster-fit.css intentionally uses display:grid!important.
   // This more-specific rule restores the native hidden state when gameplay starts.
@@ -54,6 +57,35 @@
     syncStartScreenState();
   }
 
+  // game.js pauses on every window blur. Closing the mobile keyboard or moving
+  // focus from the name field to the game can emit a transient blur while the
+  // page is still visible, causing the first frame to open already paused.
+  // Intercept only that short startup blur; real backgrounding is still handled
+  // by game.js through the visibilitychange event.
+  window.addEventListener("blur", (event) => {
+    if (performance.now() < startupGuardUntil && document.visibilityState === "visible") {
+      event.stopImmediatePropagation();
+    }
+  }, true);
+
+  if (playerForm && pauseButton && startScreen) {
+    playerForm.addEventListener("submit", () => {
+      startupGuardUntil = performance.now() + 1800;
+
+      // A second safeguard repairs browsers that delivered blur before the
+      // capture listener could suppress it. It runs only during initial launch.
+      [60, 180, 420].forEach((delay) => {
+        window.setTimeout(() => {
+          const gameHasStarted = startScreen.hidden;
+          const pausedImmediately = pauseButton.textContent.trim() === "▶";
+          if (gameHasStarted && pausedImmediately && document.visibilityState === "visible") {
+            pauseButton.click();
+          }
+        }, delay);
+      });
+    }, true);
+  }
+
   if (!poster) {
     return;
   }
@@ -90,7 +122,7 @@
 
   Promise.all(
     sourceParts.map(async (path) => {
-      const response = await fetch(`${path}?v=20260623-2`, { cache: "reload" });
+      const response = await fetch(`${path}?v=20260623-3`, { cache: "reload" });
       if (!response.ok) {
         throw new Error(`Poster source failed: ${response.status}`);
       }

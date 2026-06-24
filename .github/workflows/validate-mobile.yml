@@ -14,7 +14,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - name: Check out current revision
         uses: actions/checkout@v4
@@ -41,9 +41,13 @@ jobs:
           node --check nabatick-directional.js
           node --check maze-enhancements.js
           node --check tests/game.spec.js
+          node --check playwright.production.config.js
 
-      - name: Run desktop and mobile browser tests
+      - name: Run local desktop and mobile browser tests
         run: npm run test:smoke
+
+      - name: Run production desktop and mobile browser tests
+        run: npx playwright test tests/game.spec.js --config=playwright.production.config.js
 
       - name: Verify clean patch formatting
         run: git diff --check

@@ -88,16 +88,21 @@
     }
 
     runtime.startTransitions += 1;
-    startScreen.classList.remove("screen-visible");
+    if (startScreen.classList.contains("screen-visible")) {
+      startScreen.classList.remove("screen-visible");
+    }
     startScreen.style.setProperty("display", "none", "important");
     startScreen.style.setProperty("visibility", "hidden", "important");
     startScreen.style.setProperty("pointer-events", "none", "important");
   }
 
   if (startScreen) {
+    // Observe only the state source. Observing `class` while also changing it in
+    // the callback created an endless MutationObserver microtask loop that froze
+    // the page immediately after the Start button hid the screen.
     new MutationObserver(syncStartScreenState).observe(startScreen, {
       attributes: true,
-      attributeFilter: ["hidden", "class"]
+      attributeFilter: ["hidden"]
     });
   }
 

@@ -1,51 +1,35 @@
 (() => {
   "use strict";
 
-  const root = document.documentElement;
   const startScreen = document.getElementById("start-screen");
   const coarseQuery = window.matchMedia("(hover: none), (pointer: coarse)");
-  const nabatickSelectionPortrait = startScreen?.querySelector(
-    'input[name="character"][value="nabatick"] + .character-card img'
-  );
 
-  function syncNabatickSelectionPortrait() {
-    if (!nabatickSelectionPortrait) {
+  function syncSupplementaryMobileState() {
+    if (!startScreen || startScreen.hidden || !coarseQuery.matches) {
       return;
     }
 
-    const exactPortraitSource = "assets/nabatick-selection-sheet.svg";
-    if (!nabatickSelectionPortrait.getAttribute("src")?.endsWith(exactPortraitSource)) {
-      nabatickSelectionPortrait.src = exactPortraitSource;
-    }
-  }
-
-  function syncStartScreenState() {
-    const isOpen = Boolean(startScreen && !startScreen.hidden);
-    const isTouch = coarseQuery.matches;
-    root.classList.toggle("start-screen-open", isOpen && isTouch);
-
-    syncNabatickSelectionPortrait();
-
-    if (isOpen && isTouch) {
-      startScreen.scrollTop = 0;
-      const panel = startScreen.querySelector(".screen-panel");
-      if (panel) {
-        panel.scrollTop = 0;
-      }
+    startScreen.scrollTop = 0;
+    const panel = startScreen.querySelector(".screen-panel");
+    if (panel) {
+      panel.scrollTop = 0;
     }
   }
 
   if (startScreen) {
-    new MutationObserver(syncStartScreenState).observe(startScreen, {
+    new MutationObserver(syncSupplementaryMobileState).observe(startScreen, {
       attributes: true,
-      attributeFilter: ["hidden", "class"]
+      attributeFilter: ["hidden"]
     });
   }
 
-  coarseQuery.addEventListener?.("change", syncStartScreenState);
-  window.addEventListener("pageshow", syncStartScreenState);
-  window.addEventListener("orientationchange", () => window.setTimeout(syncStartScreenState, 120), { passive: true });
+  coarseQuery.addEventListener?.("change", syncSupplementaryMobileState);
+  window.addEventListener("pageshow", syncSupplementaryMobileState);
+  window.addEventListener(
+    "orientationchange",
+    () => window.setTimeout(syncSupplementaryMobileState, 120),
+    { passive: true }
+  );
 
-  syncNabatickSelectionPortrait();
-  syncStartScreenState();
+  syncSupplementaryMobileState();
 })();

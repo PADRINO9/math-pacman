@@ -4,15 +4,38 @@
   const root = document.documentElement;
   const startScreen = document.getElementById("start-screen");
   const endScreen = document.getElementById("end-screen");
-  const playerForm = document.getElementById("player-form");
-  const playerNameInput = document.getElementById("player-name-input");
   const pauseButton = document.getElementById("pause-button");
   const poster = document.getElementById("start-poster-image");
-  let startupGuardUntil = 0;
-  let startupRecoveryScheduled = false;
+  const coarseQuery = window.matchMedia("(hover: none), (pointer: coarse)");
 
-  // Some responsive start-screen rules intentionally use !important. Restore
-  // the native hidden state explicitly so the poster cannot cover the game.
+  const runtime = window.__mathMazeRuntime = window.__mathMazeRuntime || {
+    errors: [],
+    startedAt: performance.now(),
+    startTransitions: 0
+  };
+
+  window.addEventListener("error", (event) => {
+    runtime.errors.push(String(event.error || event.message || "Unknown runtime error"));
+  });
+  window.addEventListener("unhandledrejection", (event) => {
+    runtime.errors.push(String(event.reason || "Unhandled promise rejection"));
+  });
+
+  // The game engine used to pause on every window blur. A focus change caused by
+  // form submission, a virtual keyboard, DevTools or browser chrome is not proof
+  // that the page is hidden. Prevent legacy blur handlers from being registered;
+  // page visibility below is the single source of truth for automatic pausing.
+  const nativeAddEventListener = window.addEventListener;
+  window.addEventListener = function addEventListenerWithoutLegacyBlur(type, listener, options) {
+    if (type === "blur") {
+      return undefined;
+    }
+    return nativeAddEventListener.call(this, type, listener, options);
+  };
+  window.setTimeout(() => {
+    window.addEventListener = nativeAddEventListener;
+  }, 0);
+
   const stateStyle = document.createElement("style");
   stateStyle.id = "game-screen-state-fix";
   stateStyle.textContent = `
@@ -29,121 +52,79 @@
   `;
   document.head.appendChild(stateStyle);
 
-  const gameScreenIsOpen = () => Boolean(
-    startScreen?.hidden
-    && (!endScreen || endScreen.hidden)
-  );
-
-  const gameLooksPaused = () => pauseButton?.textContent.trim() === "▶";
-
-  const resumeFalseStartupPause = () => {
-    if (
-      performance.now() >= startupGuardUntil
-      || document.visibilityState !== "visible"
-      || !gameScreenIsOpen()
-      || !gameLooksPaused()
-    ) {
+  function syncNabatickSelectionPortrait() {
+    const image = startScreen?.querySelector(
+      'input[name="character"][value="nabatick"] + .character-card img'
+    );
+    if (!image) {
       return;
     }
 
-    pauseButton.click();
-  };
-
-  const scheduleStartupRecovery = () => {
-    if (startupRecoveryScheduled) {
-      return;
+    const source = "assets/nabatick-selection-sheet.svg";
+    if (!image.getAttribute("src")?.endsWith(source)) {
+      image.src = source;
     }
+  }
 
-    startupRecoveryScheduled = true;
-    requestAnimationFrame(() => {
-      startupRecoveryScheduled = false;
-      resumeFalseStartupPause();
-    });
-  };
-
-  const syncStartScreenState = () => {
+  function syncStartScreenState() {
     if (!startScreen) {
       return;
     }
 
     const isOpen = !startScreen.hidden;
-    root.classList.toggle(
-      "start-screen-open",
-      isOpen && window.matchMedia("(hover: none), (pointer: coarse)").matches
-    );
+    root.classList.toggle("start-screen-open", isOpen && coarseQuery.matches);
     startScreen.setAttribute("aria-hidden", String(!isOpen));
+    syncNabatickSelectionPortrait();
 
     if (isOpen) {
       startScreen.style.removeProperty("display");
       startScreen.style.removeProperty("visibility");
       startScreen.style.removeProperty("pointer-events");
-    } else {
-      startScreen.classList.remove("screen-visible");
-      startScreen.style.setProperty("display", "none", "important");
-      startScreen.style.setProperty("visibility", "hidden", "important");
-      startScreen.style.setProperty("pointer-events", "none", "important");
-      scheduleStartupRecovery();
+      if (coarseQuery.matches) {
+        startScreen.scrollTop = 0;
+        startScreen.querySelector(".screen-panel")?.scrollTo?.(0, 0);
+      }
+      return;
     }
-  };
+
+    runtime.startTransitions += 1;
+    startScreen.classList.remove("screen-visible");
+    startScreen.style.setProperty("display", "none", "important");
+    startScreen.style.setProperty("visibility", "hidden", "important");
+    startScreen.style.setProperty("pointer-events", "none", "important");
+  }
 
   if (startScreen) {
     new MutationObserver(syncStartScreenState).observe(startScreen, {
       attributes: true,
       attributeFilter: ["hidden", "class"]
     });
-    window.addEventListener("pageshow", syncStartScreenState);
-    window.addEventListener(
-      "orientationchange",
-      () => window.setTimeout(syncStartScreenState, 120),
-      { passive: true }
-    );
-    syncStartScreenState();
   }
 
-  // game.js historically paused on every window blur. Submitting the start form
-  // can briefly blur the window while the name keyboard closes or focus moves to
-  // the canvas, so the first playable frame was immediately changed to "paused".
-  // This capture listener runs before game.js and blocks only visible-page blur
-  // events during the launch transition. Real tab/app backgrounding is handled
-  // below with the Page Visibility API.
-  window.addEventListener("blur", (event) => {
-    if (
-      performance.now() < startupGuardUntil
-      && document.visibilityState === "visible"
-    ) {
-      event.stopImmediatePropagation();
-      scheduleStartupRecovery();
-    }
-  }, true);
+  coarseQuery.addEventListener?.("change", syncStartScreenState);
+  window.addEventListener("pageshow", syncStartScreenState);
+  window.addEventListener(
+    "orientationchange",
+    () => window.setTimeout(syncStartScreenState, 120),
+    { passive: true }
+  );
 
+  // Pause only when the document is genuinely hidden. Do not auto-resume on
+  // return because the player may expect the game to remain safely paused.
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") {
-      scheduleStartupRecovery();
+    const gameIsOpen = Boolean(startScreen?.hidden && (!endScreen || endScreen.hidden));
+    const isRunning = pauseButton?.textContent.trim() === "Ⅱ";
+    if (document.hidden && gameIsOpen && isRunning) {
+      pauseButton.click();
     }
-  }, true);
+  });
 
-  window.addEventListener("focus", scheduleStartupRecovery, true);
-
-  if (playerForm) {
-    playerForm.addEventListener("submit", () => {
-      // Do not arm the recovery guard for an invalid empty-name submission.
-      if (!playerNameInput?.value.trim()) {
-        return;
-      }
-
-      startupGuardUntil = performance.now() + 2200;
-      [0, 40, 120, 260, 520, 900, 1500, 2100].forEach((delay) => {
-        window.setTimeout(resumeFalseStartupPause, delay);
-      });
-    }, true);
-  }
+  syncStartScreenState();
 
   if (!poster) {
     return;
   }
 
-  // Block and invalidate the obsolete poster loader that used to be bundled
-  // into nabatick-directional.js and could restore the old poster from storage.
   window.__keflulPosterLoaderInstalled = true;
   try {
     sessionStorage.removeItem("keflul-start-poster-webp-v3");
@@ -151,12 +132,13 @@
     // Session storage may be unavailable in private browsing.
   }
 
+  const fallbackSource = poster.getAttribute("src") || "assets/math-maze-poster.png";
   const sourceParts = Array.from(
     { length: 8 },
     (_, index) => `assets/poster-source/keflul-mobile-${String(index).padStart(2, "0")}.txt`
   );
 
-  const showReadyPoster = (source) => {
+  function showReadyPoster(source) {
     const verificationImage = new Image();
     verificationImage.decoding = "async";
     verificationImage.onload = () => {
@@ -165,16 +147,16 @@
       poster.classList.add("poster-ready");
     };
     verificationImage.onerror = () => {
-      poster.classList.remove("poster-loading", "poster-ready", "poster-fallback");
-      poster.classList.add("poster-error");
-      poster.removeAttribute("src");
+      poster.src = fallbackSource;
+      poster.classList.remove("poster-loading", "poster-ready", "poster-error");
+      poster.classList.add("poster-fallback");
     };
     verificationImage.src = source;
-  };
+  }
 
   Promise.all(
     sourceParts.map(async (path) => {
-      const response = await fetch(`${path}?v=20260623-5`, { cache: "reload" });
+      const response = await fetch(`${path}?v=20260624-1`, { cache: "no-store" });
       if (!response.ok) {
         throw new Error(`Poster source failed: ${response.status}`);
       }
@@ -195,9 +177,9 @@
       showReadyPoster(`data:image/webp;base64,${base64}`);
     })
     .catch((error) => {
-      console.error("The current Keflul poster could not be loaded.", error);
-      poster.classList.remove("poster-loading", "poster-ready", "poster-fallback");
-      poster.classList.add("poster-error");
-      poster.removeAttribute("src");
+      console.warn("Using the bundled poster fallback.", error);
+      poster.src = fallbackSource;
+      poster.classList.remove("poster-loading", "poster-ready", "poster-error");
+      poster.classList.add("poster-fallback");
     });
 })();

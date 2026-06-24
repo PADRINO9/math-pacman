@@ -1,9 +1,9 @@
-name: Validate mobile build
+name: Validate game runtime
 
 on:
   push:
     branches:
-      - mobile-ui-v1
+      - main
   pull_request:
     branches:
       - main
@@ -14,20 +14,37 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
-      - name: Check out mobile branch
+      - name: Check out current revision
         uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
-          ref: mobile-ui-v1
+          node-version: 22
+          cache: npm
 
-      - name: Validate game script
-        run: node --check game.js
+      - name: Install test dependencies
+        run: npm install --no-audit --no-fund
 
-      - name: Validate mobile enhancement script
-        run: node --check mobile-enhancements.js
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
 
-      - name: Verify mobile integration
+      - name: Validate JavaScript syntax
         run: |
-          grep -q "mobile-enhancements.css" index.html
-          grep -q "dataset.gameViewport" game.js
-          git diff --check
+          node --check game.js
+          node --check poster-loader.js
+          node --check mobile-enhancements.js
+          node --check mobile-screen-state.js
+          node --check mobile-question-state.js
+          node --check mobile-native-answer.js
+          node --check nabatick-directional.js
+          node --check maze-enhancements.js
+          node --check tests/game.spec.js
+
+      - name: Run desktop and mobile browser tests
+        run: npm run test:smoke
+
+      - name: Verify clean patch formatting
+        run: git diff --check

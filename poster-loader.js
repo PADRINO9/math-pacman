@@ -21,10 +21,9 @@
     runtime.errors.push(String(event.reason || "Unhandled promise rejection"));
   });
 
-  // The game engine used to pause on every window blur. A focus change caused by
-  // form submission, a virtual keyboard, DevTools or browser chrome is not proof
-  // that the page is hidden. Prevent legacy blur handlers from being registered;
-  // page visibility below is the single source of truth for automatic pausing.
+  // The legacy engine registers a window blur handler near the end of game.js.
+  // Keep registration blocked until every parser-loaded game script has run;
+  // restoring on a zero-delay timer was network-timing dependent in production.
   const nativeAddEventListener = window.addEventListener;
   window.addEventListener = function addEventListenerWithoutLegacyBlur(type, listener, options) {
     if (type === "blur") {
@@ -32,9 +31,15 @@
     }
     return nativeAddEventListener.call(this, type, listener, options);
   };
-  window.setTimeout(() => {
+
+  const restoreNativeWindowEvents = () => {
     window.addEventListener = nativeAddEventListener;
-  }, 0);
+  };
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", restoreNativeWindowEvents, { once: true });
+  } else {
+    restoreNativeWindowEvents();
+  }
 
   const stateStyle = document.createElement("style");
   stateStyle.id = "game-screen-state-fix";

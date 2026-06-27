@@ -1,6 +1,11 @@
 (() => {
   "use strict";
 
+  const SYSTEMS = window.KaflulSystems;
+  if (!SYSTEMS) {
+    throw new Error("KaflulSystems failed to load");
+  }
+
   const WIDTH = 960;
   const HEIGHT = 720;
   const TILE = 24;
@@ -132,10 +137,13 @@
       enemyIndexStep: 5
     },
     storageKeys: {
+      save: SYSTEMS.SAVE_KEY,
       bestScore: "mathMazeBest",
       sound: "mathMazeSound",
       difficulty: "mathMazeDifficulty",
       character: "mathMazeCharacter",
+      mode: "mathMazeMode",
+      nickname: "mathMazeNickname",
       timeLimit: "mathMazeTimeLimit",
       factStats: "mathMazeFactStats"
     },
@@ -146,36 +154,7 @@
       timeLimit: "mathPacmanTimeLimit",
       factStats: "mathPacmanFactStats"
     },
-    difficulty: {
-      easy: {
-        label: "קל",
-        enemyCount: 8,
-        enemySpeedMultiplier: 0.9,
-        questionMode: "table",
-        adaptiveQuestionChance: 0.3
-      },
-      medium: {
-        label: "בינוני",
-        enemyCount: 10,
-        enemySpeedMultiplier: 1,
-        questionMode: "filteredTable",
-        adaptiveQuestionChance: 0.3
-      },
-      hard: {
-        label: "קשה",
-        enemyCount: 11,
-        enemySpeedMultiplier: 1.1,
-        questionMode: "twoByOne",
-        adaptiveQuestionChance: 0
-      },
-      veryHard: {
-        label: "קשה מאוד",
-        enemyCount: 12,
-        enemySpeedMultiplier: 1.18,
-        questionMode: "twoByTwo",
-        adaptiveQuestionChance: 0
-      }
-    },
+    difficulty: SYSTEMS.DIFFICULTIES,
     levels: [
       {
         name: "עולם הקרח",
@@ -287,8 +266,11 @@
   const JOYSTICK_DEADZONE = 12;
   const NON_EASY_FACTORS = [3, 4, 5, 6, 7, 8, 9];
   const LEGACY_DIFFICULTY_MAP = {
-    normal: "medium",
-    impossible: "veryHard"
+    easy: "beginner",
+    medium: "normal",
+    hard: "advanced",
+    veryHard: "expert",
+    impossible: "expert"
   };
   const LTR_ISOLATE_START = "\u2066";
   const LTR_ISOLATE_END = "\u2069";
@@ -336,6 +318,8 @@
     levelNumber: document.getElementById("level-number"),
     worldName: document.getElementById("world-name"),
     score: document.getElementById("score"),
+    modeLabel: document.getElementById("mode-label"),
+    difficultyLabel: document.getElementById("difficulty-label"),
     combo: document.getElementById("combo"),
     lives: document.getElementById("lives"),
     progress: document.getElementById("progress-fill"),
@@ -348,6 +332,7 @@
     startScreen: document.getElementById("start-screen"),
     playerForm: document.getElementById("player-form"),
     playerNameInput: document.getElementById("player-name-input"),
+    modeInputs: Array.from(document.querySelectorAll("input[name='game-mode']")),
     characterInputs: Array.from(document.querySelectorAll("input[name='character']")),
     difficultyInputs: Array.from(document.querySelectorAll("input[name='difficulty']")),
     timeLimitToggle: document.getElementById("time-limit-toggle"),
@@ -355,13 +340,30 @@
     nameError: document.getElementById("name-error"),
     startButton: document.getElementById("start-button"),
     bestScore: document.getElementById("best-score"),
+    selectedModeLabel: document.getElementById("selected-mode-label"),
+    selectedDifficultyLabel: document.getElementById("selected-difficulty-label"),
     endScreen: document.getElementById("end-screen"),
     winnerTrophy: document.getElementById("winner-trophy"),
+    newRecordBadge: document.getElementById("new-record-badge"),
     endKicker: document.getElementById("end-kicker"),
     endTitle: document.getElementById("end-title"),
     endCopy: document.getElementById("end-copy"),
     finalScore: document.getElementById("final-score"),
+    previousBest: document.getElementById("previous-best"),
+    leaderboardRank: document.getElementById("leaderboard-rank"),
+    nextRankScore: document.getElementById("next-rank-score"),
+    resultMode: document.getElementById("result-mode"),
+    resultDifficulty: document.getElementById("result-difficulty"),
+    resultStageLabel: document.getElementById("result-stage-label"),
+    resultStage: document.getElementById("result-stage"),
     finalCorrect: document.getElementById("final-correct"),
+    finalIncorrect: document.getElementById("final-incorrect"),
+    finalAccuracy: document.getElementById("final-accuracy"),
+    averageAnswerTime: document.getElementById("average-answer-time"),
+    maxCombo: document.getElementById("max-combo"),
+    remainingLives: document.getElementById("remaining-lives"),
+    scoreBreakdownList: document.getElementById("score-breakdown-list"),
+    retryButton: document.getElementById("retry-button"),
     restartButton: document.getElementById("restart-button"),
     questionDialog: document.getElementById("question-dialog"),
     questionStatus: document.getElementById("question-status"),
@@ -373,7 +375,19 @@
     submitAnswer: document.getElementById("submit-answer"),
     questionFeedback: document.getElementById("question-feedback"),
     joystick: document.getElementById("movement-joystick"),
-    joystickKnob: document.querySelector(".joystick-knob")
+    joystickKnob: document.querySelector(".joystick-knob"),
+    leaderboardOpen: document.getElementById("leaderboard-open"),
+    leaderboardDialog: document.getElementById("leaderboard-dialog"),
+    leaderboardClose: document.getElementById("leaderboard-close"),
+    leaderboardList: document.getElementById("leaderboard-list"),
+    leaderboardStatus: document.getElementById("leaderboard-status"),
+    leaderboardRefresh: document.getElementById("leaderboard-refresh"),
+    leaderboardModeFilter: document.getElementById("leaderboard-mode-filter"),
+    leaderboardDifficultyFilter: document.getElementById("leaderboard-difficulty-filter"),
+    endLeaderboardButton: document.getElementById("end-leaderboard-button"),
+    publishScorePanel: document.getElementById("publish-score-panel"),
+    publishScoreButton: document.getElementById("publish-score-button"),
+    publishScoreStatus: document.getElementById("publish-score-status")
   };
 
   const numberFormat = new Intl.NumberFormat("he-IL");
@@ -409,9 +423,44 @@
     }
   };
 
+  const localSave = SYSTEMS.loadSave(window.localStorage, { key: CONFIG.storageKeys.save });
+
+  function createPlayerId() {
+    if (window.crypto?.randomUUID) {
+      return window.crypto.randomUUID();
+    }
+
+    const bytes = new Uint8Array(16);
+    if (window.crypto?.getRandomValues) {
+      window.crypto.getRandomValues(bytes);
+    } else {
+      for (let index = 0; index < bytes.length; index += 1) {
+        bytes[index] = Math.floor(Math.random() * 256);
+      }
+    }
+    bytes[6] = (bytes[6] & 0x0f) | 0x40;
+    bytes[8] = (bytes[8] & 0x3f) | 0x80;
+    const hex = Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+    return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
+  }
+
+  function getOrCreatePlayerId() {
+    const storedId = storage.get(CONFIG.storageKeys.playerId, "");
+    if (/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(storedId)) {
+      return storedId;
+    }
+
+    const playerId = createPlayerId();
+    storage.set(CONFIG.storageKeys.playerId, playerId);
+    return playerId;
+  }
+
   function normalizeDifficulty(value) {
-    const mappedValue = LEGACY_DIFFICULTY_MAP[value] || value;
-    return Object.prototype.hasOwnProperty.call(CONFIG.difficulty, mappedValue) ? mappedValue : "medium";
+    return SYSTEMS.normalizeDifficulty(LEGACY_DIFFICULTY_MAP[value] || value);
+  }
+
+  function normalizeGameMode(value) {
+    return SYSTEMS.normalizeGameMode(value);
   }
 
   function normalizeCharacterId(value) {
@@ -427,11 +476,27 @@
   }
 
   function getDifficultySettings() {
-    return CONFIG.difficulty[state.difficulty] || CONFIG.difficulty.medium;
+    return CONFIG.difficulty[state.difficulty] || CONFIG.difficulty.normal;
+  }
+
+  function getModeSettings() {
+    return SYSTEMS.GAME_MODES[state.mode] || SYSTEMS.GAME_MODES.arcade;
+  }
+
+  function getPersonalBestForSelection(mode = state.mode, difficulty = state.difficulty) {
+    const localBest = SYSTEMS.getPersonalBest(state.save, mode, difficulty);
+    return Math.max(localBest, Number(storage.getMigrated(
+      CONFIG.storageKeys.bestScore,
+      CONFIG.legacyStorageKeys.bestScore,
+      "0"
+    )) || 0);
   }
 
   function getLevelIndexForAnswers(correctAnswers) {
     const levelIndex = Math.floor(correctAnswers / CONFIG.answersPerLevel);
+    if (state?.mode === "arcade") {
+      return levelIndex % CONFIG.levels.length;
+    }
     return clamp(levelIndex, 0, CONFIG.levels.length - 1);
   }
 
@@ -442,7 +507,22 @@
   function getRequiredEnemyCount() {
     const difficulty = getDifficultySettings();
     const level = getCurrentLevel();
-    return (difficulty.enemyCount || CONFIG.minEnemies) + (level.enemyCountBonus || 0);
+    const arcadeBonus = state.mode === "arcade"
+      ? Math.min(6, Math.floor(state.correctAnswers / CONFIG.answersPerLevel))
+      : 0;
+    return (difficulty.enemyCount || CONFIG.minEnemies) + (level.enemyCountBonus || 0) + arcadeBonus;
+  }
+
+  function getArcadeWave() {
+    return Math.floor(state.correctAnswers / CONFIG.answersPerLevel) + 1;
+  }
+
+  function getArcadePressureMultiplier() {
+    if (state.mode !== "arcade") {
+      return 1;
+    }
+    const difficulty = getDifficultySettings();
+    return 1 + Math.min(0.85, (getArcadeWave() - 1) * 0.045 * (difficulty.progressionSpeed || 1));
   }
 
   function getAdaptiveQuestionChance() {
@@ -475,8 +555,26 @@
     storage.set(CONFIG.storageKeys.factStats, JSON.stringify(state.factStats));
   }
 
+  const initialMode = normalizeGameMode(storage.get(CONFIG.storageKeys.mode, localSave.settings.selectedMode));
+  const savedDifficulty = normalizeDifficulty(storage.getMigrated(
+    CONFIG.storageKeys.difficulty,
+    CONFIG.legacyStorageKeys.difficulty,
+    localSave.settings.selectedDifficulty
+  ));
+  const initialDifficulty = SYSTEMS.isDifficultyUnlocked(localSave, savedDifficulty) ? savedDifficulty : "normal";
+  const initialBestScore = Math.max(
+    SYSTEMS.getPersonalBest(localSave, initialMode, initialDifficulty),
+    Number(storage.getMigrated(
+      CONFIG.storageKeys.bestScore,
+      CONFIG.legacyStorageKeys.bestScore,
+      "0"
+    )) || 0
+  );
+
   const state = {
     phase: "start",
+    save: localSave,
+    mode: initialMode,
     clock: 0,
     lastTime: 0,
     maze: [],
@@ -492,21 +590,18 @@
     levelIndex: 0,
     levelBanner: null,
     score: 0,
+    scoreState: SYSTEMS.createScoreState(),
     combo: 0,
+    comboState: SYSTEMS.createComboState(),
     lives: CONFIG.initialLives,
     correctAnswers: 0,
-    bestScore: Number(storage.getMigrated(
-      CONFIG.storageKeys.bestScore,
-      CONFIG.legacyStorageKeys.bestScore,
-      "0"
-    )) || 0,
-    playerName: "",
-    characterId: normalizeCharacterId(storage.get(CONFIG.storageKeys.character, "bifly")),
-    difficulty: normalizeDifficulty(storage.getMigrated(
-      CONFIG.storageKeys.difficulty,
-      CONFIG.legacyStorageKeys.difficulty,
-      "medium"
-    )),
+    incorrectAnswers: 0,
+    mathStats: SYSTEMS.createMathStats(),
+    bestScore: initialBestScore,
+    playerName: SYSTEMS.safeNickname(storage.get(CONFIG.storageKeys.nickname, localSave.player.nickname)),
+    characterId: normalizeCharacterId(storage.get(CONFIG.storageKeys.character, localSave.settings.selectedCharacter)),
+    playerId: getOrCreatePlayerId(),
+    difficulty: initialDifficulty,
     timeLimitEnabled: storage.getMigrated(
       CONFIG.storageKeys.timeLimit,
       CONFIG.legacyStorageKeys.timeLimit,
@@ -516,6 +611,7 @@
     recentQuestionKeys: [],
     mission: null,
     question: null,
+    questionStartedAt: null,
     questionTimeRemaining: null,
     questionDeadline: null,
     questionFeedbackTimerId: null,
@@ -529,7 +625,14 @@
     ) !== "off",
     audioContext: null,
     shake: 0,
-    fireworkTimer: 0
+    fireworkTimer: 0,
+    leaderboardLoading: false,
+    scorePublishing: false,
+    sessionStartedAt: null,
+    hitsTaken: 0,
+    finalResult: null,
+    latestLeaderboardEntryId: null,
+    lastFocusBeforeLeaderboard: null
   };
 
   function cellKey(x, y) {
@@ -891,7 +994,7 @@
       CONFIG.speed.enemyBase +
       speedTier +
       (index % 4) * CONFIG.speed.enemyIndexStep
-    ) * difficulty.enemySpeedMultiplier * (level.enemySpeedMultiplier || 1);
+    ) * difficulty.enemySpeedMultiplier * (level.enemySpeedMultiplier || 1) * getArcadePressureMultiplier();
 
     return {
       id: state.nextEnemyId,
@@ -1010,12 +1113,17 @@
     state.lastTime = performance.now();
     state.levelIndex = 0;
     state.levelBanner = null;
+    state.scoreState = SYSTEMS.createScoreState();
+    state.comboState = SYSTEMS.createComboState();
     state.score = 0;
     state.combo = 0;
-    state.lives = CONFIG.initialLives;
+    state.lives = getDifficultySettings().initialLives || CONFIG.initialLives;
     state.correctAnswers = 0;
+    state.incorrectAnswers = 0;
+    state.mathStats = SYSTEMS.createMathStats();
     state.recentQuestionKeys = [];
     state.question = null;
+    state.questionStartedAt = null;
     state.questionTimeRemaining = null;
     state.questionDeadline = null;
     state.currentEnemyId = null;
@@ -1023,6 +1131,10 @@
     state.nextEnemyId = 1;
     state.shake = 0;
     state.fireworkTimer = 0;
+    state.sessionStartedAt = performance.now();
+    state.hitsTaken = 0;
+    state.finalResult = null;
+    state.latestLeaderboardEntryId = null;
     assignMission();
     enterLevel(0);
 
@@ -1069,7 +1181,58 @@
   }
 
   function normalizePlayerName(value) {
-    return value.trim().replace(/\s+/g, " ").slice(0, 18);
+    return SYSTEMS.validateNickname(value);
+  }
+
+  function persistSave() {
+    state.save.player.nickname = SYSTEMS.safeNickname(state.playerName || els.playerNameInput.value || state.save.player.nickname);
+    state.save.settings.selectedCharacter = state.characterId;
+    state.save.settings.selectedDifficulty = state.difficulty;
+    state.save.settings.selectedMode = state.mode;
+    state.save.settings.soundEnabled = state.soundEnabled;
+    state.save.settings.timeLimitEnabled = state.timeLimitEnabled;
+    SYSTEMS.persistSave(window.localStorage, state.save, { key: CONFIG.storageKeys.save });
+  }
+
+  function updateBestScorePreview() {
+    state.bestScore = getPersonalBestForSelection();
+    if (els.bestScore) {
+      els.bestScore.textContent = numberFormat.format(state.bestScore);
+    }
+  }
+
+  function syncMenuSummary() {
+    const mode = getModeSettings();
+    const difficulty = getDifficultySettings();
+    if (els.selectedModeLabel) {
+      els.selectedModeLabel.textContent = mode.shortLabel;
+    }
+    if (els.selectedDifficultyLabel) {
+      els.selectedDifficultyLabel.textContent = difficulty.label;
+    }
+    updateBestScorePreview();
+  }
+
+  function getSelectedMode() {
+    const selected = els.modeInputs.find((input) => input.checked);
+    return normalizeGameMode(selected?.value || state.mode);
+  }
+
+  function setMode(value, persist = true) {
+    state.mode = normalizeGameMode(value);
+    if (persist) {
+      storage.set(CONFIG.storageKeys.mode, state.mode);
+      persistSave();
+    }
+    syncModeInputs();
+    syncTimeLimitToggle();
+    syncMenuSummary();
+  }
+
+  function syncModeInputs() {
+    for (const input of els.modeInputs) {
+      input.checked = input.value === state.mode;
+    }
   }
 
   function getSelectedCharacterId() {
@@ -1081,6 +1244,7 @@
     state.characterId = normalizeCharacterId(value);
     if (persist) {
       storage.set(CONFIG.storageKeys.character, state.characterId);
+      persistSave();
     }
     document.documentElement.dataset.character = state.characterId;
     syncCharacterInputs();
@@ -1098,15 +1262,22 @@
   }
 
   function setDifficulty(value, persist = true) {
-    state.difficulty = normalizeDifficulty(value);
+    const nextDifficulty = normalizeDifficulty(value);
+    state.difficulty = SYSTEMS.isDifficultyUnlocked(state.save, nextDifficulty) ? nextDifficulty : "normal";
     if (persist) {
       storage.set(CONFIG.storageKeys.difficulty, state.difficulty);
+      persistSave();
     }
     syncDifficultyInputs();
+    syncMenuSummary();
   }
 
   function syncDifficultyInputs() {
     for (const input of els.difficultyInputs) {
+      const isLocked = input.value === "legendary" && !SYSTEMS.isDifficultyUnlocked(state.save, "legendary");
+      input.disabled = isLocked;
+      input.closest("label")?.classList.toggle("difficulty-locked", isLocked);
+      input.closest("label")?.setAttribute("title", isLocked ? SYSTEMS.LEGENDARY_UNLOCK_RULE.label : "");
       input.checked = input.value === state.difficulty;
     }
   }
@@ -1115,6 +1286,7 @@
     state.timeLimitEnabled = Boolean(enabled);
     if (persist) {
       storage.set(CONFIG.storageKeys.timeLimit, state.timeLimitEnabled ? "on" : "off");
+      persistSave();
     }
     syncTimeLimitToggle();
   }
@@ -1134,28 +1306,269 @@
       "aria-label",
       enabled ? "בטל הגבלת זמן לכל תרגיל" : "הפעל הגבלת זמן של 25 שניות לכל תרגיל"
     );
-    els.timeLimitState.textContent = enabled ? "25 שניות" : "ללא זמן";
+    els.timeLimitState.textContent = state.mode === "arcade"
+      ? `${getQuestionTimeLimit()} שניות בארקייד`
+      : (enabled ? `${getQuestionTimeLimit()} שניות` : "ללא זמן");
+  }
+
+  function setLeaderboardStatus(message, isError = false) {
+    if (!els.leaderboardStatus) {
+      return;
+    }
+
+    els.leaderboardStatus.textContent = message;
+    els.leaderboardStatus.style.color = isError ? "var(--red)" : "";
+  }
+
+  function modeLabel(modeId) {
+    return SYSTEMS.GAME_MODES[SYSTEMS.normalizeGameMode(modeId)]?.shortLabel || "ארקייד";
+  }
+
+  function difficultyLabel(difficultyId) {
+    return CONFIG.difficulty[normalizeDifficulty(difficultyId)]?.label || "רגיל";
+  }
+
+  function openLeaderboard() {
+    if (!els.leaderboardDialog) {
+      return;
+    }
+
+    state.lastFocusBeforeLeaderboard = document.activeElement;
+    if (els.leaderboardModeFilter && !els.leaderboardModeFilter.value) {
+      els.leaderboardModeFilter.value = state.mode;
+    }
+    if (els.leaderboardDifficultyFilter && !els.leaderboardDifficultyFilter.value) {
+      els.leaderboardDifficultyFilter.value = state.difficulty;
+    }
+    els.leaderboardDialog.hidden = false;
+    loadLeaderboard();
+    window.setTimeout(() => els.leaderboardClose?.focus(), 0);
+  }
+
+  function closeLeaderboard() {
+    if (!els.leaderboardDialog) {
+      return;
+    }
+
+    els.leaderboardDialog.hidden = true;
+    const focusTarget = state.lastFocusBeforeLeaderboard instanceof HTMLElement
+      ? state.lastFocusBeforeLeaderboard
+      : els.leaderboardOpen;
+    focusTarget?.focus();
+  }
+
+  function renderLeaderboard(scores) {
+    if (!els.leaderboardList) {
+      return;
+    }
+
+    els.leaderboardList.replaceChildren();
+    if (!Array.isArray(scores) || scores.length === 0) {
+      const empty = document.createElement("li");
+      empty.className = "leaderboard-placeholder";
+      empty.textContent = "עדיין אין שיאים. אפשר להיות הראשון בטבלה.";
+      els.leaderboardList.append(empty);
+      return;
+    }
+
+    scores.slice(0, CONFIG.leaderboard.limit).forEach((entry, index) => {
+      const item = document.createElement("li");
+      const rank = document.createElement("span");
+      const player = document.createElement("span");
+      const details = document.createElement("small");
+      const score = document.createElement("strong");
+      const entryModeLabel = modeLabel(entry.mode || entry.gameMode);
+      const entryDifficultyLabel = difficultyLabel(entry.difficulty);
+      const stageLabel = (entry.mode || entry.gameMode) === "adventure" ? "שלב" : "גל";
+
+      item.classList.toggle("is-current-player", entry.id === state.latestLeaderboardEntryId || entry.playerId === state.playerId);
+      rank.className = "leaderboard-rank";
+      rank.textContent = String(index + 1);
+      player.className = "leaderboard-player";
+      player.textContent = entry.nickname || entry.playerName;
+      details.textContent = `${entryModeLabel} · ${entryDifficultyLabel} · ${stageLabel} ${entry.reachedStage || entry.levelReached || 1} · רצף ${entry.maxCombo || 0} · דיוק ${entry.accuracy || 0}%`;
+      score.className = "leaderboard-score";
+      score.textContent = numberFormat.format(entry.score);
+
+      player.append(details);
+      item.append(rank, player, score);
+      els.leaderboardList.append(item);
+    });
+  }
+
+  async function leaderboardRequest(options = {}) {
+    const controller = new AbortController();
+    const timeoutId = window.setTimeout(() => controller.abort(), CONFIG.leaderboard.requestTimeoutMs);
+
+    try {
+      const response = await fetch(CONFIG.leaderboard.endpoint, {
+        ...options,
+        headers: {
+          Accept: "application/json",
+          ...(options.headers || {})
+        },
+        signal: controller.signal
+      });
+      const payload = await response.json().catch(() => null);
+      if (!response.ok) {
+        const error = new Error(payload?.message || "Leaderboard request failed");
+        error.code = payload?.code || "leaderboard_request_failed";
+        throw error;
+      }
+      return payload;
+    } finally {
+      window.clearTimeout(timeoutId);
+    }
+  }
+
+  function toRemoteDifficulty(difficultyId) {
+    return {
+      beginner: "easy",
+      normal: "medium",
+      advanced: "hard",
+      expert: "veryHard",
+      legendary: "veryHard"
+    }[normalizeDifficulty(difficultyId)] || "medium";
+  }
+
+  async function loadLeaderboard() {
+    if (!els.leaderboardList || state.leaderboardLoading) {
+      return;
+    }
+
+    state.leaderboardLoading = true;
+    if (els.leaderboardRefresh) {
+      els.leaderboardRefresh.disabled = true;
+    }
+
+    const entries = SYSTEMS.getLeaderboardEntries(state.save, {
+      mode: els.leaderboardModeFilter?.value || "all",
+      difficulty: els.leaderboardDifficultyFilter?.value || "all",
+      limit: CONFIG.leaderboard.limit
+    });
+    renderLeaderboard(entries);
+    setLeaderboardStatus(entries.length ? "הטבלה המקומית מעודכנת." : "עדיין אין שיאים בקטגוריה הזאת.");
+    state.leaderboardLoading = false;
+    if (els.leaderboardRefresh) {
+      els.leaderboardRefresh.disabled = false;
+    }
+  }
+
+  function updatePublishScorePanel() {
+    if (!els.publishScorePanel || !els.publishScoreButton || !els.publishScoreStatus) {
+      return;
+    }
+
+    const eligible = state.correctAnswers >= CONFIG.leaderboard.minimumCorrectAnswers;
+    els.publishScorePanel.hidden = !eligible;
+    els.publishScoreButton.disabled = false;
+    els.publishScoreButton.textContent = "פרסם את השיא";
+    els.publishScoreStatus.textContent = "";
+    els.publishScoreStatus.style.color = "";
+  }
+
+  async function publishScore() {
+    if (
+      state.scorePublishing
+      || state.phase !== "ended"
+      || state.correctAnswers < CONFIG.leaderboard.minimumCorrectAnswers
+    ) {
+      return;
+    }
+
+    state.scorePublishing = true;
+    els.publishScoreButton.disabled = true;
+    els.publishScoreButton.textContent = "מפרסם...";
+    els.publishScoreStatus.textContent = "שומר את השיא בטבלה הציבורית...";
+    els.publishScoreStatus.style.color = "";
+
+    try {
+      const payload = await leaderboardRequest({
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          playerId: state.playerId,
+          playerName: state.playerName,
+          score: state.score,
+          correctAnswers: state.correctAnswers,
+          levelReached: getLevelIndexForAnswers(state.correctAnswers) + 1,
+          difficulty: toRemoteDifficulty(state.difficulty),
+          timeLimitEnabled: state.timeLimitEnabled
+        })
+      });
+
+      els.publishScoreButton.textContent = "השיא פורסם";
+      els.publishScoreStatus.textContent = payload?.improved === false
+        ? "השיא הקודם שלך בטבלה עדיין גבוה יותר."
+        : "השיא נשמר בהצלחה באלוף האלופים.";
+      els.publishScoreStatus.style.color = "var(--green)";
+      await loadLeaderboard();
+    } catch (error) {
+      els.publishScoreButton.disabled = false;
+      els.publishScoreButton.textContent = "נסה לפרסם שוב";
+      if (error?.code === "leaderboard_not_configured") {
+        els.publishScoreStatus.textContent = "מסד הנתונים עדיין לא הוגדר ב־Vercel.";
+      } else if (error?.code === "rate_limited") {
+        els.publishScoreStatus.textContent = "כבר ניסית לפרסם עכשיו. חכה כמה שניות ונסה שוב.";
+      } else {
+        els.publishScoreStatus.textContent = "לא הצלחנו לפרסם את השיא כרגע.";
+      }
+      els.publishScoreStatus.style.color = "var(--red)";
+    } finally {
+      state.scorePublishing = false;
+    }
+  }
+
+  const PHASE_TO_GAME_STATE = {
+    start: "mainMenu",
+    playing: "playing",
+    question: "question",
+    paused: "paused",
+    ended: "results"
+  };
+
+  function setPhase(nextPhase, options = {}) {
+    const fromState = PHASE_TO_GAME_STATE[state.phase] || state.phase;
+    const toState = PHASE_TO_GAME_STATE[nextPhase] || nextPhase;
+    if (!options.force && !SYSTEMS.canTransition(fromState, toState)) {
+      console.warn(`Invalid game phase transition ignored by audit: ${fromState} -> ${toState}`);
+    }
+    state.phase = nextPhase;
+    document.documentElement.dataset.gameState = toState;
   }
 
   function startGame(event) {
     event?.preventDefault();
+    if (state.phase === "playing" || state.phase === "question") {
+      return;
+    }
+
     const playerName = normalizePlayerName(els.playerNameInput.value);
 
-    if (!playerName) {
-      els.nameError.textContent = "צריך שם לפני שמתחילים.";
+    if (!playerName.ok) {
+      els.nameError.textContent = playerName.error;
       els.playerNameInput.focus();
       return;
     }
 
-    state.playerName = playerName;
+    state.playerName = playerName.value;
+    state.save.player.nickname = state.playerName;
+    setMode(getSelectedMode());
     setCharacter(getSelectedCharacterId());
     setDifficulty(getSelectedDifficulty());
+    persistSave();
     els.nameError.textContent = "";
     setupGame();
-    state.phase = "playing";
+    setPhase("playing");
     els.startScreen.hidden = true;
     els.startScreen.classList.remove("screen-visible");
     els.endScreen.hidden = true;
+    els.leaderboardDialog.hidden = true;
+    if (els.publishScorePanel) {
+      els.publishScorePanel.hidden = true;
+    }
     els.pause.textContent = "Ⅱ";
     stage.focus({ preventScroll: true });
     resumeAudio();
@@ -1163,26 +1576,37 @@
   }
 
   function showStartScreen() {
-    state.phase = "start";
-    state.playerName = "";
+    setPhase("start", { force: true });
+    state.playerName = SYSTEMS.safeNickname(state.save.player.nickname);
     els.endScreen.hidden = true;
     els.questionDialog.hidden = true;
     els.startScreen.hidden = false;
     els.startScreen.classList.add("screen-visible");
     els.winnerTrophy.hidden = true;
-    els.playerNameInput.value = "";
+    if (els.newRecordBadge) {
+      els.newRecordBadge.hidden = true;
+    }
+    els.playerNameInput.value = state.playerName;
     els.nameError.textContent = "";
     els.pause.textContent = "Ⅱ";
+    syncModeInputs();
     syncCharacterInputs();
     syncDifficultyInputs();
     syncTimeLimitToggle();
+    syncMenuSummary();
     setupGame();
     focusPlayerNameWhenUseful();
   }
 
+  function retryGame() {
+    const nickname = SYSTEMS.safeNickname(state.playerName || state.save.player.nickname);
+    els.playerNameInput.value = nickname;
+    startGame();
+  }
+
   function togglePause() {
     if (state.phase === "playing") {
-      state.phase = "paused";
+      setPhase("paused");
       resetJoystick();
       els.pause.textContent = "▶";
       playTone(220, 0.06, "sine", 0.035);
@@ -1190,7 +1614,7 @@
     }
 
     if (state.phase === "paused") {
-      state.phase = "playing";
+      setPhase("playing");
       els.pause.textContent = "Ⅱ";
       state.lastTime = performance.now();
       playTone(440, 0.06, "sine", 0.035);
@@ -1200,6 +1624,7 @@
   function toggleSound() {
     state.soundEnabled = !state.soundEnabled;
     storage.set(CONFIG.storageKeys.sound, state.soundEnabled ? "on" : "off");
+    persistSave();
     updateSoundButton();
     if (state.soundEnabled) {
       resumeAudio();
@@ -1274,23 +1699,60 @@
     tryApplyPlayerDirection(state.player, direction);
   }
 
+  function awardScore(event, options = {}) {
+    const comboMultiplierPct = options.comboMultiplierPct ?? state.comboState.multiplierPct ?? 100;
+    const award = SYSTEMS.applyScoreEvent(state.scoreState, event, {
+      difficulty: getDifficultySettings(),
+      comboMultiplierPct
+    });
+    state.score = state.scoreState.total;
+    return award;
+  }
+
+  function applyCombo(eventName) {
+    SYSTEMS.applyComboEvent(state.comboState, eventName, getDifficultySettings());
+    state.combo = state.comboState.count;
+    return state.comboState;
+  }
+
+  function formatSeconds(ms) {
+    if (!ms) {
+      return "0.0ש׳";
+    }
+    return `${(ms / 1000).toFixed(1)}ש׳`;
+  }
+
   function updateHud() {
     const level = getCurrentLevel();
+    const mode = getModeSettings();
+    const difficulty = getDifficultySettings();
+    const arcadeWave = getArcadeWave();
     els.correct.textContent = state.correctAnswers;
-    els.targetCorrect.textContent = `/${CONFIG.targetCorrect}`;
+    els.targetCorrect.textContent = state.mode === "arcade" ? `/גל ${arcadeWave}` : `/${CONFIG.targetCorrect}`;
     if (els.levelNumber) {
-      els.levelNumber.textContent = `${state.levelIndex + 1}`;
+      els.levelNumber.textContent = state.mode === "arcade" ? `${arcadeWave}` : `${state.levelIndex + 1}`;
     }
     if (els.worldName) {
       els.worldName.textContent = level.shortName;
       els.worldName.setAttribute("aria-label", level.name);
     }
+    if (els.modeLabel) {
+      els.modeLabel.textContent = mode.shortLabel;
+    }
+    if (els.difficultyLabel) {
+      els.difficultyLabel.textContent = difficulty.label;
+    }
     els.score.textContent = numberFormat.format(state.score);
-    els.combo.textContent = state.combo;
+    els.combo.textContent = state.comboState.multiplierPct > 100
+      ? `${state.combo} · ×${(state.comboState.multiplierPct / 100).toFixed(1)}`
+      : String(state.combo);
     const hearts = "♥".repeat(Math.max(0, state.lives));
     els.lives.textContent = hearts || "0";
     els.lives.setAttribute("aria-label", `${state.lives} חיים`);
-    els.progress.style.width = `${Math.min(100, state.correctAnswers / CONFIG.targetCorrect * 100)}%`;
+    const progressPercent = state.mode === "arcade"
+      ? (state.correctAnswers % CONFIG.answersPerLevel) / CONFIG.answersPerLevel * 100
+      : state.correctAnswers / CONFIG.targetCorrect * 100;
+    els.progress.style.width = `${Math.min(100, progressPercent)}%`;
     els.bestScore.textContent = numberFormat.format(state.bestScore);
     updateMissionHud();
   }
@@ -1376,14 +1838,13 @@
   }
 
   function completeMission() {
-    const bonus = CONFIG.missionBonus;
-    state.score += bonus;
+    const award = awardScore({ type: "mission", value: CONFIG.missionBonus });
     playMissionSound();
     pulseElement(els.missionCard, "metric-pulse");
     pulseElement(els.progressWrap, "progress-pulse");
 
     if (state.player) {
-      addFloatingText(state.player.x, state.player.y - 34, `משימה +${bonus}`, "#67f08b");
+      addFloatingText(state.player.x, state.player.y - 34, `משימה +${award.total}`, "#67f08b");
       addBurst(state.player.x, state.player.y, "#67f08b", 18, 110);
     }
 
@@ -1611,7 +2072,10 @@
       const hitRadius = player.radius + collectible.radius + 1.4;
       if (dx * dx + dy * dy <= hitRadius * hitRadius) {
         state.collectibles.delete(key);
-        state.score += collectible.value;
+        const award = awardScore({
+          type: "collectible",
+          value: collectible.value
+        });
         collected += 1;
         player.eatAnimation = GAME_THEME.player.eatAnimationDuration;
         player.eatDirection = player.direction;
@@ -1627,7 +2091,7 @@
         };
         if (collectible.value > 10) {
           addBurst(collectible.x, collectible.y, "#ffd84a", 12, 70);
-          addFloatingText(collectible.x, collectible.y - 12, `+${collectible.value}`, "#ffd84a");
+          addFloatingText(collectible.x, collectible.y - 12, `+${award.total}`, "#ffd84a");
         } else if (Math.random() < 0.2) {
           addBurst(collectible.x, collectible.y, "#f7fbff", 4, 42);
         }
@@ -1720,7 +2184,8 @@
 
     const playerDir = DIRS[player.direction] || DIRS.right;
     const cycle = state.clock % 24;
-    const scatterWindow = !MOBILE_RUNTIME.coarse && state.clock > 10 && cycle > 18;
+    const aggression = getDifficultySettings().enemyAiAggressiveness || 1;
+    const scatterWindow = !MOBILE_RUNTIME.coarse && state.clock > 10 && cycle > 18 + clamp((aggression - 1) * 5, 0, 4);
 
     if (player.invulnerable > 0 || scatterWindow) {
       return normalizeTargetCell(enemy.scatter);
@@ -1728,8 +2193,8 @@
 
     if (enemy.personality === 1) {
       return normalizeTargetCell({
-        x: playerCell.x + playerDir.x * 4,
-        y: playerCell.y + playerDir.y * 4
+        x: playerCell.x + playerDir.x * Math.round(3 + aggression),
+        y: playerCell.y + playerDir.y * Math.round(3 + aggression)
       });
     }
 
@@ -1896,6 +2361,13 @@
       };
     }
 
+    if (difficulty.questionMode === "legendary") {
+      return {
+        a: randomInt(12, 99),
+        b: randomInt(12, 99)
+      };
+    }
+
     return {
       a: randomInt(11, 99),
       b: randomInt(11, 99)
@@ -1938,6 +2410,10 @@
 
     if (difficulty.questionMode === "twoByOne") {
       return isBetween(a, 11, 99) && NON_EASY_FACTORS.includes(b);
+    }
+
+    if (difficulty.questionMode === "legendary") {
+      return isBetween(a, 12, 99) && isBetween(b, 12, 99);
     }
 
     return isBetween(a, 11, 99) && isBetween(b, 11, 99);
@@ -2032,9 +2508,10 @@
 
   function openQuestion(enemy) {
     clearQuestionFeedbackTimer();
-    state.phase = "question";
+    setPhase("question");
     resetJoystick();
     state.question = generateQuestion();
+    state.questionStartedAt = performance.now();
     state.currentEnemyId = enemy.id;
     state.answerLocked = false;
     els.questionStatus.textContent = `יריב ${state.combo > 2 ? "ברצף" : "נתפס"}`;
@@ -2052,20 +2529,28 @@
   }
 
   function startQuestionTimer() {
-    if (!state.timeLimitEnabled) {
+    if (!isQuestionTimerEnabled()) {
       state.questionTimeRemaining = null;
       state.questionDeadline = null;
       updateQuestionTimerDisplay();
       return;
     }
 
-    state.questionDeadline = performance.now() + CONFIG.questionTimeLimit * 1000;
+    state.questionDeadline = performance.now() + getQuestionTimeLimit() * 1000;
     state.questionTimeRemaining = getQuestionTimeRemaining();
     updateQuestionTimerDisplay();
   }
 
+  function isQuestionTimerEnabled() {
+    return state.mode === "arcade" || state.timeLimitEnabled;
+  }
+
+  function getQuestionTimeLimit() {
+    return getDifficultySettings().answerTimeLimit || CONFIG.questionTimeLimit;
+  }
+
   function updateQuestionTimer() {
-    if (!state.timeLimitEnabled || state.answerLocked || !state.question || state.questionDeadline === null) {
+    if (!isQuestionTimerEnabled() || state.answerLocked || !state.question || state.questionDeadline === null) {
       return;
     }
 
@@ -2075,6 +2560,40 @@
     if (state.questionTimeRemaining <= 0) {
       expireQuestionTimer();
     }
+  }
+
+  function suspendQuestionTimer() {
+    if (
+      state.phase !== "question"
+      || !isQuestionTimerEnabled()
+      || state.answerLocked
+      || state.questionDeadline === null
+    ) {
+      return;
+    }
+
+    state.questionTimeRemaining = getQuestionTimeRemaining();
+    state.questionDeadline = null;
+  }
+
+  function resumeQuestionTimer() {
+    if (
+      state.phase !== "question"
+      || !isQuestionTimerEnabled()
+      || state.answerLocked
+      || state.questionDeadline !== null
+      || state.questionTimeRemaining === null
+    ) {
+      return;
+    }
+
+    if (state.questionTimeRemaining <= 0) {
+      expireQuestionTimer();
+      return;
+    }
+
+    state.questionDeadline = performance.now() + state.questionTimeRemaining * 1000;
+    updateQuestionTimerDisplay();
   }
 
   function getQuestionTimeRemaining() {
@@ -2090,7 +2609,7 @@
       return;
     }
 
-    const hasTimer = state.timeLimitEnabled && state.questionDeadline !== null && state.questionTimeRemaining !== null;
+    const hasTimer = isQuestionTimerEnabled() && state.questionDeadline !== null && state.questionTimeRemaining !== null;
     els.questionTimer.hidden = !hasTimer;
     if (!hasTimer) {
       return;
@@ -2110,10 +2629,18 @@
     els.answerInput.disabled = true;
     els.submitAnswer.disabled = true;
     recordFactResult(state.question, false);
+    SYSTEMS.recordMathAnswer(state.mathStats, {
+      correct: false,
+      responseMs: getQuestionTimeLimit() * 1000
+    });
+    state.incorrectAnswers = state.mathStats.incorrectAnswers;
     state.questionDeadline = null;
     els.questionFeedback.textContent = timeExpiredFeedback(state.question.answer);
     els.questionFeedback.style.color = "#ff4c5f";
-    scheduleQuestionFinish(false);
+    scheduleQuestionFinish(false, {
+      responseMs: getQuestionTimeLimit() * 1000,
+      timedOut: true
+    });
   }
 
   function clearQuestionFeedbackTimer() {
@@ -2125,15 +2652,15 @@
     state.questionFeedbackTimerId = null;
   }
 
-  function scheduleQuestionFinish(correct) {
+  function scheduleQuestionFinish(correct, answerContext = {}) {
     clearQuestionFeedbackTimer();
     state.questionFeedbackTimerId = setTimeout(
-      () => finishQuestion(correct),
+      () => finishQuestion(correct, answerContext),
       correct ? CONFIG.questionFeedbackDelay.correct : CONFIG.questionFeedbackDelay.wrong
     );
   }
 
-  function finishQuestion(correct) {
+  function finishQuestion(correct, answerContext = {}) {
     state.questionFeedbackTimerId = null;
     state.questionTimeRemaining = null;
     state.questionDeadline = null;
@@ -2144,28 +2671,34 @@
     els.submitAnswer.disabled = false;
 
     if (correct) {
-      applyCorrectAnswer();
+      applyCorrectAnswer(answerContext);
     } else {
-      applyWrongAnswer();
+      applyWrongAnswer(answerContext);
     }
 
     updateHud();
   }
 
-  function applyCorrectAnswer() {
+  function applyCorrectAnswer(answerContext = {}) {
     const enemy = state.enemies.find((candidate) => candidate.id === state.currentEnemyId);
     const previousLevelIndex = state.levelIndex;
-    state.correctAnswers += 1;
-    state.combo += 1;
-    const comboBonus = Math.min(750, state.combo * 35);
-    state.score += 260 + comboBonus;
+    state.correctAnswers = state.mathStats.correctAnswers;
+    applyCombo("success");
+    const award = awardScore({
+      type: "correctAnswer",
+      responseMs: answerContext.responseMs,
+      timeLimitMs: isQuestionTimerEnabled() ? getQuestionTimeLimit() * 1000 : 0,
+      questionMode: getDifficultySettings().questionMode,
+      enemyDefeated: Boolean(enemy)
+    });
     state.shake = 0.07;
     playCorrectSound();
     pulseElement(els.progressWrap, "progress-pulse");
+    pulseElement(els.combo.closest(".metric"), "metric-pulse");
 
     if (enemy) {
       addBurst(enemy.x, enemy.y, enemy.color, 36, 150);
-      addFloatingText(enemy.x, enemy.y - 24, `+${260 + comboBonus}`, "#67f08b");
+      addFloatingText(enemy.x, enemy.y - 24, `+${award.total}`, "#67f08b");
       state.enemies = state.enemies.filter((candidate) => candidate.id !== enemy.id);
       scheduleEnemySpawn(0.9);
       updateMission("enemyDefeated");
@@ -2179,18 +2712,23 @@
 
     const awardedLife = state.correctAnswers % CONFIG.answersPerLevel === 0;
     if (awardedLife) {
+      const stageAward = awardScore({
+        type: "stageComplete",
+        mode: state.mode
+      });
       state.lives += 1;
-      addFloatingText(state.player.x, state.player.y - 28, "+חיים", "#ff5f9f");
+      addFloatingText(state.player.x, state.player.y - 28, `גל +${stageAward.total}`, "#ffd84a");
+      addFloatingText(state.player.x, state.player.y - 10, "+חיים", "#ff5f9f");
       playTone(880, 0.12, "triangle", 0.04);
     }
 
-    if (state.correctAnswers >= CONFIG.targetCorrect) {
+    if (state.mode === "adventure" && state.correctAnswers >= CONFIG.targetCorrect) {
       showEndScreen(true);
       return;
     }
 
     const nextLevelIndex = getLevelIndexForAnswers(state.correctAnswers);
-    state.phase = "playing";
+    setPhase("playing");
     state.currentEnemyId = null;
     state.question = null;
 
@@ -2204,7 +2742,9 @@
 
   function applyWrongAnswer() {
     state.lives -= 1;
-    state.combo = 0;
+    state.incorrectAnswers = state.mathStats.incorrectAnswers;
+    state.hitsTaken += 1;
+    applyCombo("lifeLost");
     state.shake = 0.28;
     playWrongSound();
     updateMission("wrongAnswer");
@@ -2221,7 +2761,7 @@
 
     resetPositionsAfterHit();
     state.player.invulnerable = 2.6;
-    state.phase = "playing";
+    setPhase("playing");
     state.currentEnemyId = null;
     state.question = null;
   }
@@ -2248,28 +2788,206 @@
     });
   }
 
-  function showEndScreen(won) {
+  function applyFinalScoreBonuses(won) {
+    const accuracy = SYSTEMS.getAccuracy(state.mathStats);
+    if (state.lives > 0) {
+      awardScore({ type: "lifeRemaining", count: state.lives }, { comboMultiplierPct: 100 });
+    }
+    if (state.hitsTaken === 0 && state.mathStats.totalQuestions > 0) {
+      awardScore({ type: "noHitBonus" }, { comboMultiplierPct: 100 });
+    }
+    if (state.mathStats.totalQuestions >= 5) {
+      awardScore({ type: "accuracyBonus", accuracy }, { comboMultiplierPct: 100 });
+    }
+    if (won && state.sessionStartedAt) {
+      const elapsedSeconds = Math.max(0, (performance.now() - state.sessionStartedAt) / 1000);
+      const timeBonus = Math.max(0, Math.floor(SYSTEMS.SCORE_CONFIG.timeBonusMax - elapsedSeconds * 6));
+      awardScore({ type: "timeBonus", value: timeBonus }, { comboMultiplierPct: 100 });
+    }
+  }
+
+  function finalizeSession(won) {
+    if (state.finalResult) {
+      return state.finalResult;
+    }
+
+    applyFinalScoreBonuses(won);
+
+    const mode = state.mode;
+    const difficulty = state.difficulty;
+    const accuracy = SYSTEMS.getAccuracy(state.mathStats);
+    const averageAnswerTimeMs = SYSTEMS.getAverageAnswerTime(state.mathStats);
+    const reachedStage = mode === "arcade" ? getArcadeWave() : getLevelIndexForAnswers(state.correctAnswers) + 1;
+    const previousBest = getPersonalBestForSelection(mode, difficulty);
+    const score = state.scoreState.total;
+    const resultDate = new Date().toISOString();
+
+    const bestResult = SYSTEMS.recordPersonalBest(state.save, {
+      mode,
+      difficulty,
+      score,
+      reachedStage,
+      maxCombo: state.comboState.max,
+      accuracy,
+      date: resultDate
+    });
+    const newRecord = score > previousBest;
+
+    const entry = SYSTEMS.createLeaderboardEntry({
+      playerId: state.playerId,
+      nickname: state.playerName || state.save.player.nickname,
+      score,
+      mode,
+      difficulty,
+      reachedStage,
+      selectedCharacter: state.characterId,
+      maxCombo: state.comboState.max,
+      accuracy,
+      date: resultDate,
+      gameVersion: SYSTEMS.GAME_VERSION
+    });
+    const leaderboardResult = SYSTEMS.addLocalLeaderboardEntry(state.save, entry, {
+      limit: CONFIG.leaderboard.limit
+    });
+    state.latestLeaderboardEntryId = leaderboardResult.entry?.id || null;
+
+    const completionKey = `${mode}:${difficulty}`;
+    const previousCompletion = state.save.completedLevels[completionKey] || { reachedStage: 0, won: false };
+    state.save.completedLevels[completionKey] = {
+      reachedStage: Math.max(previousCompletion.reachedStage || 0, reachedStage),
+      won: previousCompletion.won || won,
+      updatedAt: resultDate
+    };
+
+    const unlocksLegendary = SYSTEMS.shouldUnlockLegendary(state.save, {
+      mode,
+      difficulty,
+      won,
+      score
+    });
+    if (unlocksLegendary) {
+      SYSTEMS.unlockDifficulty(state.save, "legendary");
+      playMissionSound();
+    }
+
+    state.save.player.nickname = state.playerName || state.save.player.nickname;
+    state.save.settings.selectedMode = mode;
+    state.save.settings.selectedDifficulty = difficulty;
+    state.save.settings.selectedCharacter = state.characterId;
+    SYSTEMS.persistSave(window.localStorage, state.save, { key: CONFIG.storageKeys.save });
+
+    if (newRecord) {
+      state.bestScore = score;
+      storage.set(CONFIG.storageKeys.bestScore, String(score));
+      els.bestScore.textContent = numberFormat.format(score);
+    } else {
+      state.bestScore = Math.max(previousBest, bestResult.current);
+    }
+
+    state.finalResult = {
+      won,
+      score,
+      previousBest,
+      newRecord,
+      leaderboardRank: leaderboardResult.rank,
+      scoreToNextRank: leaderboardResult.scoreToNextRank,
+      mode,
+      difficulty,
+      reachedStage,
+      correctAnswers: state.mathStats.correctAnswers,
+      incorrectAnswers: state.mathStats.incorrectAnswers,
+      totalQuestions: state.mathStats.totalQuestions,
+      accuracy,
+      averageAnswerTimeMs,
+      fastestAnswerMs: state.mathStats.fastestAnswerMs,
+      maxCombo: state.comboState.max,
+      remainingLives: state.lives,
+      breakdown: { ...state.scoreState.breakdown },
+      unlocksLegendary
+    };
+
+    return state.finalResult;
+  }
+
+  function renderScoreBreakdown(breakdown) {
+    if (!els.scoreBreakdownList) {
+      return;
+    }
+
+    const rows = [
+      ["נקודות משחק", breakdown.gameplay],
+      ["נקודות מתמטיקה", breakdown.math],
+      ["בונוס מהירות", breakdown.speed],
+      ["ניצחון על יריבים", breakdown.enemy],
+      ["משימות", breakdown.mission],
+      ["השלמת שלב או גל", breakdown.completion],
+      ["חיים שנשארו", breakdown.lives],
+      ["בונוס ללא פגיעה", breakdown.noHit],
+      ["בונוס דיוק", breakdown.accuracy],
+      ["בונוס זמן", breakdown.time],
+      [`מכפיל קושי ×${(getDifficultySettings().scoreMultiplierPct / 100).toFixed(1)}`, breakdown.difficulty],
+      ["תרומת רצף", breakdown.combo]
+    ];
+
+    els.scoreBreakdownList.replaceChildren();
+    rows.forEach(([label, value]) => {
+      const item = document.createElement("li");
+      const name = document.createElement("span");
+      const amount = document.createElement("strong");
+      name.textContent = label;
+      amount.textContent = numberFormat.format(Math.max(0, Math.floor(value || 0)));
+      item.append(name, amount);
+      els.scoreBreakdownList.append(item);
+    });
+  }
+
+  function renderResults(result) {
     const playerName = state.playerName || "שחקן";
-    state.phase = "ended";
+    els.winnerTrophy.hidden = !(result.won || result.newRecord);
+    if (els.newRecordBadge) {
+      els.newRecordBadge.hidden = !result.newRecord;
+    }
+    els.endKicker.textContent = result.newRecord ? `שיא חדש, ${playerName}` : (result.won ? `כל הכבוד ${playerName}` : "עוד סיבוב");
+    els.endTitle.textContent = result.won
+      ? `${playerName} ניצח!`
+      : (state.mode === "arcade" ? "המרדף נגמר" : "המשחק נגמר");
+    els.endCopy.textContent = result.unlocksLegendary
+      ? "פתחת את רמת אגדי. עכשיו מתחיל המבחן האמיתי."
+      : (state.mode === "arcade"
+        ? `הגעת לגל ${result.reachedStage} ושמרת שיא מקומי בהיכל.`
+        : (result.won ? "השלמת את מסלול ההרפתקה." : "לא נורא, חוזרים חזקים יותר."));
+    els.finalScore.textContent = numberFormat.format(result.score);
+    els.previousBest.textContent = numberFormat.format(result.previousBest);
+    els.leaderboardRank.textContent = result.leaderboardRank ? `#${result.leaderboardRank}` : "-";
+    els.nextRankScore.textContent = result.scoreToNextRank === 0
+      ? "בפסגה"
+      : (result.scoreToNextRank ? `+${numberFormat.format(result.scoreToNextRank)}` : "-");
+    els.resultMode.textContent = modeLabel(result.mode);
+    els.resultDifficulty.textContent = difficultyLabel(result.difficulty);
+    els.resultStageLabel.firstChild.textContent = result.mode === "arcade" ? "גל " : "שלב ";
+    els.resultStage.textContent = result.reachedStage;
+    els.finalCorrect.textContent = result.correctAnswers;
+    els.finalIncorrect.textContent = result.incorrectAnswers;
+    els.finalAccuracy.textContent = `${result.accuracy}%`;
+    els.averageAnswerTime.textContent = formatSeconds(result.averageAnswerTimeMs);
+    els.maxCombo.textContent = result.maxCombo;
+    els.remainingLives.textContent = result.remainingLives;
+    renderScoreBreakdown(result.breakdown);
+  }
+
+  function showEndScreen(won) {
+    const result = finalizeSession(won);
+    setPhase("ended");
     resetJoystick();
     state.currentEnemyId = null;
     state.question = null;
     els.questionDialog.hidden = true;
     els.endScreen.hidden = false;
-    els.winnerTrophy.hidden = !won;
-    els.endKicker.textContent = won ? `כל הכבוד ${playerName}` : "עוד סיבוב";
-    els.endTitle.textContent = won ? `${playerName} ניצח!` : "המשחק נגמר";
-    els.endCopy.textContent = won ? `${playerName} השלים 100 תשובות נכונות.` : "לא נורא, תנסה שוב";
-    els.finalScore.textContent = numberFormat.format(state.score);
-    els.finalCorrect.textContent = state.correctAnswers;
+    renderResults(result);
 
-    if (state.score > state.bestScore) {
-      state.bestScore = state.score;
-      storage.set(CONFIG.storageKeys.bestScore, String(state.bestScore));
-      els.bestScore.textContent = numberFormat.format(state.bestScore);
-    }
+    updatePublishScorePanel();
 
-    if (won) {
+    if (won || result.newRecord) {
       state.fireworkTimer = 0;
       for (let i = 0; i < 7; i += 1) {
         spawnFirework(90 + i * 120, 90 + Math.random() * 210);
@@ -3054,13 +3772,17 @@
 
     const answer = Number(raw);
     const correct = Number.isFinite(answer) && answer === state.question.answer;
+    const responseMs = Math.max(0, performance.now() - (state.questionStartedAt || performance.now()));
     state.answerLocked = true;
     els.answerInput.disabled = true;
     els.submitAnswer.disabled = true;
     recordFactResult(state.question, correct);
+    SYSTEMS.recordMathAnswer(state.mathStats, { correct, responseMs });
+    state.correctAnswers = state.mathStats.correctAnswers;
+    state.incorrectAnswers = state.mathStats.incorrectAnswers;
     els.questionFeedback.textContent = correct ? positiveFeedback() : supportFeedback(state.question.answer);
     els.questionFeedback.style.color = correct ? "#67f08b" : "#ff4c5f";
-    scheduleQuestionFinish(correct);
+    scheduleQuestionFinish(correct, { responseMs });
   });
 
   els.pause.addEventListener("click", togglePause);
@@ -3078,10 +3800,26 @@
   els.characterInputs.forEach((input) => {
     input.addEventListener("change", () => setCharacter(input.value));
   });
+  els.modeInputs.forEach((input) => {
+    input.addEventListener("change", () => setMode(input.value));
+  });
   els.difficultyInputs.forEach((input) => {
     input.addEventListener("change", () => setDifficulty(input.value));
   });
   els.timeLimitToggle?.addEventListener("click", toggleTimeLimit);
+  els.leaderboardOpen?.addEventListener("click", openLeaderboard);
+  els.leaderboardClose?.addEventListener("click", closeLeaderboard);
+  els.leaderboardDialog?.addEventListener("click", (event) => {
+    if (event.target === els.leaderboardDialog) {
+      closeLeaderboard();
+    }
+  });
+  els.leaderboardRefresh?.addEventListener("click", loadLeaderboard);
+  els.leaderboardModeFilter?.addEventListener("change", loadLeaderboard);
+  els.leaderboardDifficultyFilter?.addEventListener("change", loadLeaderboard);
+  els.publishScoreButton?.addEventListener("click", publishScore);
+  els.retryButton?.addEventListener("click", retryGame);
+  els.endLeaderboardButton?.addEventListener("click", openLeaderboard);
   els.restartButton.addEventListener("click", showStartScreen);
   window.addEventListener("resize", resizeCanvas, { passive: true });
   window.addEventListener("orientationchange", () => window.setTimeout(resizeCanvas, 120), { passive: true });
@@ -3095,10 +3833,14 @@
     }
   });
 
+  setPhase("start", { force: true });
   resizeCanvas();
+  setMode(state.mode, false);
   setCharacter(state.characterId, false);
   syncDifficultyInputs();
   syncTimeLimitToggle();
+  els.playerNameInput.value = state.playerName;
+  syncMenuSummary();
   setupGame();
   updateSoundButton();
   focusPlayerNameWhenUseful();

@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "test": "playwright test",
+    "build": "node --check kaflul-systems.js && node --check game.js && node --check mobile-enhancements.js",
+    "test": "node --test tests/kaflul-systems.test.js && playwright test",
+    "test:node": "node --test tests/kaflul-systems.test.js",
     "test:smoke": "playwright test tests/game.spec.js"
   },
   "devDependencies": {

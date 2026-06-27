@@ -43,6 +43,8 @@
   <link rel="stylesheet" href="start-screen-poster-compact.css?v=20260622-3">
   <link rel="stylesheet" href="mobile-start-one-screen.css?v=20260622-4">
   <link rel="stylesheet" href="mobile-start-polish.css?v=20260622-1">
+  <link rel="stylesheet" href="leaderboard.css?v=20260622-1">
+  <link rel="stylesheet" href="arcade-foundation.css?v=20260627-1">
 </head>
 <body>
   <main class="game-shell" aria-label="כפלול, משחק לוח הכפל">
@@ -63,6 +65,14 @@
         <div class="metric metric-score">
           <span class="metric-label">ניקוד</span>
           <strong id="score">0</strong>
+        </div>
+        <div class="metric metric-mode">
+          <span class="metric-label">מצב</span>
+          <strong id="mode-label">ארקייד</strong>
+        </div>
+        <div class="metric metric-difficulty">
+          <span class="metric-label">קושי</span>
+          <strong id="difficulty-label">רגיל</strong>
         </div>
         <div class="metric metric-combo">
           <span class="metric-label">רצף</span>
@@ -109,6 +119,9 @@
       </div>
 
       <div id="start-screen" class="screen screen-visible">
+        <button id="leaderboard-open" class="leaderboard-open-button" type="button">
+          היכל אלופי כפלול
+        </button>
         <div class="start-layout">
           <figure class="start-poster-frame">
             <img
@@ -130,13 +143,33 @@
               <p class="start-intro">אוספים נקודות, מתחמקים מהרוחות ופותרים תרגילי כפל כדי לנצח.</p>
             </header>
             <div class="screen-stats">
-              <span>שיא: <strong id="best-score">0</strong></span>
-              <span>יעד: <strong>100</strong></span>
+              <span>שיא אישי: <strong id="best-score">0</strong></span>
+              <span>מצב: <strong id="selected-mode-label">ארקייד</strong></span>
+              <span>קושי: <strong id="selected-difficulty-label">רגיל</strong></span>
             </div>
             <form id="player-form" class="name-form" autocomplete="off" novalidate>
-              <label for="player-name-input">שם השחקן</label>
-              <input id="player-name-input" type="text" maxlength="18" placeholder="הכניסו שם..." autocomplete="nickname" required>
+              <label for="player-name-input">כינוי השחקן</label>
+              <input id="player-name-input" type="text" maxlength="14" placeholder="אלוף כפלול" autocomplete="nickname" required>
               <p id="name-error" class="form-note" aria-live="assertive"></p>
+              <fieldset class="mode-field">
+                <legend>בחרו מצב משחק</legend>
+                <div class="mode-options" role="radiogroup" aria-label="מצב משחק">
+                  <label>
+                    <input type="radio" name="game-mode" value="arcade" checked>
+                    <span>
+                      <strong>ארקייד</strong>
+                      <small>שיאים, חיים וגלים</small>
+                    </span>
+                  </label>
+                  <label>
+                    <input type="radio" name="game-mode" value="adventure">
+                    <span>
+                      <strong>הרפתקה</strong>
+                      <small>שלבים והתקדמות</small>
+                    </span>
+                  </label>
+                </div>
+              </fieldset>
               <fieldset class="character-field">
                 <legend>בחרו גיבור</legend>
                 <div class="character-options" role="radiogroup" aria-label="בחירת דמות">
@@ -168,20 +201,24 @@
                 <legend>בחרו רמת קושי</legend>
                 <div class="difficulty-options" role="radiogroup" aria-label="רמת קושי">
                   <label>
-                    <input type="radio" name="difficulty" value="easy">
-                    <span>קל</span>
+                    <input type="radio" name="difficulty" value="beginner">
+                    <span>מתחילים</span>
                   </label>
                   <label>
-                    <input type="radio" name="difficulty" value="medium" checked>
-                    <span>בינוני</span>
+                    <input type="radio" name="difficulty" value="normal" checked>
+                    <span>רגיל</span>
                   </label>
                   <label>
-                    <input type="radio" name="difficulty" value="hard">
-                    <span>קשה</span>
+                    <input type="radio" name="difficulty" value="advanced">
+                    <span>מתקדם</span>
                   </label>
                   <label>
-                    <input type="radio" name="difficulty" value="veryHard">
-                    <span>קשה מאוד</span>
+                    <input type="radio" name="difficulty" value="expert">
+                    <span>מומחה</span>
+                  </label>
+                  <label>
+                    <input type="radio" name="difficulty" value="legendary">
+                    <span>אגדי</span>
                   </label>
                 </div>
               </fieldset>
@@ -199,28 +236,104 @@
       </div>
 
       <div id="end-screen" class="screen" hidden>
-        <div class="screen-panel">
+        <div class="screen-panel results-panel">
           <div id="winner-trophy" class="winner-trophy" aria-hidden="true" hidden>🏆</div>
+          <div id="new-record-badge" class="record-badge" hidden>שיא אישי חדש</div>
           <p id="end-kicker" class="eyebrow">כל הכבוד</p>
           <h1 id="end-title">ניצחון!</h1>
           <p id="end-copy"></p>
           <div class="screen-stats">
             <span>ניקוד: <strong id="final-score">0</strong></span>
-            <span>תשובות: <strong id="final-correct">0</strong></span>
+            <span>שיא קודם: <strong id="previous-best">0</strong></span>
+            <span>דירוג: <strong id="leaderboard-rank">-</strong></span>
+            <span>למקום הבא: <strong id="next-rank-score">-</strong></span>
           </div>
-          <button id="restart-button" class="primary-button" type="button">שחק שוב</button>
+          <div class="results-grid" aria-label="סיכום ביצועים">
+            <span>מצב <strong id="result-mode">ארקייד</strong></span>
+            <span>קושי <strong id="result-difficulty">רגיל</strong></span>
+            <span id="result-stage-label">גל <strong id="result-stage">1</strong></span>
+            <span>נכונות <strong id="final-correct">0</strong></span>
+            <span>טעויות <strong id="final-incorrect">0</strong></span>
+            <span>דיוק <strong id="final-accuracy">0%</strong></span>
+            <span>זמן ממוצע <strong id="average-answer-time">0.0ש׳</strong></span>
+            <span>רצף שיא <strong id="max-combo">0</strong></span>
+            <span>חיים שנשארו <strong id="remaining-lives">0</strong></span>
+          </div>
+          <section class="score-breakdown" aria-labelledby="score-breakdown-title">
+            <h2 id="score-breakdown-title">פירוט ניקוד</h2>
+            <ul id="score-breakdown-list"></ul>
+          </section>
+          <div class="result-actions">
+            <button id="retry-button" class="primary-button" type="button">שחק שוב מיד</button>
+            <button id="restart-button" class="secondary-button" type="button">חזרה לתפריט</button>
+            <button id="end-leaderboard-button" class="secondary-button" type="button">היכל אלופי כפלול</button>
+          </div>
+          <div id="publish-score-panel" class="publish-score-panel" hidden>
+            <strong>מקום בטבלת אלוף האלופים מחכה לך</strong>
+            <p>עברת את השלב הראשון, ולכן אפשר לפרסם את השיא הזה לכל השחקנים.</p>
+            <button id="publish-score-button" class="secondary-button" type="button">פרסם את השיא</button>
+            <p id="publish-score-status" class="publish-score-status" aria-live="polite"></p>
+          </div>
         </div>
       </div>
 
-    </section>
-
-    <div class="mobile-joystick" aria-label="בקרי תנועה">
-      <div id="movement-joystick" class="joystick-base" role="application" aria-label="ג׳ויסטיק תנועה">
-        <div class="joystick-knob" aria-hidden="true"></div>
+      <div id="leaderboard-dialog" class="leaderboard-dialog" role="dialog" aria-modal="true" aria-labelledby="leaderboard-title" hidden>
+        <section class="leaderboard-panel">
+          <div class="leaderboard-header">
+            <div>
+              <p class="leaderboard-kicker">היכל אלופי כפלול</p>
+              <h2 id="leaderboard-title">טבלת השיאים המקומית</h2>
+            </div>
+            <div class="leaderboard-actions">
+              <button
+                id="leaderboard-refresh"
+                class="leaderboard-icon-button"
+                type="button"
+                aria-label="רענון טבלת השיאים"
+                title="רענון טבלת השיאים"
+              >↻</button>
+              <button
+                id="leaderboard-close"
+                class="leaderboard-icon-button"
+                type="button"
+                aria-label="סגירת טבלת השיאים"
+                title="סגירת טבלת השיאים"
+              >×</button>
+            </div>
+          </div>
+          <p class="leaderboard-copy">שיאים שנשמרו על המכשיר הזה. בעתיד אפשר יהיה לחבר כאן דירוג מקוון מאובטח.</p>
+          <div class="leaderboard-filters" aria-label="סינון טבלת שיאים">
+            <label>
+              <span>מצב</span>
+              <select id="leaderboard-mode-filter">
+                <option value="all">כל המצבים</option>
+                <option value="arcade">ארקייד</option>
+                <option value="adventure">הרפתקה</option>
+              </select>
+            </label>
+            <label>
+              <span>קושי</span>
+              <select id="leaderboard-difficulty-filter">
+                <option value="all">כל הקשיים</option>
+                <option value="beginner">מתחילים</option>
+                <option value="normal">רגיל</option>
+                <option value="advanced">מתקדם</option>
+                <option value="expert">מומחה</option>
+                <option value="legendary">אגדי</option>
+              </select>
+            </label>
+          </div>
+          <ol id="leaderboard-list" class="leaderboard-list" aria-live="polite">
+            <li class="leaderboard-placeholder">עדיין אין שיאים מקומיים.</li>
+          </ol>
+          <p id="leaderboard-status" class="leaderboard-status" aria-live="polite"></p>
+        </section>
       </div>
-    </div>
+
+    </section>
   </main>
 
+  <script src="kaflul-systems.js?v=20260627-1"></script>
   <script src="poster-loader.js?v=20260622-3"></script>
   <script src="mobile-enhancements.js?v=20260621-1"></script>
   <script src="mobile-screen-state.js?v=20260621-4"></script>

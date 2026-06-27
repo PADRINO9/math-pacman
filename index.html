@@ -36,15 +36,9 @@
   <link rel="stylesheet" href="mobile-resolution-hotfix.css?v=20260621-5">
   <link rel="stylesheet" href="mobile-native-answer.css?v=20260621-6">
   <link rel="stylesheet" href="mobile-final-layout.css?v=20260621-7">
-  <link rel="stylesheet" href="character-selector.css?v=20260621-2">
-  <link rel="stylesheet" href="start-screen-redesign.css?v=20260622-2">
-  <link rel="stylesheet" href="start-screen-poster-fit.css?v=20260622-3">
-  <link rel="stylesheet" href="start-screen-poster-mobile.css?v=20260622-3">
-  <link rel="stylesheet" href="start-screen-poster-compact.css?v=20260622-3">
-  <link rel="stylesheet" href="mobile-start-one-screen.css?v=20260622-4">
-  <link rel="stylesheet" href="mobile-start-polish.css?v=20260622-1">
   <link rel="stylesheet" href="leaderboard.css?v=20260622-1">
   <link rel="stylesheet" href="arcade-foundation.css?v=20260627-1">
+  <link rel="stylesheet" href="main-menu.css?v=20260627-1">
 </head>
 <body>
   <main class="game-shell" aria-label="כפלול, משחק לוח הכפל">
@@ -118,121 +112,177 @@
         </div>
       </div>
 
-      <div id="start-screen" class="screen screen-visible">
-        <button id="leaderboard-open" class="leaderboard-open-button" type="button">
-          היכל אלופי כפלול
-        </button>
-        <div class="start-layout">
-          <figure class="start-poster-frame">
-            <img
-              id="start-poster-image"
-              class="start-poster poster-loading"
-              src="assets/math-maze-poster.png"
-              alt="פוסטר המשחק כפלול: ביפלי ונבטיק במרדף בתוך מבוך הכפל"
-              width="720"
-              height="857"
-              loading="eager"
-              decoding="async"
-              fetchpriority="high"
-            >
-          </figure>
-          <div class="screen-panel">
-            <header class="start-panel-header">
-              <p class="eyebrow">כפלול • מבוך הכפל</p>
-              <h1>בחרו גיבור ו<span>צאו למרדף</span></h1>
-              <p class="start-intro">אוספים נקודות, מתחמקים מהרוחות ופותרים תרגילי כפל כדי לנצח.</p>
-            </header>
-            <div class="screen-stats">
-              <span>שיא אישי: <strong id="best-score">0</strong></span>
-              <span>מצב: <strong id="selected-mode-label">ארקייד</strong></span>
-              <span>קושי: <strong id="selected-difficulty-label">רגיל</strong></span>
+      <div id="start-screen" class="screen screen-visible" aria-label="מסך ראשי כפלול">
+        <form id="player-form" class="main-menu" autocomplete="off" novalidate>
+          <div class="menu-world" aria-hidden="true">
+            <div class="maze-depth maze-depth-back"></div>
+            <div class="maze-depth maze-depth-mid"></div>
+            <img class="menu-enemy enemy-a" src="assets/dark-enemy.png" alt="">
+            <img class="menu-enemy enemy-b" src="assets/dark-enemy-angry.png" alt="">
+            <img class="menu-enemy enemy-c" src="assets/dark-enemy.png" alt="">
+            <span class="menu-particle particle-a"></span>
+            <span class="menu-particle particle-b"></span>
+            <span class="menu-particle particle-c"></span>
+          </div>
+
+          <header class="menu-topbar" aria-label="סרגל ראשי">
+            <section class="menu-best-card" aria-label="שיא אישי">
+              <span class="menu-best-icon" aria-hidden="true">♕</span>
+              <span class="menu-best-copy">
+                <span>שיא אישי</span>
+                <strong id="best-score">0</strong>
+              </span>
+            </section>
+
+            <div class="menu-logo" aria-label="כפלול, מבוך הכפל">
+              <h1>
+                <span style="--logo-color:#ffcf24">כ</span><span style="--logo-color:#ff5fea">פ</span><span style="--logo-color:#20d9ff">ל</span><span style="--logo-color:#7469ff">ו</span><span style="--logo-color:#95f11f">ל</span>
+              </h1>
+              <p>מבוך הכפל · משחק מחשבה · ניצחון</p>
             </div>
-            <form id="player-form" class="name-form" autocomplete="off" novalidate>
-              <label for="player-name-input">כינוי השחקן</label>
-              <input id="player-name-input" type="text" maxlength="14" placeholder="אלוף כפלול" autocomplete="nickname" required>
-              <p id="name-error" class="form-note" aria-live="assertive"></p>
+
+            <div class="menu-actions" aria-label="פעולות">
+              <button id="leaderboard-open" class="menu-icon-button leaderboard-open-button" type="button" aria-label="פתח היכל אלופי כפלול" title="היכל אלופי כפלול">
+                <span aria-hidden="true">♛</span>
+                <small>אלופים</small>
+              </button>
+              <button id="menu-sound-button" class="menu-icon-button" type="button" aria-label="צלילים פועלים" title="צלילים">
+                <span aria-hidden="true">♪</span>
+              </button>
+              <button id="menu-settings-button" class="menu-icon-button" type="button" aria-label="פתח הגדרות" title="הגדרות">
+                <span aria-hidden="true">⚙</span>
+              </button>
+            </div>
+          </header>
+
+          <section class="menu-hero" aria-label="בחירת גיבור">
+            <div class="character-options menu-character-options" role="radiogroup" aria-label="בחירת דמות">
+              <label class="character-option menu-character menu-character-bifly">
+                <input type="radio" name="character" value="bifly" checked>
+                <span class="character-card">
+                  <span class="character-glow" aria-hidden="true"></span>
+                  <img src="assets/bifly-player.png" alt="" aria-hidden="true">
+                  <span class="character-copy">
+                    <strong>ביפלי</strong>
+                  </span>
+                  <span class="character-check" aria-hidden="true">✓</span>
+                </span>
+              </label>
+              <label class="character-option menu-character menu-character-nabatick">
+                <input type="radio" name="character" value="nabatick">
+                <span class="character-card">
+                  <span class="character-glow" aria-hidden="true"></span>
+                  <img src="assets/nabatick-idle-v2.svg" alt="" aria-hidden="true">
+                  <span class="character-copy">
+                    <strong>נבטיק</strong>
+                  </span>
+                  <span class="character-check" aria-hidden="true">✓</span>
+                </span>
+              </label>
+            </div>
+          </section>
+
+          <aside class="menu-leaderboard-card" aria-label="מצב בטבלת השיאים">
+            <span class="menu-panel-title">המקום שלך</span>
+            <strong id="menu-rank-value">-</strong>
+            <span class="menu-panel-divider"></span>
+            <span>שיא: <strong id="menu-personal-best">0</strong></span>
+            <p id="menu-next-rank">עוד אין דירוג בקטגוריה הזאת.</p>
+            <button id="menu-leaderboard-link" class="menu-text-button" type="button">היכל אלופי כפלול</button>
+          </aside>
+
+          <section class="menu-cta" aria-label="התחלת משחק">
+            <button id="start-button" class="arcade-play-button" type="submit">שחק עכשיו</button>
+            <p id="menu-selection-summary">ביפלי · רגיל · ארקייד</p>
+            <p id="name-error" class="form-note" aria-live="assertive"></p>
+          </section>
+
+          <nav class="menu-control-strip" aria-label="בחירות משחק">
+            <button id="mode-control-button" class="menu-control-button" type="button" aria-expanded="false" aria-controls="mode-panel">
+              <span aria-hidden="true">▣</span>
+              <small>מצב משחק</small>
+              <strong id="selected-mode-label">ארקייד</strong>
+            </button>
+            <button id="difficulty-control-button" class="menu-control-button" type="button" aria-expanded="false" aria-controls="difficulty-panel">
+              <span aria-hidden="true">▥</span>
+              <small>רמת קושי</small>
+              <strong id="selected-difficulty-label">רגיל</strong>
+            </button>
+            <button id="profile-control-button" class="menu-control-button profile-control" type="button" aria-expanded="false" aria-controls="settings-panel">
+              <span aria-hidden="true">●</span>
+              <small>שחקן</small>
+              <strong id="player-greeting">אלוף כפלול</strong>
+            </button>
+          </nav>
+
+          <section id="mode-panel" class="menu-sheet" role="dialog" aria-modal="true" aria-labelledby="mode-panel-title" hidden>
+            <div class="menu-sheet-inner">
+              <button class="sheet-close" type="button" data-close-panel aria-label="סגור בחירת מצב">×</button>
+              <h2 id="mode-panel-title">בחרו מצב משחק</h2>
               <fieldset class="mode-field">
-                <legend>בחרו מצב משחק</legend>
+                <legend>מצב המשחק משנה את קצב ההתקדמות והניקוד</legend>
                 <div class="mode-options" role="radiogroup" aria-label="מצב משחק">
                   <label>
                     <input type="radio" name="game-mode" value="arcade" checked>
                     <span>
                       <strong>ארקייד</strong>
-                      <small>שיאים, חיים וגלים</small>
+                      <small>הישרדות תחרותית, מרדף אחרי ניקוד וטבלת שיאים.</small>
                     </span>
                   </label>
                   <label>
                     <input type="radio" name="game-mode" value="adventure">
                     <span>
                       <strong>הרפתקה</strong>
-                      <small>שלבים והתקדמות</small>
+                      <small>שלבים מסודרים, התקדמות והשלמת עולמות.</small>
                     </span>
                   </label>
                 </div>
               </fieldset>
-              <fieldset class="character-field">
-                <legend>בחרו גיבור</legend>
-                <div class="character-options" role="radiogroup" aria-label="בחירת דמות">
-                  <label class="character-option">
-                    <input type="radio" name="character" value="bifly" checked>
-                    <span class="character-card">
-                      <img src="assets/bifly-player.png" alt="" aria-hidden="true">
-                      <span class="character-copy">
-                        <strong>ביפלי</strong>
-                        <small>הגיבור הכחול</small>
-                      </span>
-                      <span class="character-check" aria-hidden="true">✓</span>
-                    </span>
-                  </label>
-                  <label class="character-option">
-                    <input type="radio" name="character" value="nabatick">
-                    <span class="character-card">
-                      <img src="assets/nabatick-idle-front.webp" alt="" aria-hidden="true">
-                      <span class="character-copy">
-                        <strong>נבטיק</strong>
-                        <small>גיבור הנבט הירוק</small>
-                      </span>
-                      <span class="character-check" aria-hidden="true">✓</span>
-                    </span>
-                  </label>
-                </div>
-              </fieldset>
+            </div>
+          </section>
+
+          <section id="difficulty-panel" class="menu-sheet" role="dialog" aria-modal="true" aria-labelledby="difficulty-panel-title" hidden>
+            <div class="menu-sheet-inner">
+              <button class="sheet-close" type="button" data-close-panel aria-label="סגור בחירת קושי">×</button>
+              <h2 id="difficulty-panel-title">בחרו רמת קושי</h2>
               <fieldset class="difficulty-field">
-                <legend>בחרו רמת קושי</legend>
+                <legend>הקושי קובע זמן לתרגיל, מהירות אויבים ומכפיל ניקוד</legend>
                 <div class="difficulty-options" role="radiogroup" aria-label="רמת קושי">
                   <label>
                     <input type="radio" name="difficulty" value="beginner">
-                    <span>מתחילים</span>
+                    <span><strong>מתחילים</strong><em>×1</em><small>יותר חיים, קצב רגוע ורמזים.</small></span>
                   </label>
                   <label>
                     <input type="radio" name="difficulty" value="normal" checked>
-                    <span>רגיל</span>
+                    <span><strong>רגיל</strong><em>×1.5</em><small>איזון טוב לאימון יומי.</small></span>
                   </label>
                   <label>
                     <input type="radio" name="difficulty" value="advanced">
-                    <span>מתקדם</span>
+                    <span><strong>מתקדם</strong><em>×2</em><small>אויבים מהירים ופחות זמן.</small></span>
                   </label>
                   <label>
                     <input type="radio" name="difficulty" value="expert">
-                    <span>מומחה</span>
+                    <span><strong>מומחה</strong><em>×3</em><small>טעויות כואבות ושאלות מורכבות.</small></span>
                   </label>
                   <label>
                     <input type="radio" name="difficulty" value="legendary">
-                    <span>אגדי</span>
+                    <span><strong>אגדי</strong><em>×5</em><small>אתגר קצה לשיאים גדולים.</small></span>
                   </label>
                 </div>
               </fieldset>
-              <div class="time-limit-setting">
-                <span class="time-limit-title">זמן לכל תרגיל</span>
-                <button id="time-limit-toggle" class="time-limit-toggle" type="button" aria-pressed="false" aria-label="הפעל הגבלת זמן של 25 שניות לכל תרגיל">
-                  <span class="clock-icon" aria-hidden="true"></span>
-                </button>
-                <span id="time-limit-state" class="time-limit-state">ללא זמן</span>
-              </div>
-              <button id="start-button" class="primary-button" type="submit">התחל משחק</button>
-            </form>
-          </div>
-        </div>
+            </div>
+          </section>
+
+          <section id="settings-panel" class="menu-sheet" role="dialog" aria-modal="true" aria-labelledby="settings-panel-title" hidden>
+            <div class="menu-sheet-inner settings-sheet">
+              <button class="sheet-close" type="button" data-close-panel aria-label="סגור הגדרות">×</button>
+              <h2 id="settings-panel-title">הגדרות שחקן</h2>
+              <label for="player-name-input">כינוי השחקן</label>
+              <input id="player-name-input" type="text" maxlength="14" placeholder="אלוף כפלול" autocomplete="nickname" required>
+              <button id="settings-save-button" class="menu-save-button" type="button">שמור כינוי</button>
+            </div>
+          </section>
+        </form>
       </div>
 
       <div id="end-screen" class="screen" hidden>

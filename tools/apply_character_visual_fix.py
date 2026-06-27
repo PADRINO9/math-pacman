@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Switch Nabatick to seamless vector assets and refresh selector cache keys."""
+"""Switch Nabatick to seamless vector assets and refresh game cache keys."""
 
 from pathlib import Path
 
@@ -29,7 +29,6 @@ def main() -> None:
     index = replace_once(index, 'href="assets/nabatick-eat-prepare.png"', 'href="assets/nabatick-eat-prepare-v2.svg"', "prepare preload")
     index = replace_once(index, 'href="assets/nabatick-eat.png"', 'href="assets/nabatick-eat-v2.svg"', "eat preload")
     index = replace_once(index, 'src="assets/nabatick-idle.png"', 'src="assets/nabatick-idle-v2.svg"', "selector preview")
-    index = replace_once(index, 'character-selector.css?v=20260621-1', 'character-selector.css?v=20260621-2', "selector CSS cache")
     index = replace_once(index, 'game.js?v=20260621-10', 'game.js?v=20260621-11', "game cache")
     INDEX.write_text(index, encoding="utf-8")
 

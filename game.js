@@ -144,6 +144,7 @@
       character: "mathMazeCharacter",
       mode: "mathMazeMode",
       nickname: "mathMazeNickname",
+      playerId: "mathMazePlayerId",
       timeLimit: "mathMazeTimeLimit",
       factStats: "mathMazeFactStats"
     },
@@ -247,7 +248,13 @@
       "טעות קטנה, הראש עובד. התשובה היא {answer}",
       "נשימה ולנסות שוב. התשובה היא {answer}",
       "זה חלק מהאימון. התשובה היא {answer}"
-    ]
+    ],
+    leaderboard: {
+      endpoint: "/api/champions",
+      limit: 50,
+      minimumCorrectAnswers: 25,
+      requestTimeoutMs: 6000
+    }
   };
 
   const DIRS = {
@@ -329,6 +336,7 @@
     missionProgress: document.getElementById("mission-progress"),
     pause: document.getElementById("pause-button"),
     sound: document.getElementById("sound-button"),
+    menuSound: document.getElementById("menu-sound-button"),
     startScreen: document.getElementById("start-screen"),
     playerForm: document.getElementById("player-form"),
     playerNameInput: document.getElementById("player-name-input"),
@@ -342,6 +350,22 @@
     bestScore: document.getElementById("best-score"),
     selectedModeLabel: document.getElementById("selected-mode-label"),
     selectedDifficultyLabel: document.getElementById("selected-difficulty-label"),
+    menuSelectionSummary: document.getElementById("menu-selection-summary"),
+    menuRankValue: document.getElementById("menu-rank-value"),
+    menuPersonalBest: document.getElementById("menu-personal-best"),
+    menuNextRank: document.getElementById("menu-next-rank"),
+    playerGreeting: document.getElementById("player-greeting"),
+    modeControlButton: document.getElementById("mode-control-button"),
+    difficultyControlButton: document.getElementById("difficulty-control-button"),
+    profileControlButton: document.getElementById("profile-control-button"),
+    menuSettingsButton: document.getElementById("menu-settings-button"),
+    menuLeaderboardLink: document.getElementById("menu-leaderboard-link"),
+    modePanel: document.getElementById("mode-panel"),
+    difficultyPanel: document.getElementById("difficulty-panel"),
+    settingsPanel: document.getElementById("settings-panel"),
+    settingsSaveButton: document.getElementById("settings-save-button"),
+    menuSheets: Array.from(document.querySelectorAll(".menu-sheet")),
+    panelCloseButtons: Array.from(document.querySelectorAll("[data-close-panel]")),
     endScreen: document.getElementById("end-screen"),
     winnerTrophy: document.getElementById("winner-trophy"),
     newRecordBadge: document.getElementById("new-record-badge"),
@@ -602,11 +626,7 @@
     characterId: normalizeCharacterId(storage.get(CONFIG.storageKeys.character, localSave.settings.selectedCharacter)),
     playerId: getOrCreatePlayerId(),
     difficulty: initialDifficulty,
-    timeLimitEnabled: storage.getMigrated(
-      CONFIG.storageKeys.timeLimit,
-      CONFIG.legacyStorageKeys.timeLimit,
-      "off"
-    ) === "on",
+    timeLimitEnabled: true,
     factStats: loadFactStats(),
     recentQuestionKeys: [],
     mission: null,
@@ -632,7 +652,8 @@
     hitsTaken: 0,
     finalResult: null,
     latestLeaderboardEntryId: null,
-    lastFocusBeforeLeaderboard: null
+    lastFocusBeforeLeaderboard: null,
+    lastFocusBeforeMenuSheet: null
   };
 
   function cellKey(x, y) {
@@ -1199,6 +1220,76 @@
     if (els.bestScore) {
       els.bestScore.textContent = numberFormat.format(state.bestScore);
     }
+    if (els.menuPersonalBest) {
+      els.menuPersonalBest.textContent = numberFormat.format(state.bestScore);
+    }
+  }
+
+  function characterLabel(characterId = state.characterId) {
+    return PLAYER_CHARACTERS[normalizeCharacterId(characterId)]?.name || "ביפלי";
+  }
+
+  function scoreMultiplierLabel(difficulty = getDifficultySettings()) {
+    const multiplier = Math.max(0, Number(difficulty.scoreMultiplierPct) || 100) / 100;
+    return `×${Number.isInteger(multiplier) ? multiplier : multiplier.toFixed(1)}`;
+  }
+
+  function updatePlayerGreeting() {
+    if (!els.playerGreeting) {
+      return;
+    }
+    els.playerGreeting.textContent = SYSTEMS.safeNickname(state.playerName || state.save.player.nickname);
+  }
+
+  function updateMenuLeaderboardPreview() {
+    if (!els.menuRankValue && !els.menuNextRank && !els.menuPersonalBest) {
+      return;
+    }
+
+    const mode = state.mode;
+    const difficulty = state.difficulty;
+    const personalBest = getPersonalBestForSelection(mode, difficulty);
+    const entries = SYSTEMS.getLeaderboardEntries(state.save, {
+      mode,
+      difficulty,
+      limit: CONFIG.leaderboard.limit
+    });
+    const playerEntryIndex = entries.findIndex((entry) => (
+      entry.playerId === state.playerId
+      || (entry.nickname === state.playerName && entry.score === personalBest)
+      || entry.id === state.latestLeaderboardEntryId
+    ));
+    const playerEntry = playerEntryIndex >= 0 ? entries[playerEntryIndex] : null;
+    const rank = playerEntryIndex >= 0 ? playerEntryIndex + 1 : null;
+
+    if (els.menuPersonalBest) {
+      els.menuPersonalBest.textContent = numberFormat.format(personalBest);
+    }
+    if (els.menuRankValue) {
+      els.menuRankValue.textContent = rank ? String(rank) : "-";
+    }
+    if (!els.menuNextRank) {
+      return;
+    }
+
+    if (!entries.length) {
+      els.menuNextRank.textContent = "עוד אין שיאים בקטגוריה הזאת.";
+      return;
+    }
+    if (!playerEntry) {
+      els.menuNextRank.textContent = personalBest > 0
+        ? "שחק סיבוב כדי לשמור את השיא בטבלה המקומית."
+        : "הסיבוב הראשון שלך יפתח דירוג חדש.";
+      return;
+    }
+    if (rank === 1) {
+      els.menuNextRank.textContent = "אתה מוביל את הקטגוריה הזאת.";
+      return;
+    }
+
+    const nextScore = entries[playerEntryIndex - 1]?.score || playerEntry.score;
+    const needed = Math.max(1, nextScore - playerEntry.score + 1);
+    els.menuNextRank.textContent = `חסרות ${numberFormat.format(needed)} נקודות למקום ${rank - 1}`;
   }
 
   function syncMenuSummary() {
@@ -1210,7 +1301,12 @@
     if (els.selectedDifficultyLabel) {
       els.selectedDifficultyLabel.textContent = difficulty.label;
     }
+    if (els.menuSelectionSummary) {
+      els.menuSelectionSummary.textContent = `${characterLabel()} · ${difficulty.label} ${scoreMultiplierLabel(difficulty)} · ${mode.shortLabel}`;
+    }
+    updatePlayerGreeting();
     updateBestScorePreview();
+    updateMenuLeaderboardPreview();
   }
 
   function getSelectedMode() {
@@ -1248,6 +1344,7 @@
     }
     document.documentElement.dataset.character = state.characterId;
     syncCharacterInputs();
+    syncMenuSummary();
   }
 
   function syncCharacterInputs() {
@@ -1264,6 +1361,7 @@
   function setDifficulty(value, persist = true) {
     const nextDifficulty = normalizeDifficulty(value);
     state.difficulty = SYSTEMS.isDifficultyUnlocked(state.save, nextDifficulty) ? nextDifficulty : "normal";
+    state.timeLimitEnabled = true;
     if (persist) {
       storage.set(CONFIG.storageKeys.difficulty, state.difficulty);
       persistSave();
@@ -1309,6 +1407,67 @@
     els.timeLimitState.textContent = state.mode === "arcade"
       ? `${getQuestionTimeLimit()} שניות בארקייד`
       : (enabled ? `${getQuestionTimeLimit()} שניות` : "ללא זמן");
+  }
+
+  function getMenuSheetTrigger(sheet) {
+    if (sheet === els.modePanel) {
+      return els.modeControlButton;
+    }
+    if (sheet === els.difficultyPanel) {
+      return els.difficultyControlButton;
+    }
+    if (sheet === els.settingsPanel) {
+      return els.profileControlButton || els.menuSettingsButton;
+    }
+    return null;
+  }
+
+  function closeMenuSheets(options = {}) {
+    const { restoreFocus = true } = options;
+    for (const sheet of els.menuSheets) {
+      sheet.hidden = true;
+      getMenuSheetTrigger(sheet)?.setAttribute("aria-expanded", "false");
+    }
+    if (restoreFocus && state.lastFocusBeforeMenuSheet instanceof HTMLElement) {
+      state.lastFocusBeforeMenuSheet.focus({ preventScroll: true });
+    }
+    state.lastFocusBeforeMenuSheet = null;
+  }
+
+  function focusMenuSheet(sheet) {
+    const target = sheet.querySelector("input:checked:not(:disabled)")
+      || sheet.querySelector("input:not(:disabled)")
+      || sheet.querySelector("button:not([data-close-panel])")
+      || sheet.querySelector("[data-close-panel]");
+    window.setTimeout(() => target?.focus({ preventScroll: true }), 0);
+  }
+
+  function openMenuSheet(sheet, trigger) {
+    if (!sheet) {
+      return;
+    }
+    state.lastFocusBeforeMenuSheet = trigger || document.activeElement;
+    closeMenuSheets({ restoreFocus: false });
+    sheet.hidden = false;
+    getMenuSheetTrigger(sheet)?.setAttribute("aria-expanded", "true");
+    focusMenuSheet(sheet);
+  }
+
+  function saveNicknameFromSettings() {
+    const nickname = normalizePlayerName(els.playerNameInput.value);
+    if (!nickname.ok) {
+      els.nameError.textContent = nickname.error;
+      els.playerNameInput.focus();
+      return;
+    }
+
+    state.playerName = nickname.value;
+    state.save.player.nickname = nickname.value;
+    storage.set(CONFIG.storageKeys.nickname, nickname.value);
+    persistSave();
+    els.nameError.textContent = "";
+    syncMenuSummary();
+    closeMenuSheets();
   }
 
   function setLeaderboardStatus(message, isError = false) {
@@ -1555,10 +1714,12 @@
 
     state.playerName = playerName.value;
     state.save.player.nickname = state.playerName;
+    state.timeLimitEnabled = true;
     setMode(getSelectedMode());
     setCharacter(getSelectedCharacterId());
     setDifficulty(getSelectedDifficulty());
     persistSave();
+    closeMenuSheets({ restoreFocus: false });
     els.nameError.textContent = "";
     setupGame();
     setPhase("playing");
@@ -1594,6 +1755,7 @@
     syncDifficultyInputs();
     syncTimeLimitToggle();
     syncMenuSummary();
+    closeMenuSheets({ restoreFocus: false });
     setupGame();
     focusPlayerNameWhenUseful();
   }
@@ -1633,8 +1795,17 @@
   }
 
   function updateSoundButton() {
-    els.sound.textContent = state.soundEnabled ? "♪" : "×";
-    els.sound.setAttribute("aria-label", state.soundEnabled ? "צלילים פועלים" : "צלילים כבויים");
+    const label = state.soundEnabled ? "צלילים פועלים" : "צלילים כבויים";
+    const text = state.soundEnabled ? "♪" : "×";
+    if (els.sound) {
+      els.sound.textContent = text;
+      els.sound.setAttribute("aria-label", label);
+    }
+    if (els.menuSound) {
+      const icon = els.menuSound.querySelector("span") || els.menuSound;
+      icon.textContent = text;
+      els.menuSound.setAttribute("aria-label", label);
+    }
   }
 
   function resumeAudio() {
@@ -2542,7 +2713,7 @@
   }
 
   function isQuestionTimerEnabled() {
-    return state.mode === "arcade" || state.timeLimitEnabled;
+    return getQuestionTimeLimit() > 0;
   }
 
   function getQuestionTimeLimit() {
@@ -3637,6 +3808,14 @@
       return;
     }
 
+    if (state.phase === "start") {
+      if (event.key === "Escape" && els.menuSheets.some((sheet) => !sheet.hidden)) {
+        event.preventDefault();
+        closeMenuSheets();
+      }
+      return;
+    }
+
     if (event.key === " " || event.key === "Escape") {
       event.preventDefault();
       togglePause();
@@ -3659,7 +3838,7 @@
       return;
     }
 
-    setTimeout(() => els.playerNameInput.focus(), 30);
+    setTimeout(() => els.startButton?.focus({ preventScroll: true }), 30);
   }
 
   let joystickPointerId = null;
@@ -3787,6 +3966,7 @@
 
   els.pause.addEventListener("click", togglePause);
   els.sound.addEventListener("click", toggleSound);
+  els.menuSound?.addEventListener("click", toggleSound);
   els.playerForm.addEventListener("submit", startGame);
   els.playerNameInput.addEventListener("input", () => {
     els.nameError.textContent = "";
@@ -3801,13 +3981,35 @@
     input.addEventListener("change", () => setCharacter(input.value));
   });
   els.modeInputs.forEach((input) => {
-    input.addEventListener("change", () => setMode(input.value));
+    input.addEventListener("change", () => {
+      setMode(input.value);
+      closeMenuSheets();
+    });
   });
   els.difficultyInputs.forEach((input) => {
-    input.addEventListener("change", () => setDifficulty(input.value));
+    input.addEventListener("change", () => {
+      setDifficulty(input.value);
+      closeMenuSheets();
+    });
   });
   els.timeLimitToggle?.addEventListener("click", toggleTimeLimit);
+  els.modeControlButton?.addEventListener("click", () => openMenuSheet(els.modePanel, els.modeControlButton));
+  els.difficultyControlButton?.addEventListener("click", () => openMenuSheet(els.difficultyPanel, els.difficultyControlButton));
+  els.profileControlButton?.addEventListener("click", () => openMenuSheet(els.settingsPanel, els.profileControlButton));
+  els.menuSettingsButton?.addEventListener("click", () => openMenuSheet(els.settingsPanel, els.menuSettingsButton));
+  els.settingsSaveButton?.addEventListener("click", saveNicknameFromSettings);
+  els.panelCloseButtons.forEach((button) => {
+    button.addEventListener("click", () => closeMenuSheets());
+  });
+  els.menuSheets.forEach((sheet) => {
+    sheet.addEventListener("click", (event) => {
+      if (event.target === sheet) {
+        closeMenuSheets();
+      }
+    });
+  });
   els.leaderboardOpen?.addEventListener("click", openLeaderboard);
+  els.menuLeaderboardLink?.addEventListener("click", openLeaderboard);
   els.leaderboardClose?.addEventListener("click", closeLeaderboard);
   els.leaderboardDialog?.addEventListener("click", (event) => {
     if (event.target === els.leaderboardDialog) {

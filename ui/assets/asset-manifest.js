@@ -2,7 +2,7 @@
   "use strict";
 
   const manifest = {
-    version: "phase1-20260628",
+    version: "phase3-20260628",
     iconSprite: {
       path: "ui/icons.svg",
       type: "svg-sprite",
@@ -154,6 +154,97 @@
         state: "sad",
         preload: true,
         sourceStatus: "current-production"
+      }
+    },
+    characterAnimations: {
+      recognizedStates: [
+        "idle",
+        "blink",
+        "tap",
+        "selected",
+        "excited",
+        "worried",
+        "victory",
+        "defeat",
+        "eat",
+        "hit"
+      ],
+      adapterTypes: [
+        "static-png",
+        "sprite-sheet",
+        "layered-png-rig",
+        "rive",
+        "spine"
+      ],
+      characters: {
+        bifly: {
+          id: "bifly",
+          displayName: "ביפלי",
+          fallbackState: "idle",
+          defaultAdapter: "static-png",
+          lighting: {
+            primary: "#58e8ff",
+            secondary: "#ff5bd9",
+            glow: "rgba(88, 232, 255, 0.58)"
+          },
+          adapters: {
+            "static-png": {
+              sourceStatus: "current-production-static",
+              states: {
+                idle: {
+                  assetId: "biflyMenu",
+                  path: "assets/bifly-menu.png",
+                  dimensions: [512, 512],
+                  safeArea: [36, 34, 440, 430]
+                },
+                eat: {
+                  assetId: "biflyEat",
+                  path: "assets/bifly-eat.png",
+                  dimensions: [512, 512],
+                  safeArea: [36, 34, 440, 430]
+                }
+              }
+            },
+            "sprite-sheet": { states: {} },
+            "layered-png-rig": { states: {} },
+            rive: { states: {}, runtimeOptional: true },
+            spine: { states: {}, runtimeOptional: true }
+          }
+        },
+        nabatick: {
+          id: "nabatick",
+          displayName: "נבטיק",
+          fallbackState: "idle",
+          defaultAdapter: "static-png",
+          lighting: {
+            primary: "#a4f52d",
+            secondary: "#ffd84a",
+            glow: "rgba(164, 245, 45, 0.62)"
+          },
+          adapters: {
+            "static-png": {
+              sourceStatus: "current-production-reference-static",
+              states: {
+                idle: {
+                  assetId: "nabatickIdle",
+                  path: "assets/nabatick-idle-reference.png",
+                  dimensions: [512, 512],
+                  safeArea: [42, 28, 428, 430]
+                },
+                eat: {
+                  assetId: "nabatickEat",
+                  path: "assets/nabatick-eat-reference.png",
+                  dimensions: [512, 512],
+                  safeArea: [42, 28, 428, 430]
+                }
+              }
+            },
+            "sprite-sheet": { states: {} },
+            "layered-png-rig": { states: {} },
+            rive: { states: {}, runtimeOptional: true },
+            spine: { states: {}, runtimeOptional: true }
+          }
+        }
       }
     },
     legacyCandidates: [

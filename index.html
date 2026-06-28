@@ -237,7 +237,7 @@
           </section>
 
           <section class="menu-control-strip home-pregame-summary" aria-label="סיכום לפני משחק">
-            <button id="character-control-button" class="menu-control-button" type="button" aria-label="בחירת דמות">
+            <button id="character-control-button" class="menu-control-button" type="button" aria-label="פתיחת גלריית דמויות" aria-expanded="false" aria-controls="hero-gallery">
               <span class="ui-icon-wrap" aria-hidden="true">
                 <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#character"></use></svg>
               </span>
@@ -286,6 +286,73 @@
               <strong>אלופים</strong>
             </button>
           </nav>
+
+          <section id="hero-gallery" class="hero-gallery" role="dialog" aria-modal="true" aria-labelledby="hero-gallery-title" hidden>
+            <div class="hero-gallery-shell">
+              <div class="hero-gallery-ambient" aria-hidden="true">
+                <span class="hero-gallery-orbit orbit-a"></span>
+                <span class="hero-gallery-orbit orbit-b"></span>
+                <span class="hero-gallery-orbit orbit-c"></span>
+                <img class="hero-gallery-enemy enemy-left" src="assets/dark-enemy.png" alt="">
+                <img class="hero-gallery-enemy enemy-right" src="assets/dark-enemy-angry.png" alt="">
+              </div>
+
+              <header class="hero-gallery-header">
+                <button id="hero-gallery-back" class="hero-gallery-icon-button" type="button" aria-label="חזרה למסך הבית">
+                  <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="ui/icons.svg#back"></use></svg>
+                </button>
+                <div>
+                  <span class="hero-gallery-kicker">גלריית דמויות</span>
+                  <h2 id="hero-gallery-title">בחרו גיבור למבוך</h2>
+                </div>
+                <p id="hero-gallery-status" class="hero-gallery-status" role="status" aria-live="polite">ביפלי נבחר למשחק.</p>
+              </header>
+
+              <div id="hero-gallery-stage" class="hero-gallery-stage" aria-live="polite">
+                <button id="hero-gallery-prev" class="hero-gallery-nav hero-gallery-prev" type="button" aria-label="הדמות הקודמת">
+                  <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="ui/icons.svg#back"></use></svg>
+                </button>
+
+                <article class="hero-gallery-card" data-preview-character="bifly">
+                  <div class="hero-gallery-card-light" aria-hidden="true"></div>
+                  <button id="hero-gallery-art-button" class="hero-gallery-art-button" type="button" aria-label="תגובה של הדמות">
+                    <span id="hero-animation-mount" class="hero-animation-mount" data-character="bifly" data-state="idle" data-adapter-kind="static-png">
+                      <img id="hero-gallery-image" class="hero-animation-image" src="assets/bifly-menu.png" alt="" aria-hidden="true" draggable="false">
+                    </span>
+                  </button>
+                  <div class="hero-gallery-copy">
+                    <h3 id="hero-gallery-name">ביפלי</h3>
+                    <p id="hero-gallery-description">דמות זריזה ושמחה שמרגישה בבית בתוך מסלולי מבוך מהירים.</p>
+                  </div>
+                  <div class="hero-gallery-meta" aria-label="מידע על הדמות">
+                    <span>
+                      <small>אופי</small>
+                      <strong id="hero-gallery-style">זריז במבוך</strong>
+                    </span>
+                    <span>
+                      <small>שיא שמור</small>
+                      <strong id="hero-gallery-best">אין עדיין שיא לדמות הזאת</strong>
+                    </span>
+                  </div>
+                  <p id="hero-gallery-asset-note" class="hero-gallery-asset-note">תמונה סטטית עם חיבור מוכן למצבי אנימציה.</p>
+                </article>
+
+                <button id="hero-gallery-next" class="hero-gallery-nav hero-gallery-next" type="button" aria-label="הדמות הבאה">
+                  <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="ui/icons.svg#back"></use></svg>
+                </button>
+              </div>
+
+              <footer class="hero-gallery-actions">
+                <button id="hero-gallery-select" class="hero-gallery-select-button" type="button" aria-pressed="true">
+                  <span class="ui-icon-wrap" aria-hidden="true">
+                    <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#check"></use></svg>
+                  </span>
+                  <span id="hero-gallery-select-label">ביפלי נבחר</span>
+                </button>
+                <button id="hero-gallery-home" class="hero-gallery-home-button" type="button">חזרה למסך הבית</button>
+              </footer>
+            </div>
+          </section>
 
           <section id="mode-panel" class="menu-sheet" role="dialog" aria-modal="true" aria-labelledby="mode-panel-title" hidden>
             <div class="menu-sheet-inner">
@@ -468,7 +535,8 @@
   </main>
 
   <script src="kaflul-systems.js?v=20260627-1"></script>
-  <script src="ui/assets/asset-manifest.js?v=20260628-1"></script>
+  <script src="ui/assets/asset-manifest.js?v=20260628-2"></script>
+  <script src="ui/character-animation-adapter.js?v=20260628-1"></script>
   <script src="poster-loader.js?v=20260628-1"></script>
   <script src="mobile-enhancements.js?v=20260621-1"></script>
   <script src="mobile-screen-state.js?v=20260621-4"></script>
@@ -476,6 +544,6 @@
   <script src="mobile-native-answer.js?v=20260621-6"></script>
   <script src="nabatick-directional.js?v=20260628-1"></script>
   <script src="maze-enhancements.js?v=20260622-1"></script>
-  <script src="game.js?v=20260628-3"></script>
+  <script src="game.js?v=20260628-4"></script>
 </body>
 </html>

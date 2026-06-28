@@ -7,7 +7,7 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
-const outputDir = path.join(root, "docs", "phase2-screenshots");
+const outputDir = path.join(root, "docs", "phase3-screenshots");
 const args = new Set(process.argv.slice(2));
 const shouldFail = args.has("--ci");
 
@@ -195,47 +195,51 @@ async function tapSelector(cdp, sessionId, selector) {
     touchPoints: [{ x: point.x, y: point.y, radiusX: 3, radiusY: 3, force: 1 }]
   }, sessionId);
   await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] }, sessionId);
-  await wait(100);
+  await wait(120);
 }
 
-async function probeSelector(cdp, sessionId, selector) {
-  return evaluate(cdp, sessionId, `(() => {
+async function swipeSelector(cdp, sessionId, selector, deltaX) {
+  const points = await evaluate(cdp, sessionId, `(() => {
     const element = document.querySelector(${JSON.stringify(selector)});
     if (!element) return null;
     const box = element.getBoundingClientRect();
-    const x = box.x + box.width / 2;
+    const startX = box.x + box.width / 2;
     const y = box.y + box.height / 2;
-    const hit = document.elementFromPoint(x, y);
-    const actionable = hit?.closest?.("button, label, input, [role='button']");
-    return {
-      selector: ${JSON.stringify(selector)},
-      point: { x: Math.round(x), y: Math.round(y) },
-      hitTag: hit?.tagName || null,
-      hitId: hit?.id || null,
-      hitClass: hit?.className || null,
-      actionableId: actionable?.id || null,
-      actionableClass: actionable?.className || null
-    };
+    return { startX, endX: startX + ${Number(deltaX)}, y };
   })()`);
+  if (!points) throw new Error(`Missing selector for swipe: ${selector}`);
+  await cdp.send("Input.dispatchTouchEvent", {
+    type: "touchStart",
+    touchPoints: [{ x: points.startX, y: points.y, radiusX: 4, radiusY: 4, force: 1 }]
+  }, sessionId);
+  await wait(50);
+  await cdp.send("Input.dispatchTouchEvent", {
+    type: "touchMove",
+    touchPoints: [{ x: points.endX, y: points.y, radiusX: 4, radiusY: 4, force: 1 }]
+  }, sessionId);
+  await cdp.send("Input.dispatchTouchEvent", { type: "touchEnd", touchPoints: [] }, sessionId);
+  await wait(180);
 }
 
-async function inspectHome(cdp, sessionId) {
+async function openHeroGallery(cdp, sessionId) {
+  await tapSelector(cdp, sessionId, "#home-nav-characters");
+  await wait(250);
+}
+
+async function inspectHero(cdp, sessionId) {
   return evaluate(cdp, sessionId, `(() => {
     const selectors = [
       "#start-screen",
-      ".home-player-bar",
-      ".home-player-card",
-      ".menu-best-card",
-      "#leaderboard-open",
-      ".menu-actions",
-      "#menu-sound-button",
-      "#menu-settings-button",
-      ".menu-logo",
-      ".home-hero-scene",
-      ".home-progress-card",
-      "#start-button",
-      ".home-pregame-summary",
-      ".home-bottom-nav"
+      "#hero-gallery",
+      ".hero-gallery-header",
+      ".hero-gallery-stage",
+      ".hero-gallery-card",
+      "#hero-gallery-art-button",
+      "#hero-animation-mount",
+      ".hero-animation-image",
+      "#hero-gallery-name",
+      "#hero-gallery-select",
+      ".hero-gallery-actions"
     ];
     const viewport = { width: window.innerWidth, height: window.innerHeight };
     const rects = Object.fromEntries(selectors.map((selector) => {
@@ -260,22 +264,21 @@ async function inspectHome(cdp, sessionId) {
         || rect.y + rect.height > viewport.height + 1
       ))
       .map(([selector, rect]) => ({ selector, rect }));
-    const textSelectors = [
-      ".home-player-card strong",
-      ".menu-best-copy strong",
-      ".home-rank-button strong",
-      ".menu-control-button strong",
-      ".home-nav-button strong",
-      "#start-button .arcade-play-label",
-      "#menu-selection-summary",
-      ".world-ribbon span"
-    ];
     const overflowingText = [];
-    for (const selector of textSelectors) {
+    for (const selector of [
+      "#hero-gallery-title",
+      "#hero-gallery-status",
+      "#hero-gallery-name",
+      "#hero-gallery-description",
+      "#hero-gallery-style",
+      "#hero-gallery-best",
+      "#hero-gallery-select-label",
+      "#hero-gallery-home"
+    ]) {
       for (const element of document.querySelectorAll(selector)) {
         const style = getComputedStyle(element);
         if (style.display === "none" || style.visibility === "hidden") continue;
-        if (element.scrollWidth > element.clientWidth + 1 || element.scrollHeight > element.clientHeight + 2) {
+        if (element.scrollWidth > element.clientWidth + 1 || element.scrollHeight > element.clientHeight + 3) {
           overflowingText.push({
             selector,
             text: element.textContent.trim(),
@@ -287,15 +290,29 @@ async function inspectHome(cdp, sessionId) {
         }
       }
     }
+    const image = document.querySelector(".hero-animation-image");
+    const imageBox = image?.getBoundingClientRect();
+    const mountBox = document.querySelector("#hero-animation-mount")?.getBoundingClientRect();
+    const naturalRatio = image?.naturalWidth && image?.naturalHeight ? image.naturalWidth / image.naturalHeight : null;
+    const renderedRatio = imageBox?.width && imageBox?.height ? imageBox.width / imageBox.height : null;
+    const ratioDelta = naturalRatio && renderedRatio ? Math.abs(naturalRatio - renderedRatio) / naturalRatio : 0;
+    const imageFitTolerance = 4;
+    const imageInMount = Boolean(imageBox && mountBox
+      && imageBox.x >= mountBox.x - imageFitTolerance
+      && imageBox.y >= mountBox.y - imageFitTolerance
+      && imageBox.x + imageBox.width <= mountBox.x + mountBox.width + imageFitTolerance
+      && imageBox.y + imageBox.height <= mountBox.y + mountBox.height + imageFitTolerance);
     return {
       title: document.title,
       lang: document.documentElement.lang,
       dir: document.documentElement.dir,
       selectedCharacter: document.querySelector("input[name='character']:checked")?.value || null,
-      selectedMode: document.querySelector("input[name='game-mode']:checked")?.value || null,
-      selectedDifficulty: document.querySelector("input[name='difficulty']:checked")?.value || null,
-      soundIcon: document.getElementById("menu-sound-button")?.dataset.icon || null,
-      manifestLoaded: Boolean(window.KAFLUL_ASSET_MANIFEST?.iconSprite),
+      previewCharacter: document.getElementById("hero-gallery")?.dataset.galleryCharacter || null,
+      heroHidden: document.getElementById("hero-gallery")?.hidden ?? true,
+      adapterLoaded: Boolean(window.KaflulCharacterAnimationAdapter),
+      manifestLoaded: Boolean(window.KAFLUL_ASSET_MANIFEST?.characterAnimations),
+      supportedStates: window.KaflulCharacterAnimationAdapter?.getSupportedStates(document.getElementById("hero-gallery")?.dataset.galleryCharacter || "bifly", "static-png") || [],
+      missingStates: window.KaflulCharacterAnimationAdapter?.getMissingStates(document.getElementById("hero-gallery")?.dataset.galleryCharacter || "bifly", "static-png") || [],
       runtimeErrors: window.__mathMazeRuntime?.errors || [],
       scroll: {
         width: document.documentElement.scrollWidth,
@@ -305,7 +322,16 @@ async function inspectHome(cdp, sessionId) {
       },
       rects,
       outOfBounds,
-      overflowingText
+      overflowingText,
+      image: {
+        complete: image?.complete || false,
+        naturalWidth: image?.naturalWidth || 0,
+        naturalHeight: image?.naturalHeight || 0,
+        renderedWidth: Math.round(imageBox?.width || 0),
+        renderedHeight: Math.round(imageBox?.height || 0),
+        ratioDelta,
+        imageInMount
+      }
     };
   })()`);
 }
@@ -313,112 +339,67 @@ async function inspectHome(cdp, sessionId) {
 async function runAcceptance(cdp, appPort) {
   const { targetId, sessionId } = await createPage(cdp, { width: 430, height: 932, mobile: true });
   const { events, off } = collectEvents(cdp, sessionId);
-  await cdp.send("Page.navigate", { url: `http://127.0.0.1:${appPort}/?phase2-acceptance=1` }, sessionId);
+  await cdp.send("Page.navigate", { url: `http://127.0.0.1:${appPort}/?phase3-acceptance=1` }, sessionId);
   await wait(900);
   await evaluate(cdp, sessionId, "localStorage.clear(); location.reload(); true;");
   await wait(900);
 
-  await tapSelector(cdp, sessionId, ".menu-character-nabatick");
-  const afterCharacter = await evaluate(cdp, sessionId, `(() => ({
-    checked: document.querySelector("input[name='character'][value='nabatick']")?.checked,
-    label: document.getElementById("selected-character-label")?.textContent || ""
+  await openHeroGallery(cdp, sessionId);
+  const opened = await evaluate(cdp, sessionId, "!document.getElementById('hero-gallery').hidden");
+  const initialName = await evaluate(cdp, sessionId, "document.getElementById('hero-gallery-name')?.textContent || ''");
+
+  await tapSelector(cdp, sessionId, "#hero-gallery-next");
+  const nextName = await evaluate(cdp, sessionId, "document.getElementById('hero-gallery-name')?.textContent || ''");
+
+  await tapSelector(cdp, sessionId, "#hero-gallery-art-button");
+  const tapRequested = await evaluate(cdp, sessionId, "document.getElementById('hero-animation-mount')?.dataset.requestedState === 'tap'");
+  await wait(460);
+
+  await tapSelector(cdp, sessionId, "#hero-gallery-select");
+  const selectedNabatick = await evaluate(cdp, sessionId, `(() => ({
+    radio: document.querySelector("input[name='character'][value='nabatick']")?.checked,
+    homeLabel: document.getElementById("selected-character-label")?.textContent || "",
+    root: document.documentElement.dataset.character
   }))()`);
 
-  await tapSelector(cdp, sessionId, "#mode-control-button");
-  const modeSheetOpened = await evaluate(cdp, sessionId, "!document.getElementById('mode-panel').hidden");
-  await evaluate(cdp, sessionId, `(() => {
-    document.querySelector("input[name='game-mode'][value='adventure']")?.closest("label")?.click();
-    return document.querySelector("input[name='game-mode'][value='adventure']")?.checked;
-  })()`);
-  await evaluate(cdp, sessionId, "document.querySelector('#mode-panel [data-close-panel]')?.click(); true;");
-  await wait(100);
-
-  await tapSelector(cdp, sessionId, "#difficulty-control-button");
-  const difficultySheetOpened = await evaluate(cdp, sessionId, "!document.getElementById('difficulty-panel').hidden");
-  await evaluate(cdp, sessionId, `(() => {
-    document.querySelector("input[name='difficulty'][value='advanced']")?.closest("label")?.click();
-    return document.querySelector("input[name='difficulty'][value='advanced']")?.checked;
-  })()`);
-  await evaluate(cdp, sessionId, "document.querySelector('#difficulty-panel [data-close-panel]')?.click(); true;");
-  await wait(100);
-
-  const settingsProbe = await probeSelector(cdp, sessionId, "#menu-settings-button");
-  await tapSelector(cdp, sessionId, "#menu-settings-button");
-  const settingsOpened = await evaluate(cdp, sessionId, "!document.getElementById('settings-panel').hidden");
-  const settingsClosed = await evaluate(cdp, sessionId, `(() => {
-    const input = document.getElementById("player-name-input");
-    input.value = "בודק בית";
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-    document.getElementById("settings-save-button").click();
-    return document.getElementById("settings-panel").hidden;
-  })()`);
-
-  const soundProbe = await probeSelector(cdp, sessionId, "#menu-sound-button");
-  await tapSelector(cdp, sessionId, "#menu-sound-button");
-  const soundOff = await evaluate(cdp, sessionId, "document.getElementById('menu-sound-button')?.dataset.icon === 'sound-off'");
-
-  await tapSelector(cdp, sessionId, "#home-nav-progress");
-  const progressFocused = await evaluate(cdp, sessionId, "document.activeElement?.classList.contains('home-progress-card')");
-
-  await tapSelector(cdp, sessionId, "#home-nav-characters");
-  const characterGalleryOpened = await evaluate(cdp, sessionId, `(() => {
-    const gallery = document.getElementById("hero-gallery");
-    return Boolean(gallery && !gallery.hidden && document.activeElement?.id === "hero-gallery-select");
-  })()`);
-  await evaluate(cdp, sessionId, "document.getElementById('hero-gallery-back')?.click(); true;");
-  await wait(100);
-
-  await tapSelector(cdp, sessionId, "#home-nav-game");
-  const gameFocused = await evaluate(cdp, sessionId, "document.activeElement?.id === 'start-button'");
-
-  await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9 }, sessionId);
-  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Tab", code: "Tab", windowsVirtualKeyCode: 9 }, sessionId);
-  const keyboardReachedControl = await evaluate(cdp, sessionId, "Boolean(document.activeElement && document.activeElement !== document.body)");
-
-  await tapSelector(cdp, sessionId, "#home-nav-champions");
-  const leaderboardOpened = await evaluate(cdp, sessionId, "!document.getElementById('leaderboard-dialog').hidden");
-  await evaluate(cdp, sessionId, "document.getElementById('leaderboard-close').click(); true;");
+  await tapSelector(cdp, sessionId, "#hero-gallery-home");
+  const returnedHome = await evaluate(cdp, sessionId, "document.getElementById('hero-gallery').hidden && document.getElementById('start-screen').hidden === false");
 
   await cdp.send("Page.reload", { ignoreCache: true }, sessionId);
   await wait(900);
   const persisted = await evaluate(cdp, sessionId, `(() => ({
     character: document.querySelector("input[name='character']:checked")?.value,
-    mode: document.querySelector("input[name='game-mode']:checked")?.value,
-    difficulty: document.querySelector("input[name='difficulty']:checked")?.value,
-    nickname: document.getElementById("player-name-input")?.value,
-    soundIcon: document.getElementById("menu-sound-button")?.dataset.icon
+    label: document.getElementById("selected-character-label")?.textContent || ""
   }))()`);
 
-  await tapSelector(cdp, sessionId, "#start-button");
-  await wait(250);
-  const gameStarted = await evaluate(cdp, sessionId, "document.getElementById('start-screen').hidden === true");
-  await evaluate(cdp, sessionId, "document.getElementById('restart-button').click(); true;");
-  await wait(200);
-  const returnedToMenu = await evaluate(cdp, sessionId, "document.getElementById('start-screen').hidden === false");
-  const runtimeErrors = await evaluate(cdp, sessionId, "window.__mathMazeRuntime?.errors || []");
+  await openHeroGallery(cdp, sessionId);
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "ArrowRight", code: "ArrowRight", windowsVirtualKeyCode: 39 }, sessionId);
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "ArrowRight", code: "ArrowRight", windowsVirtualKeyCode: 39 }, sessionId);
+  await wait(150);
+  const keyboardName = await evaluate(cdp, sessionId, "document.getElementById('hero-gallery-name')?.textContent || ''");
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyDown", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13 }, sessionId);
+  await cdp.send("Input.dispatchKeyEvent", { type: "keyUp", key: "Enter", code: "Enter", windowsVirtualKeyCode: 13 }, sessionId);
+  await wait(150);
+  const keyboardSelected = await evaluate(cdp, sessionId, "document.querySelector(\"input[name='character'][value='bifly']\")?.checked === true");
 
+  await swipeSelector(cdp, sessionId, "#hero-gallery-stage", -130);
+  const touchName = await evaluate(cdp, sessionId, "document.getElementById('hero-gallery-name')?.textContent || ''");
+
+  const runtimeErrors = await evaluate(cdp, sessionId, "window.__mathMazeRuntime?.errors || []");
   off();
   await cdp.send("Target.closeTarget", { targetId });
 
   const checks = {
-    characterSelected: afterCharacter.checked === true && afterCharacter.label.includes("נבטיק"),
-    modeSheetOpened,
-    difficultySheetOpened,
-    settingsOpened,
-    settingsClosed,
-    soundPersistedBeforeReload: soundOff,
-    progressFocused,
-    characterGalleryOpened,
-    gameFocused,
-    keyboardReachedControl,
-    leaderboardOpened,
-    persistedCharacter: persisted.character === "nabatick",
-    persistedMode: persisted.mode === "adventure",
-    persistedDifficulty: persisted.difficulty === "advanced",
-    persistedNickname: persisted.nickname === "בודק בית",
-    persistedSound: persisted.soundIcon === "sound-off",
-    gameStarted,
-    returnedToMenu,
+    opened,
+    initialName: initialName.includes("ביפלי"),
+    nextControl: nextName.includes("נבטיק"),
+    tapReaction: tapRequested,
+    selectedNabatick: selectedNabatick.radio === true && selectedNabatick.homeLabel.includes("נבטיק") && selectedNabatick.root === "nabatick",
+    returnedHome,
+    persistedSelection: persisted.character === "nabatick" && persisted.label.includes("נבטיק"),
+    keyboardNavigation: keyboardName.includes("ביפלי"),
+    keyboardSelection: keyboardSelected,
+    touchNavigation: touchName.includes("נבטיק"),
     noRuntimeErrors: runtimeErrors.length === 0,
     noConsoleErrors: events.length === 0
   };
@@ -427,7 +408,6 @@ async function runAcceptance(cdp, appPort) {
     ok: Object.values(checks).every(Boolean),
     checks,
     persisted,
-    probes: { settingsProbe, soundProbe },
     events,
     runtimeErrors
   };
@@ -436,14 +416,14 @@ async function runAcceptance(cdp, appPort) {
 async function main() {
   const chromePath = findChrome();
   if (!chromePath) {
-    throw new Error("No Chrome or Chromium executable found. Set CHROME_PATH to run Phase 2 home verification.");
+    throw new Error("No Chrome or Chromium executable found. Set CHROME_PATH to run Phase 3 hero verification.");
   }
 
   await mkdir(outputDir, { recursive: true });
   const server = await startServer();
   const appPort = server.address().port;
-  const cdpPort = 9600 + Math.floor(Math.random() * 400);
-  const userDataDir = path.join("/private/tmp", `kaflul-phase2-home-${process.pid}`);
+  const cdpPort = 10000 + Math.floor(Math.random() * 500);
+  const userDataDir = path.join("/private/tmp", `kaflul-phase3-hero-${process.pid}`);
   const chrome = spawn(chromePath, [
     "--headless=new",
     "--disable-gpu",
@@ -465,15 +445,17 @@ async function main() {
     for (const viewport of viewports) {
       const { targetId, sessionId } = await createPage(cdp, viewport);
       const { events, off } = collectEvents(cdp, sessionId);
-      await cdp.send("Page.navigate", { url: `http://127.0.0.1:${appPort}/?phase2=${viewport.name}` }, sessionId);
-      await wait(1400);
-      const evaluation = await inspectHome(cdp, sessionId);
+      await cdp.send("Page.navigate", { url: `http://127.0.0.1:${appPort}/?phase3=${viewport.name}` }, sessionId);
+      await wait(1000);
+      await openHeroGallery(cdp, sessionId);
+      await wait(350);
+      const evaluation = await inspectHero(cdp, sessionId);
       const screenshot = await cdp.send("Page.captureScreenshot", {
         format: "png",
         fromSurface: true,
         captureBeyondViewport: false
       }, sessionId);
-      const file = path.join(outputDir, `phase2-home-${viewport.name}.png`);
+      const file = path.join(outputDir, `phase3-hero-${viewport.name}.png`);
       await writeFile(file, Buffer.from(screenshot.data, "base64"));
       off();
       await cdp.send("Target.closeTarget", { targetId });
@@ -496,17 +478,23 @@ async function main() {
       || result.evaluation.overflowingText.length > 0
       || result.evaluation.lang !== "he"
       || result.evaluation.dir !== "rtl"
+      || result.evaluation.heroHidden
+      || !result.evaluation.adapterLoaded
       || !result.evaluation.manifestLoaded
+      || !result.evaluation.image.complete
+      || result.evaluation.image.naturalWidth <= 0
+      || result.evaluation.image.ratioDelta > 0.12
+      || !result.evaluation.image.imageInMount
     ));
     const report = {
-      phase: 2,
+      phase: 3,
       capturedAt: new Date().toISOString(),
       chrome: version.Browser,
       ok: failures.length === 0 && acceptance.ok,
       results,
       acceptance
     };
-    const reportFile = path.join(outputDir, "phase2-home-report.json");
+    const reportFile = path.join(outputDir, "phase3-hero-report.json");
     await writeFile(reportFile, JSON.stringify(report, null, 2));
 
     await cdp.send("Browser.close").catch(() => {});
@@ -521,6 +509,7 @@ async function main() {
         overflow: result.evaluation.scroll,
         outOfBounds: result.evaluation.outOfBounds.length,
         overflowingText: result.evaluation.overflowingText.length,
+        image: result.evaluation.image,
         rtl: result.evaluation.dir === "rtl" && result.evaluation.lang === "he"
       })),
       acceptance: acceptance.checks,

@@ -315,3 +315,35 @@ State preservation:
 - Leaderboard open/close remains owned by existing leaderboard helpers.
 
 Phase 2 verified that the home rank button must override the global `.leaderboard-open-button` fixed positioning from `leaderboard.css`; otherwise it can cover the settings button on mobile.
+
+## Phase 3 Hero Gallery Map
+
+Phase 3 adds a dedicated character gallery launched from the home hub. It does not change gameplay rules or character gameplay behavior.
+
+Current hero gallery regions:
+
+| Region | Production selectors | Purpose |
+| --- | --- | --- |
+| Gallery shell | `#hero-gallery`, `.hero-gallery-shell` | Full-screen RTL character gallery overlay. |
+| Header | `#hero-gallery-back`, `#hero-gallery-title`, `#hero-gallery-status` | Return control, title, selected/preview status. |
+| Character stage | `#hero-gallery-stage`, `.hero-gallery-card` | Character-specific scene, lighting, enemies, maze route lines. |
+| Animation mount | `#hero-animation-mount`, `.hero-animation-image` | Adapter-owned render target for static PNG now and richer formats later. |
+| Browse controls | `#hero-gallery-prev`, `#hero-gallery-next` | Previous/next character navigation. |
+| Character copy | `#hero-gallery-name`, `#hero-gallery-description`, `#hero-gallery-style`, `#hero-gallery-best`, `#hero-gallery-asset-note` | Name, short personality, truthful stored best, and asset-state note. |
+| Actions | `#hero-gallery-select`, `#hero-gallery-home` | Persistent selection and return to home hub. |
+
+State preservation:
+
+- Character selection remains owned by existing `setCharacter` and radio inputs.
+- `mathMazeCharacter` and save settings remain compatible.
+- Home hub labels and `documentElement.dataset.character` update immediately after gallery selection.
+- Character-specific best is derived only from existing leaderboard entries that include `selectedCharacter` or `characterId`.
+- If no truthful character-specific leaderboard data exists, the gallery states that there is no stored best for that character.
+
+Interaction coverage:
+
+- Touch swipe on `#hero-gallery-stage`.
+- Keyboard arrow navigation.
+- Enter/Space selection on the gallery select action.
+- Escape/back/home return to the home hub.
+- Static PNG fallback for missing animation states.

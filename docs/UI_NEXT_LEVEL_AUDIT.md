@@ -716,3 +716,28 @@ Observed as preserved in Phase 2 verification:
 - Game start and return to menu.
 - RTL document direction.
 - No document overflow or checked text overflow across required Phase 2 viewports.
+
+## Phase 3 Hero Gallery Addendum
+
+Date: 2026-06-28
+
+Phase 3 added a dedicated character gallery and preserved existing gameplay behavior. Character selection still flows through the existing radio controls and `setCharacter`; there is no new save schema.
+
+Verified behavior after Phase 3:
+
+- Gallery opens from the home hub character entry points.
+- Previous/next controls browse Bifly and Nabatick.
+- Keyboard arrows browse characters.
+- Enter confirms the previewed character.
+- Touch swipe browses characters.
+- Selection persists after reload.
+- Home hub updates immediately after selection.
+- Character art is not distorted or clipped in the required viewports.
+- No document overflow, checked text overflow, console errors, or runtime errors were reported by the Phase 3 CDP verifier.
+
+Current Phase 3 risks:
+
+- Character animation remains static PNG based until final animation assets are supplied.
+- Tap and selected responses are UI feedback, not character animation states.
+- Rive and Spine are adapter-compatible but no runtime or approved files are bundled.
+- Character-specific best can only be shown from existing leaderboard entries with character metadata; the current `personalBests` store is not character-specific.

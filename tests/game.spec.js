@@ -96,7 +96,9 @@ test("phase 2 home summary and bottom navigation stay interactive", async ({ pag
   await expect(page.locator("#start-screen")).toBeVisible();
 
   await page.locator("#character-control-button").click();
-  expect(await page.evaluate(() => document.activeElement?.matches("input[name='character']"))).toBe(true);
+  await expect(page.locator("#hero-gallery")).toBeVisible();
+  await page.locator("#hero-gallery-back").click();
+  await expect(page.locator("#hero-gallery")).toBeHidden();
 
   await page.locator("#mode-control-button").click();
   await expect(page.locator("#mode-panel")).toBeVisible();
@@ -118,6 +120,40 @@ test("phase 2 home summary and bottom navigation stay interactive", async ({ pag
   await expect(page.locator("#leaderboard-dialog")).toBeVisible();
   await page.locator("#leaderboard-close").click();
   await expect(page.locator("#leaderboard-dialog")).toBeHidden();
+
+  expect(errors).toEqual([]);
+});
+
+test("phase 3 hero gallery selects characters and returns to the home hub", async ({ page }) => {
+  const errors = collectRuntimeErrors(page);
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#start-screen")).toBeVisible();
+
+  await page.locator("#home-nav-characters").click();
+  await expect(page.locator("#hero-gallery")).toBeVisible();
+  await expect(page.locator("#hero-gallery-name")).toContainText("ביפלי");
+
+  await page.locator("#hero-gallery-next").click();
+  await expect(page.locator("#hero-gallery-name")).toContainText("נבטיק");
+  await page.locator("#hero-gallery-select").click();
+  await expect(page.locator("input[name='character'][value='nabatick']")).toBeChecked();
+  await expect(page.locator("#selected-character-label")).toContainText("נבטיק");
+
+  await page.keyboard.press("ArrowRight");
+  await expect(page.locator("#hero-gallery-name")).toContainText("ביפלי");
+  await page.keyboard.press("Enter");
+  await expect(page.locator("input[name='character'][value='bifly']")).toBeChecked();
+
+  await page.locator("#hero-gallery-home").click();
+  await expect(page.locator("#hero-gallery")).toBeHidden();
+  await expect(page.locator("#start-button")).toBeVisible();
+
+  await page.locator("#home-nav-characters").click();
+  await page.locator("#hero-gallery-next").click();
+  await page.locator("#hero-gallery-select").click();
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.locator("input[name='character'][value='nabatick']")).toBeChecked();
+  await expect(page.locator("#selected-character-label")).toContainText("נבטיק");
 
   expect(errors).toEqual([]);
 });

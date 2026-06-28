@@ -277,3 +277,45 @@ Missing or incomplete for later phases:
 - Enemy animation states beyond the current static PNGs.
 
 Phase 2 deliberately did not add placeholder art. Static fallbacks remain in place until production assets exist.
+
+## Phase 3 Hero Gallery Asset Status
+
+Phase 3 adds a character-animation adapter foundation and uses only approved existing assets. No placeholder art was created.
+
+Adapter types now recognized by `ui/character-animation-adapter.js` and `ui/assets/asset-manifest.js`:
+
+| Adapter type | Runtime requirement | Phase 3 status |
+| --- | --- | --- |
+| `static-png` | Browser image support only | Implemented and used. |
+| `sprite-sheet` | Browser image support only | Adapter path exists; no approved sprite sheet assets yet. |
+| `layered-png-rig` | Browser image support only | Adapter path exists; no approved layered rig assets yet. |
+| `rive` | Optional Rive runtime | Manifest path exists; no runtime or approved `.riv` assets bundled. |
+| `spine` | Optional Spine runtime | Manifest path exists; no runtime or approved Spine assets bundled. |
+
+Supported character states from approved current assets:
+
+| Character | Supported states | Source assets |
+| --- | --- | --- |
+| Bifly | `idle`, `eat` | `assets/bifly-menu.png`, `assets/bifly-eat.png` |
+| Nabatick | `idle`, `eat` | `assets/nabatick-idle-reference.png`, `assets/nabatick-eat-reference.png` |
+
+Missing character-animation states for both characters:
+
+- `blink`
+- `tap`
+- `selected`
+- `excited`
+- `worried`
+- `victory`
+- `defeat`
+- `hit`
+
+Phase 3 uses CSS interaction feedback for tap/selected confirmation, but does not fake those as real character animation states. The adapter falls back to the approved static PNG when a requested state is not available.
+
+Additional missing art for later phases:
+
+- Production sprite sheets or layered rigs for both Bifly and Nabatick.
+- Character-safe selected-state renders.
+- Character-specific blink, tap, excited, worried, victory, defeat, and hit states.
+- Final Nabatick production animation set to replace reference-status files.
+- Optional Rive/Spine files only if the project chooses those pipelines later.

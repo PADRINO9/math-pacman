@@ -123,3 +123,66 @@ Commands run for Phase 2 QA included:
 - `node --test tests/kaflul-systems.test.js`.
 - `node tools/phase2_home_verification.mjs --ci`.
 - Local Playwright binary check via `node_modules/.bin/playwright`.
+
+## Phase 3 Hero Gallery QA Addendum
+
+Date: 2026-06-28
+Phase: 3 hero gallery only
+
+Automated checks:
+
+| Check | Result | Notes |
+| --- | --- | --- |
+| Direct JS syntax checks | Pass | `kaflul-systems.js`, `game.js`, `mobile-enhancements.js`, `poster-loader.js`, `ui/assets/asset-manifest.js`, `ui/character-animation-adapter.js`, `tools/phase2_home_verification.mjs`, `tools/phase3_hero_verification.mjs`. |
+| Node systems tests | Pass | 11/11 in `tests/kaflul-systems.test.js`. |
+| Phase 2 home verification | Pass | Re-run after Phase 3; character navigation now verifies opening the hero gallery. |
+| Phase 3 hero verification | Pass | Required screenshots, console/runtime checks, overflow checks, RTL checks, keyboard, touch swipe, persistence, image fit, and home-update checks passed. |
+| `pnpm run build` / full Playwright suite | Blocked | No local `node_modules` install was present; `pnpm` attempted a registry install and failed under restricted network. The partial install artifacts were removed. |
+
+Required Phase 3 screenshots:
+
+| Viewport | Screenshot |
+| --- | --- |
+| 390x844 portrait | `docs/phase3-screenshots/phase3-hero-390x844-portrait.png` |
+| 430x932 portrait | `docs/phase3-screenshots/phase3-hero-430x932-portrait.png` |
+| 844x390 landscape | `docs/phase3-screenshots/phase3-hero-844x390-landscape.png` |
+| 1280x720 desktop | `docs/phase3-screenshots/phase3-hero-1280x720-desktop.png` |
+| 1440x900 desktop | `docs/phase3-screenshots/phase3-hero-1440x900-desktop.png` |
+
+Report file:
+
+- `docs/phase3-screenshots/phase3-hero-report.json`
+
+Phase 3 acceptance checks passed:
+
+- Gallery opens from the home hub.
+- Bifly renders first from a clean local save.
+- Next control reaches Nabatick.
+- Tap reaction requests the `tap` state and falls back safely.
+- Nabatick selection updates radio state, home label, and root character dataset.
+- Return-to-home keeps the start screen visible.
+- Selection persists after reload.
+- Keyboard arrows navigate and Enter confirms.
+- Touch swipe navigates.
+- Console errors: 0.
+- Runtime errors: 0.
+- Document overflow: none at all required viewports.
+- Text overflow: none in checked hero regions.
+- Character image is complete, ratio-preserving, and inside the animation mount.
+- Document language/direction remain `he`/`rtl`.
+
+Manual screenshot inspection notes:
+
+- 390x844 and 430x932 portrait are dense but usable without accidental scrolling or clipped Hebrew.
+- 844x390 landscape remains in-bounds with primary selection action available.
+- 1280x720 and 1440x900 desktop keep the character art large and undistorted.
+- Current gallery screenshots use Bifly as the clean-save first character; scripted acceptance verifies browsing and selecting Nabatick.
+
+Commands run for Phase 3 QA included:
+
+- Direct `node --check` for production and verification scripts.
+- `node --test tests/kaflul-systems.test.js`.
+- `git diff --check`.
+- `node tools/phase2_home_verification.mjs --ci`.
+- `node tools/phase3_hero_verification.mjs --ci`.
+- Attempted `pnpm run build`, blocked by restricted network while trying to install missing Playwright packages.

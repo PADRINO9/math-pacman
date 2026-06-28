@@ -60,6 +60,20 @@
     }
   };
 
+  const HERO_GALLERY_ORDER = ["bifly", "nabatick"];
+  const HERO_GALLERY_COPY = {
+    bifly: {
+      description: "דמות זריזה ושמחה שמרגישה בבית בתוך מסלולי מבוך מהירים.",
+      style: "זריז במבוך",
+      assetNote: "תצוגת PNG סטטית. מצבי idle ו-eat קיימים כנכסים מאושרים."
+    },
+    nabatick: {
+      description: "נבטיק רגוע וחד, קורא את המסלול ומחכה לרגע הנכון לברוח מיריבים.",
+      style: "חד מול יריבים",
+      assetNote: "תצוגת PNG סטטית מנכס reference מאושר. מצבי idle ו-eat קיימים."
+    }
+  };
+
   const GAME_THEME = {
     title: "Math Maze",
     hebrewTitle: "מבוך הכפל",
@@ -369,6 +383,23 @@
     homeNavCharacters: document.getElementById("home-nav-characters"),
     homeNavProgress: document.getElementById("home-nav-progress"),
     homeNavChampions: document.getElementById("home-nav-champions"),
+    heroGallery: document.getElementById("hero-gallery"),
+    heroGalleryBack: document.getElementById("hero-gallery-back"),
+    heroGalleryHome: document.getElementById("hero-gallery-home"),
+    heroGalleryPrev: document.getElementById("hero-gallery-prev"),
+    heroGalleryNext: document.getElementById("hero-gallery-next"),
+    heroGalleryStage: document.getElementById("hero-gallery-stage"),
+    heroGalleryCard: document.querySelector(".hero-gallery-card"),
+    heroGalleryArtButton: document.getElementById("hero-gallery-art-button"),
+    heroAnimationMount: document.getElementById("hero-animation-mount"),
+    heroGalleryName: document.getElementById("hero-gallery-name"),
+    heroGalleryDescription: document.getElementById("hero-gallery-description"),
+    heroGalleryStyle: document.getElementById("hero-gallery-style"),
+    heroGalleryBest: document.getElementById("hero-gallery-best"),
+    heroGalleryStatus: document.getElementById("hero-gallery-status"),
+    heroGalleryAssetNote: document.getElementById("hero-gallery-asset-note"),
+    heroGallerySelect: document.getElementById("hero-gallery-select"),
+    heroGallerySelectLabel: document.getElementById("hero-gallery-select-label"),
     modePanel: document.getElementById("mode-panel"),
     difficultyPanel: document.getElementById("difficulty-panel"),
     settingsPanel: document.getElementById("settings-panel"),
@@ -662,7 +693,11 @@
     finalResult: null,
     latestLeaderboardEntryId: null,
     lastFocusBeforeLeaderboard: null,
-    lastFocusBeforeMenuSheet: null
+    lastFocusBeforeMenuSheet: null,
+    lastFocusBeforeHeroGallery: null,
+    heroGalleryCharacterId: null,
+    heroGallerySwipeStart: null,
+    heroGalleryReactionTimerId: null
   };
 
   function cellKey(x, y) {
@@ -1301,6 +1336,225 @@
     els.menuNextRank.textContent = `חסרות ${numberFormat.format(needed)} נקודות למקום ${rank - 1}`;
   }
 
+  function getHeroGalleryCopy(characterId) {
+    const normalized = normalizeCharacterId(characterId);
+    return HERO_GALLERY_COPY[normalized] || HERO_GALLERY_COPY.bifly;
+  }
+
+  function getCharacterStoredBest(characterId) {
+    const normalized = normalizeCharacterId(characterId);
+    const entries = Array.isArray(state.save?.leaderboardEntries) ? state.save.leaderboardEntries : [];
+    return entries.reduce((best, entry) => {
+      if (normalizeCharacterId(entry?.selectedCharacter || entry?.characterId) !== normalized) {
+        return best;
+      }
+      return Math.max(best, Math.max(0, Math.floor(Number(entry.score) || 0)));
+    }, 0);
+  }
+
+  function heroGalleryStatusText(characterId) {
+    const name = characterLabel(characterId);
+    return characterId === state.characterId
+      ? `${name} נבחר למשחק.`
+      : `אפשר לבחור את ${name} למשחק הבא.`;
+  }
+
+  function renderHeroGalleryCharacter(renderState = "idle") {
+    if (!els.heroGallery || !els.heroAnimationMount) {
+      return;
+    }
+
+    const characterId = normalizeCharacterId(state.heroGalleryCharacterId || state.characterId);
+    const copy = getHeroGalleryCopy(characterId);
+    const name = characterLabel(characterId);
+    const adapter = window.KaflulCharacterAnimationAdapter;
+    const resolved = adapter?.render(els.heroAnimationMount, {
+      characterId,
+      state: renderState,
+      alt: ""
+    });
+    const supportedStates = adapter?.getSupportedStates(characterId, "static-png") || ["idle"];
+    const missingStates = adapter?.getMissingStates(characterId, "static-png") || [];
+    const characterBest = getCharacterStoredBest(characterId);
+    const isSelected = characterId === state.characterId;
+
+    els.heroGallery.dataset.galleryCharacter = characterId;
+    els.heroGalleryCard?.setAttribute("data-preview-character", characterId);
+    if (els.heroGalleryName) els.heroGalleryName.textContent = name;
+    if (els.heroGalleryDescription) els.heroGalleryDescription.textContent = copy.description;
+    if (els.heroGalleryStyle) els.heroGalleryStyle.textContent = copy.style;
+    if (els.heroGalleryBest) {
+      els.heroGalleryBest.textContent = characterBest > 0
+        ? `שיא שמור: ${numberFormat.format(characterBest)}`
+        : "אין עדיין שיא לדמות הזאת";
+    }
+    if (els.heroGalleryStatus) els.heroGalleryStatus.textContent = heroGalleryStatusText(characterId);
+    if (els.heroGalleryAssetNote) {
+      const renderedState = resolved?.renderedState || "idle";
+      const fallbackText = resolved?.usedFallback ? " · fallback סטטי" : "";
+      const missingCount = missingStates.length;
+      els.heroGalleryAssetNote.textContent = `${copy.assetNote} מצב מוצג: ${renderedState}. חסרים ${missingCount} מצבי אנימציה${fallbackText}`;
+    }
+    if (els.heroGallerySelect) {
+      els.heroGallerySelect.setAttribute("aria-pressed", isSelected ? "true" : "false");
+      els.heroGallerySelect.dataset.selected = isSelected ? "true" : "false";
+    }
+    if (els.heroGallerySelectLabel) {
+      els.heroGallerySelectLabel.textContent = isSelected ? `${name} נבחר` : `בחר את ${name}`;
+    }
+    if (els.heroAnimationMount) {
+      els.heroAnimationMount.dataset.supportedStates = supportedStates.join(" ");
+    }
+  }
+
+  function browseHeroGallery(offset) {
+    const current = normalizeCharacterId(state.heroGalleryCharacterId || state.characterId);
+    const currentIndex = HERO_GALLERY_ORDER.indexOf(current);
+    const nextIndex = (currentIndex + offset + HERO_GALLERY_ORDER.length) % HERO_GALLERY_ORDER.length;
+    state.heroGalleryCharacterId = HERO_GALLERY_ORDER[nextIndex];
+    renderHeroGalleryCharacter("idle");
+    playTone(360 + nextIndex * 80, 0.04, "triangle", 0.025);
+    window.setTimeout(() => els.heroGallerySelect?.focus({ preventScroll: true }), 0);
+  }
+
+  function closeHeroGallery(options = {}) {
+    if (!els.heroGallery || els.heroGallery.hidden) {
+      return;
+    }
+    const { restoreFocus = true } = options;
+    els.heroGallery.hidden = true;
+    els.playerForm.classList.remove("hero-gallery-open");
+    els.characterControlButton?.setAttribute("aria-expanded", "false");
+    if (state.heroGalleryReactionTimerId) {
+      window.clearTimeout(state.heroGalleryReactionTimerId);
+      state.heroGalleryReactionTimerId = null;
+    }
+    state.heroGallerySwipeStart = null;
+    setHomeNavActive(els.homeNavGame);
+    if (restoreFocus && state.lastFocusBeforeHeroGallery instanceof HTMLElement) {
+      state.lastFocusBeforeHeroGallery.focus({ preventScroll: true });
+    }
+    state.lastFocusBeforeHeroGallery = null;
+  }
+
+  function openHeroGallery(characterId = state.characterId) {
+    if (!els.heroGallery) {
+      focusSelectedCharacter();
+      return;
+    }
+    closeMenuSheets({ restoreFocus: false });
+    state.lastFocusBeforeHeroGallery = document.activeElement;
+    state.heroGalleryCharacterId = normalizeCharacterId(characterId);
+    els.heroGallery.hidden = false;
+    els.playerForm.classList.add("hero-gallery-open");
+    els.characterControlButton?.setAttribute("aria-expanded", "true");
+    setHomeNavActive(els.homeNavCharacters);
+    renderHeroGalleryCharacter("idle");
+    window.setTimeout(() => els.heroGallerySelect?.focus({ preventScroll: true }), 0);
+  }
+
+  function confirmHeroGallerySelection() {
+    const characterId = normalizeCharacterId(state.heroGalleryCharacterId || state.characterId);
+    const selectedChanged = characterId !== state.characterId;
+    setCharacter(characterId);
+    els.heroGalleryCard?.classList.add("is-confirming");
+    renderHeroGalleryCharacter("selected");
+    playTone(selectedChanged ? 560 : 420, 0.08, "triangle", 0.035);
+    window.setTimeout(() => {
+      els.heroGalleryCard?.classList.remove("is-confirming");
+      renderHeroGalleryCharacter("idle");
+    }, 620);
+  }
+
+  function reactToHeroGalleryTap() {
+    if (!els.heroGalleryCard) {
+      return;
+    }
+    els.heroGalleryCard.classList.remove("is-reacting");
+    void els.heroGalleryCard.offsetWidth;
+    els.heroGalleryCard.classList.add("is-reacting");
+    renderHeroGalleryCharacter("tap");
+    playTone(500, 0.05, "sine", 0.025);
+    if (state.heroGalleryReactionTimerId) {
+      window.clearTimeout(state.heroGalleryReactionTimerId);
+    }
+    state.heroGalleryReactionTimerId = window.setTimeout(() => {
+      els.heroGalleryCard?.classList.remove("is-reacting");
+      renderHeroGalleryCharacter("idle");
+      state.heroGalleryReactionTimerId = null;
+    }, 430);
+  }
+
+  function handleHeroGalleryKeydown(event) {
+    if (!els.heroGallery || els.heroGallery.hidden) {
+      return;
+    }
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      browseHeroGallery(1);
+    } else if (event.key === "ArrowRight") {
+      event.preventDefault();
+      browseHeroGallery(-1);
+    } else if (event.key === "Enter" || event.key === " ") {
+      const interactiveTarget = event.target?.closest?.("button, input, select, textarea, a");
+      if (!interactiveTarget || interactiveTarget === els.heroGallerySelect) {
+        event.preventDefault();
+        confirmHeroGallerySelection();
+      }
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      closeHeroGallery();
+    }
+  }
+
+  function handleHeroGalleryPointerDown(event) {
+    if (!els.heroGallery || els.heroGallery.hidden) {
+      return;
+    }
+    state.heroGallerySwipeStart = {
+      x: event.clientX,
+      y: event.clientY,
+      time: performance.now()
+    };
+  }
+
+  function handleHeroGalleryPointerUp(event) {
+    const start = state.heroGallerySwipeStart;
+    state.heroGallerySwipeStart = null;
+    if (!start || !els.heroGallery || els.heroGallery.hidden) {
+      return;
+    }
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    const elapsed = performance.now() - start.time;
+    if (elapsed > 900 || Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.25) {
+      return;
+    }
+    browseHeroGallery(dx < 0 ? 1 : -1);
+  }
+
+  function handleHeroGalleryTouchStart(event) {
+    const touch = event.changedTouches?.[0];
+    if (!touch) {
+      return;
+    }
+    handleHeroGalleryPointerDown({
+      clientX: touch.clientX,
+      clientY: touch.clientY
+    });
+  }
+
+  function handleHeroGalleryTouchEnd(event) {
+    const touch = event.changedTouches?.[0];
+    if (!touch) {
+      return;
+    }
+    handleHeroGalleryPointerUp({
+      clientX: touch.clientX,
+      clientY: touch.clientY
+    });
+  }
+
   function syncMenuSummary() {
     const mode = getModeSettings();
     const difficulty = getDifficultySettings();
@@ -1359,6 +1613,10 @@
     document.documentElement.dataset.character = state.characterId;
     syncCharacterInputs();
     syncMenuSummary();
+    if (els.heroGallery && !els.heroGallery.hidden) {
+      state.heroGalleryCharacterId = state.characterId;
+      renderHeroGalleryCharacter(changed ? "selected" : "idle");
+    }
   }
 
   function syncCharacterInputs() {
@@ -1430,6 +1688,7 @@
   }
 
   function focusHomeGameAction() {
+    closeHeroGallery({ restoreFocus: false });
     els.startButton?.focus({ preventScroll: true });
     pulseHomeElement(els.startButton);
     setHomeNavActive(els.homeNavGame);
@@ -1810,6 +2069,7 @@
     syncDifficultyInputs();
     syncTimeLimitToggle();
     syncMenuSummary();
+    closeHeroGallery({ restoreFocus: false });
     closeMenuSheets({ restoreFocus: false });
     setupGame();
     focusPlayerNameWhenUseful();
@@ -4068,18 +4328,35 @@
     });
   });
   els.timeLimitToggle?.addEventListener("click", toggleTimeLimit);
-  els.characterControlButton?.addEventListener("click", focusSelectedCharacter);
+  els.characterControlButton?.addEventListener("click", () => openHeroGallery(state.characterId));
   els.modeControlButton?.addEventListener("click", () => openMenuSheet(els.modePanel, els.modeControlButton));
   els.difficultyControlButton?.addEventListener("click", () => openMenuSheet(els.difficultyPanel, els.difficultyControlButton));
   els.profileControlButton?.addEventListener("click", () => openMenuSheet(els.settingsPanel, els.profileControlButton));
   els.menuSettingsButton?.addEventListener("click", () => openMenuSheet(els.settingsPanel, els.menuSettingsButton));
   els.homeNavGame?.addEventListener("click", focusHomeGameAction);
-  els.homeNavCharacters?.addEventListener("click", focusSelectedCharacter);
+  els.homeNavCharacters?.addEventListener("click", () => openHeroGallery(state.characterId));
   els.homeNavProgress?.addEventListener("click", focusHomeProgress);
   els.homeNavChampions?.addEventListener("click", () => {
     setHomeNavActive(els.homeNavChampions);
     openLeaderboard();
   });
+  els.heroGalleryBack?.addEventListener("click", closeHeroGallery);
+  els.heroGalleryHome?.addEventListener("click", closeHeroGallery);
+  els.heroGalleryPrev?.addEventListener("click", () => browseHeroGallery(-1));
+  els.heroGalleryNext?.addEventListener("click", () => browseHeroGallery(1));
+  els.heroGallerySelect?.addEventListener("click", confirmHeroGallerySelection);
+  els.heroGalleryArtButton?.addEventListener("click", reactToHeroGalleryTap);
+  els.heroGallery?.addEventListener("keydown", handleHeroGalleryKeydown);
+  if (window.PointerEvent) {
+    els.heroGalleryStage?.addEventListener("pointerdown", handleHeroGalleryPointerDown);
+    els.heroGalleryStage?.addEventListener("pointerup", handleHeroGalleryPointerUp);
+    els.heroGalleryStage?.addEventListener("pointercancel", () => {
+      state.heroGallerySwipeStart = null;
+    });
+  } else {
+    els.heroGalleryStage?.addEventListener("touchstart", handleHeroGalleryTouchStart, { passive: true });
+    els.heroGalleryStage?.addEventListener("touchend", handleHeroGalleryTouchEnd, { passive: true });
+  }
   els.settingsSaveButton?.addEventListener("click", saveNicknameFromSettings);
   els.panelCloseButtons.forEach((button) => {
     button.addEventListener("click", () => closeMenuSheets());

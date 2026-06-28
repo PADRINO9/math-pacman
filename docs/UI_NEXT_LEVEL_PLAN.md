@@ -282,3 +282,29 @@ Deferred to later phases:
 - Replacing low-resolution or reference-only character art with production-ready sprite sheets.
 
 Phase 3 must not assume unsupported progression data. Progress surfaces should continue to show only verified save/leaderboard information.
+
+## Phase 3 Completion Notes
+
+Phase 3 built the dedicated Bifly/Nabatick hero gallery only. It did not begin Phase 4, change gameplay rules, redesign the gameplay HUD, or add unsupported progression data.
+
+Completed:
+
+- Added a full-screen premium hero gallery launched from the home hub character controls.
+- Added large selected-character presentation, Hebrew name, short personality copy, character-specific lighting, black enemies, maze route decoration, previous/next controls, select confirmation, and return-to-home flow.
+- Added keyboard navigation, touch swipe navigation, tap reaction, entrance animation, and reduced-motion-compatible fallbacks.
+- Preserved character gameplay behavior; both characters still use the existing `setCharacter` path and persisted storage.
+- Added `ui/character-animation-adapter.js` supporting `static-png`, `sprite-sheet`, `layered-png-rig`, `rive`, and `spine` adapter paths without paid-tool requirements.
+- Updated `ui/assets/asset-manifest.js` with Phase 3 character-animation metadata.
+- Added `tools/phase3_hero_verification.mjs` and required hero-gallery screenshot artifacts.
+- Updated Phase 2 home verification to treat the new character gallery as the expected character-control destination.
+
+Deferred to later phases:
+
+- Production sprite sheets or layered PNG rigs.
+- Real blink, tap, selected, excited, worried, victory, defeat, and hit animation assets.
+- Full motion system.
+- Full audio asset system.
+- Dedicated gameplay HUD redesign.
+- Any Phase 4 work.
+
+Phase 4 may start only after the Phase 3 gallery, asset manifest, and QA report are reviewed and accepted.

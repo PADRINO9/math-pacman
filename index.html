@@ -30,12 +30,8 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@500;700;800&family=Fredoka:wght@600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles.css?v=20260619-6">
-  <link rel="stylesheet" href="mobile-enhancements.css?v=20260621-1">
-  <link rel="stylesheet" href="mobile-phone-refinement.css?v=20260621-2">
-  <link rel="stylesheet" href="mobile-start-hotfix.css?v=20260621-4">
-  <link rel="stylesheet" href="mobile-resolution-hotfix.css?v=20260621-5">
-  <link rel="stylesheet" href="mobile-native-answer.css?v=20260621-6">
-  <link rel="stylesheet" href="mobile-final-layout.css?v=20260621-7">
+  <link rel="stylesheet" href="ui/foundation.css?v=20260628-1">
+  <link rel="stylesheet" href="ui/mobile-overrides.css?v=20260628-1">
   <link rel="stylesheet" href="leaderboard.css?v=20260622-1">
   <link rel="stylesheet" href="arcade-foundation.css?v=20260627-1">
   <link rel="stylesheet" href="main-menu.css?v=20260628-3">
@@ -88,8 +84,12 @@
       </div>
 
       <div class="hud-group hud-actions">
-        <button id="pause-button" class="icon-button" type="button" aria-label="השהיה">Ⅱ</button>
-        <button id="sound-button" class="icon-button" type="button" aria-label="צלילים">♪</button>
+        <button id="pause-button" class="icon-button" type="button" aria-label="השהיה" data-icon="pause">
+          <svg class="ui-icon" aria-hidden="true" focusable="false" data-icon-slot><use href="ui/icons.svg#pause"></use></svg>
+        </button>
+        <button id="sound-button" class="icon-button" type="button" aria-label="צלילים פועלים" data-icon="sound-on">
+          <svg class="ui-icon" aria-hidden="true" focusable="false" data-icon-slot><use href="ui/icons.svg#sound-on"></use></svg>
+        </button>
       </div>
     </div>
 
@@ -128,7 +128,9 @@
 
           <header class="menu-topbar" aria-label="סרגל ראשי">
             <section class="menu-best-card" aria-label="שיא אישי">
-              <span class="menu-best-icon" aria-hidden="true">♕</span>
+              <span class="menu-best-icon ui-icon-wrap" aria-hidden="true">
+                <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#score"></use></svg>
+              </span>
               <span class="menu-best-copy">
                 <span>שיא אישי</span>
                 <strong id="best-score">0</strong>
@@ -144,14 +146,20 @@
 
             <div class="menu-actions" aria-label="פעולות">
               <button id="leaderboard-open" class="menu-icon-button leaderboard-open-button" type="button" aria-label="פתח היכל אלופי כפלול" title="היכל אלופי כפלול">
-                <span aria-hidden="true">♛</span>
+                <span class="ui-icon-wrap" aria-hidden="true">
+                  <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#leaderboard"></use></svg>
+                </span>
                 <small>אלופים</small>
               </button>
-              <button id="menu-sound-button" class="menu-icon-button" type="button" aria-label="צלילים פועלים" title="צלילים">
-                <span aria-hidden="true">♪</span>
+              <button id="menu-sound-button" class="menu-icon-button" type="button" aria-label="צלילים פועלים" title="צלילים" data-icon="sound-on">
+                <span class="ui-icon-wrap" aria-hidden="true">
+                  <svg class="ui-icon" focusable="false" data-icon-slot><use href="ui/icons.svg#sound-on"></use></svg>
+                </span>
               </button>
               <button id="menu-settings-button" class="menu-icon-button" type="button" aria-label="פתח הגדרות" title="הגדרות">
-                <span aria-hidden="true">⚙</span>
+                <span class="ui-icon-wrap" aria-hidden="true">
+                  <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#settings"></use></svg>
+                </span>
               </button>
             </div>
           </header>
@@ -166,7 +174,9 @@
                   <span class="character-copy">
                     <strong>ביפלי</strong>
                   </span>
-                  <span class="character-check" aria-hidden="true">✓</span>
+                  <span class="character-check ui-icon-wrap" aria-hidden="true">
+                    <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#check"></use></svg>
+                  </span>
                 </span>
               </label>
               <label class="character-option menu-character menu-character-nabatick">
@@ -177,7 +187,9 @@
                   <span class="character-copy">
                     <strong>נבטיק</strong>
                   </span>
-                  <span class="character-check" aria-hidden="true">✓</span>
+                  <span class="character-check ui-icon-wrap" aria-hidden="true">
+                    <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#check"></use></svg>
+                  </span>
                 </span>
               </label>
             </div>
@@ -200,17 +212,23 @@
 
           <nav class="menu-control-strip" aria-label="בחירות משחק">
             <button id="mode-control-button" class="menu-control-button" type="button" aria-expanded="false" aria-controls="mode-panel">
-              <span aria-hidden="true">▣</span>
+              <span class="ui-icon-wrap" aria-hidden="true">
+                <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#mode"></use></svg>
+              </span>
               <small>מצב משחק</small>
               <strong id="selected-mode-label">ארקייד</strong>
             </button>
             <button id="difficulty-control-button" class="menu-control-button" type="button" aria-expanded="false" aria-controls="difficulty-panel">
-              <span aria-hidden="true">▥</span>
+              <span class="ui-icon-wrap" aria-hidden="true">
+                <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#difficulty"></use></svg>
+              </span>
               <small>רמת קושי</small>
               <strong id="selected-difficulty-label">רגיל</strong>
             </button>
             <button id="profile-control-button" class="menu-control-button profile-control" type="button" aria-expanded="false" aria-controls="settings-panel">
-              <span aria-hidden="true">●</span>
+              <span class="ui-icon-wrap" aria-hidden="true">
+                <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#profile"></use></svg>
+              </span>
               <small>שחקן</small>
               <strong id="player-greeting">אלוף כפלול</strong>
             </button>
@@ -218,7 +236,9 @@
 
           <section id="mode-panel" class="menu-sheet" role="dialog" aria-modal="true" aria-labelledby="mode-panel-title" hidden>
             <div class="menu-sheet-inner">
-              <button class="sheet-close" type="button" data-close-panel aria-label="סגור בחירת מצב">×</button>
+              <button class="sheet-close" type="button" data-close-panel aria-label="סגור בחירת מצב">
+                <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="ui/icons.svg#close"></use></svg>
+              </button>
               <h2 id="mode-panel-title">בחרו מצב משחק</h2>
               <fieldset class="mode-field">
                 <legend>מצב המשחק משנה את קצב ההתקדמות והניקוד</legend>
@@ -244,7 +264,9 @@
 
           <section id="difficulty-panel" class="menu-sheet" role="dialog" aria-modal="true" aria-labelledby="difficulty-panel-title" hidden>
             <div class="menu-sheet-inner">
-              <button class="sheet-close" type="button" data-close-panel aria-label="סגור בחירת קושי">×</button>
+              <button class="sheet-close" type="button" data-close-panel aria-label="סגור בחירת קושי">
+                <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="ui/icons.svg#close"></use></svg>
+              </button>
               <h2 id="difficulty-panel-title">בחרו רמת קושי</h2>
               <fieldset class="difficulty-field">
                 <legend>הקושי קובע זמן לתרגיל, מהירות אויבים ומכפיל ניקוד</legend>
@@ -276,7 +298,9 @@
 
           <section id="settings-panel" class="menu-sheet" role="dialog" aria-modal="true" aria-labelledby="settings-panel-title" hidden>
             <div class="menu-sheet-inner settings-sheet">
-              <button class="sheet-close" type="button" data-close-panel aria-label="סגור הגדרות">×</button>
+              <button class="sheet-close" type="button" data-close-panel aria-label="סגור הגדרות">
+                <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="ui/icons.svg#close"></use></svg>
+              </button>
               <h2 id="settings-panel-title">הגדרות שחקן</h2>
               <label for="player-name-input">כינוי השחקן</label>
               <input id="player-name-input" type="text" maxlength="14" placeholder="אלוף כפלול" autocomplete="nickname" required>
@@ -288,7 +312,9 @@
 
       <div id="end-screen" class="screen" hidden>
         <div class="screen-panel results-panel">
-          <div id="winner-trophy" class="winner-trophy" aria-hidden="true" hidden>🏆</div>
+          <div id="winner-trophy" class="winner-trophy ui-icon-wrap" aria-hidden="true" hidden>
+            <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#leaderboard"></use></svg>
+          </div>
           <div id="new-record-badge" class="record-badge" hidden>שיא אישי חדש</div>
           <p id="end-kicker" class="eyebrow">כל הכבוד</p>
           <h1 id="end-title">ניצחון!</h1>
@@ -342,14 +368,18 @@
                 type="button"
                 aria-label="רענון טבלת השיאים"
                 title="רענון טבלת השיאים"
-              >↻</button>
+              >
+                <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="ui/icons.svg#refresh"></use></svg>
+              </button>
               <button
                 id="leaderboard-close"
                 class="leaderboard-icon-button"
                 type="button"
                 aria-label="סגירת טבלת השיאים"
                 title="סגירת טבלת השיאים"
-              >×</button>
+              >
+                <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="ui/icons.svg#close"></use></svg>
+              </button>
             </div>
           </div>
           <p class="leaderboard-copy">שיאים שנשמרו על המכשיר הזה. בעתיד אפשר יהיה לחבר כאן דירוג מקוון מאובטח.</p>
@@ -385,6 +415,7 @@
   </main>
 
   <script src="kaflul-systems.js?v=20260627-1"></script>
+  <script src="ui/assets/asset-manifest.js?v=20260628-1"></script>
   <script src="poster-loader.js?v=20260628-1"></script>
   <script src="mobile-enhancements.js?v=20260621-1"></script>
   <script src="mobile-screen-state.js?v=20260621-4"></script>

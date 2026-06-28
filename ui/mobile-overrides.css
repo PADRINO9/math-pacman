@@ -1,0 +1,12 @@
+/*
+  Phase 1 mobile cascade boundary.
+  The imported files remain separate source files for reviewability, but
+  index.html now owns mobile overrides through one explicit stylesheet link.
+  Preserve this order unless a later phase replaces the hotfix layer.
+*/
+@import url("../mobile-enhancements.css?v=20260621-1");
+@import url("../mobile-phone-refinement.css?v=20260621-2");
+@import url("../mobile-start-hotfix.css?v=20260621-4");
+@import url("../mobile-resolution-hotfix.css?v=20260621-5");
+@import url("../mobile-native-answer.css?v=20260621-6");
+@import url("../mobile-final-layout.css?v=20260621-7");

@@ -3,9 +3,10 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "node --check kaflul-systems.js && node --check game.js && node --check mobile-enhancements.js",
+    "build": "node --check kaflul-systems.js && node --check game.js && node --check mobile-enhancements.js && node --check poster-loader.js && node --check ui/assets/asset-manifest.js && node --check tools/phase1_visual_regression.mjs",
     "test": "node --test tests/kaflul-systems.test.js && playwright test",
     "test:node": "node --test tests/kaflul-systems.test.js",
+    "test:visual": "node tools/phase1_visual_regression.mjs --ci",
     "test:smoke": "playwright test tests/game.spec.js"
   },
   "devDependencies": {

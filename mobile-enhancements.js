@@ -48,11 +48,11 @@
   function syncActionButtonStates() {
     if (pauseButton) {
       pauseButton.classList.add("mobile-icon-button");
-      pauseButton.dataset.mobileState = pauseButton.textContent.includes("▶") ? "play" : "pause";
+      pauseButton.dataset.mobileState = pauseButton.dataset.icon === "play" ? "play" : "pause";
     }
     if (soundButton) {
       soundButton.classList.add("mobile-icon-button");
-      soundButton.dataset.mobileState = soundButton.textContent.includes("×") ? "off" : "on";
+      soundButton.dataset.mobileState = soundButton.dataset.icon === "sound-off" ? "off" : "on";
     }
   }
 
@@ -64,7 +64,9 @@
     const button = document.createElement("button");
     button.type = "button";
     button.className = "icon-button fullscreen-button mobile-icon-button";
+    button.dataset.icon = "fullscreen";
     button.setAttribute("aria-label", "מסך מלא");
+    button.innerHTML = '<svg class="ui-icon" aria-hidden="true" focusable="false"><use href="ui/icons.svg#fullscreen"></use></svg>';
     button.addEventListener("click", async () => {
       try {
         if (document.fullscreenElement) {
@@ -91,6 +93,8 @@
   [pauseButton, soundButton].forEach((button) => {
     if (button) {
       new MutationObserver(syncActionButtonStates).observe(button, {
+        attributes: true,
+        attributeFilter: ["data-icon", "aria-label"],
         childList: true,
         characterData: true,
         subtree: true

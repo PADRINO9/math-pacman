@@ -12,19 +12,34 @@ function collectRuntimeErrors(page) {
 async function startGame(page, playerName = "בודק") {
   await page.goto("/", { waitUntil: "domcontentloaded" });
   await expect(page.locator("#start-screen")).toBeVisible();
-  await page.locator("#player-name-input").fill(playerName);
+  if (playerName) {
+    await setNickname(page, playerName);
+  }
   await page.locator("#start-button").click();
   await expect(page.locator("#start-screen")).toBeHidden();
   await expect(page.locator("#end-screen")).toBeHidden();
-  await expect(page.locator("#pause-button")).toHaveText("Ⅱ");
+  await expect(page.locator("#pause-button")).toHaveAttribute("data-icon", "pause");
 }
 
-test("empty player name stays on the start screen", async ({ page }) => {
+async function setNickname(page, playerName) {
+  await page.locator("#menu-settings-button").click();
+  await expect(page.locator("#settings-panel")).toBeVisible();
+  await page.locator("#player-name-input").fill(playerName);
+  await page.locator("#settings-save-button").click();
+  await expect(page.locator("#settings-panel")).toBeHidden();
+}
+
+test("empty player name in settings stays on the start screen", async ({ page }) => {
   const errors = collectRuntimeErrors(page);
   await page.goto("/", { waitUntil: "domcontentloaded" });
-  await page.locator("#start-button").click();
   await expect(page.locator("#start-screen")).toBeVisible();
-  await expect(page.locator("#name-error")).toContainText("צריך שם");
+  await page.locator("#menu-settings-button").click();
+  await expect(page.locator("#settings-panel")).toBeVisible();
+  await page.locator("#player-name-input").fill("   ");
+  await page.locator("#settings-save-button").click();
+  await expect(page.locator("#start-screen")).toBeVisible();
+  await expect(page.locator("#settings-panel")).toBeVisible();
+  await expect(page.locator("#name-error")).toContainText("כינוי קצר");
   expect(errors).toEqual([]);
 });
 
@@ -39,7 +54,7 @@ test("start button enters a running game and visible blur does not pause it", as
 
   await page.evaluate(() => window.dispatchEvent(new Event("blur")));
   await page.waitForTimeout(150);
-  await expect(page.locator("#pause-button")).toHaveText("Ⅱ");
+  await expect(page.locator("#pause-button")).toHaveAttribute("data-icon", "pause");
 
   const runtime = await page.evaluate(() => window.__mathMazeRuntime);
   expect(runtime.startTransitions).toBeGreaterThan(0);
@@ -64,7 +79,7 @@ test("mobile uses one native numeric input and starts without a stale overlay", 
   expect(hiddenStyle).toEqual({ display: "none", visibility: "hidden", pointerEvents: "none" });
 
   await page.waitForTimeout(500);
-  await expect(page.locator("#pause-button")).toHaveText("Ⅱ");
+  await expect(page.locator("#pause-button")).toHaveAttribute("data-icon", "pause");
   expect(await page.evaluate(() => window.__mathMazeRuntime.errors)).toEqual([]);
   expect(errors).toEqual([]);
 });
@@ -73,4 +88,40 @@ test("the game does not replace native Map methods", async ({ page }) => {
   await page.goto("/", { waitUntil: "domcontentloaded" });
   const source = await page.evaluate(() => Function.prototype.toString.call(Map.prototype.set));
   expect(source).toContain("[native code]");
+});
+
+test("menu selections, nickname and sound state persist across reloads", async ({ page }) => {
+  const errors = collectRuntimeErrors(page);
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#start-screen")).toBeVisible();
+
+  await page.locator(".menu-character-nabatick").click();
+  await expect(page.locator("input[name='character'][value='nabatick']")).toBeChecked();
+
+  await page.locator("#mode-control-button").click();
+  await expect(page.locator("#mode-panel")).toBeVisible();
+  await page.locator("#mode-panel label", { hasText: "הרפתקה" }).click();
+  await expect(page.locator("input[name='game-mode'][value='adventure']")).toBeChecked();
+
+  await page.locator("#difficulty-control-button").click();
+  await expect(page.locator("#difficulty-panel")).toBeVisible();
+  await page.locator("#difficulty-panel label", { hasText: "מתקדם" }).click();
+  await expect(page.locator("input[name='difficulty'][value='advanced']")).toBeChecked();
+
+  await page.locator("#menu-settings-button").click();
+  await expect(page.locator("#settings-panel")).toBeVisible();
+  await page.locator("#player-name-input").fill("שומר");
+  await page.locator("#settings-save-button").click();
+  await expect(page.locator("#settings-panel")).toBeHidden();
+
+  await page.locator("#menu-sound-button").click();
+  await expect(page.locator("#menu-sound-button")).toHaveAttribute("data-icon", "sound-off");
+
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.locator("input[name='character'][value='nabatick']")).toBeChecked();
+  await expect(page.locator("input[name='game-mode'][value='adventure']")).toBeChecked();
+  await expect(page.locator("input[name='difficulty'][value='advanced']")).toBeChecked();
+  await expect(page.locator("#player-name-input")).toHaveValue("שומר");
+  await expect(page.locator("#menu-sound-button")).toHaveAttribute("data-icon", "sound-off");
+  expect(errors).toEqual([]);
 });

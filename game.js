@@ -155,6 +155,7 @@
       timeLimit: "mathPacmanTimeLimit",
       factStats: "mathPacmanFactStats"
     },
+    iconSprite: "ui/icons.svg",
     difficulty: SYSTEMS.DIFFICULTIES,
     levels: [
       {
@@ -1732,7 +1733,7 @@
     if (els.publishScorePanel) {
       els.publishScorePanel.hidden = true;
     }
-    els.pause.textContent = "Ⅱ";
+    updatePauseButton();
     stage.focus({ preventScroll: true });
     resumeAudio();
     playTone(420, 0.08, "triangle", 0.04);
@@ -1751,7 +1752,7 @@
     }
     els.playerNameInput.value = state.playerName;
     els.nameError.textContent = "";
-    els.pause.textContent = "Ⅱ";
+    updatePauseButton();
     syncModeInputs();
     syncCharacterInputs();
     syncDifficultyInputs();
@@ -1772,14 +1773,14 @@
     if (state.phase === "playing") {
       setPhase("paused");
       resetJoystick();
-      els.pause.textContent = "▶";
+      updatePauseButton();
       playTone(220, 0.06, "sine", 0.035);
       return;
     }
 
     if (state.phase === "paused") {
       setPhase("playing");
-      els.pause.textContent = "Ⅱ";
+      updatePauseButton();
       state.lastTime = performance.now();
       playTone(440, 0.06, "sine", 0.035);
     }
@@ -1798,16 +1799,32 @@
 
   function updateSoundButton() {
     const label = state.soundEnabled ? "צלילים פועלים" : "צלילים כבויים";
-    const text = state.soundEnabled ? "♪" : "×";
-    if (els.sound) {
-      els.sound.textContent = text;
-      els.sound.setAttribute("aria-label", label);
+    const icon = state.soundEnabled ? "sound-on" : "sound-off";
+    const fallback = state.soundEnabled ? "♪" : "×";
+    setIconButton(els.sound, icon, label, fallback);
+    setIconButton(els.menuSound, icon, label, fallback);
+  }
+
+  function updatePauseButton() {
+    const paused = state.phase === "paused";
+    setIconButton(els.pause, paused ? "play" : "pause", paused ? "המשך משחק" : "השהיה", paused ? "▶" : "Ⅱ");
+  }
+
+  function setIconButton(button, icon, label, fallbackText) {
+    if (!button) {
+      return;
     }
-    if (els.menuSound) {
-      const icon = els.menuSound.querySelector("span") || els.menuSound;
-      icon.textContent = text;
-      els.menuSound.setAttribute("aria-label", label);
+
+    button.dataset.icon = icon;
+    button.setAttribute("aria-label", label);
+
+    const use = button.querySelector("use");
+    if (use) {
+      use.setAttribute("href", `${CONFIG.iconSprite}#${icon}`);
+      return;
     }
+
+    button.textContent = fallbackText;
   }
 
   function resumeAudio() {

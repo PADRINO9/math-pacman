@@ -347,3 +347,57 @@ Interaction coverage:
 - Enter/Space selection on the gallery select action.
 - Escape/back/home return to the home hub.
 - Static PNG fallback for missing animation states.
+
+## Phase 4 Gameplay HUD Map
+
+Phase 4 changes the gameplay HUD only. The canvas maze remains the primary gameplay surface.
+
+Current always-visible gameplay HUD regions:
+
+| Region | Production selectors | Purpose |
+| --- | --- | --- |
+| HUD shell | `.hud` | Compact fixed overlay above the canvas during gameplay. |
+| Primary metrics group | `.hud-group-main` | Owns score, combo, lives, wave/level progress, and current mission. |
+| Score | `.metric-score`, `#score` | Displays current score and receives animated score-delta feedback. |
+| Combo | `.metric-combo`, `#combo` | Displays combo count and multiplier when active; receives milestone feedback. |
+| Lives | `.metric-lives`, `#lives`, `.hud-life-icon` | Displays lives with SVG icons and an accessible Hebrew label. |
+| Wave/level progress | `.metric-progress`, `#hud-progress-stage`, `#correct-answers`, `#target-correct` | Shows current arcade wave or adventure level progress. |
+| Mission | `#mission-card`, `#mission-title`, `#mission-progress` | Shows the current mission and compact progress. |
+| Progress rail | `.progress-wrap`, `#progress-fill` | Visual progressbar with ARIA progressbar metadata. |
+| Pause control | `#pause-button` | Readable pause/resume control with icon and visible Hebrew label. |
+| Sound control | `#sound-button` | Readable sound toggle with icon and visible Hebrew label. |
+
+Secondary information moved out of the always-visible HUD:
+
+- Mode.
+- Difficulty.
+- World.
+- Detailed secondary statistics.
+- Explanatory labels.
+
+Secondary context now appears in:
+
+- Canvas pause overlay via `drawPaused`.
+- Results screen via existing results rendering.
+- Level/progression context via existing gameplay state and end screens.
+
+State preservation:
+
+- Score, lives, combo, mission progress, level progress, question timing, and enemy behavior remain owned by the existing gameplay state.
+- HUD rendering reads state from the existing `updateHud` path.
+- Pause/resume still flows through the existing `togglePause` path and systems state-machine behavior.
+- Sound state still flows through the existing `toggleSound` path and persisted setting.
+
+Phase 4 verification coverage:
+
+- Desktop keyboard play through the automated acceptance session.
+- Mobile touch and swipe play through the automated acceptance session.
+- Pause and resume.
+- Sound toggle.
+- Question dialog opening.
+- Correct answer.
+- Wrong answer.
+- Timeout.
+- Game over.
+- Required viewport screenshots: 390x844, 430x932, 844x390, 1280x720, 1440x900.
+- RTL, overflow, text clipping, console errors, runtime errors, and sampled frame rate.

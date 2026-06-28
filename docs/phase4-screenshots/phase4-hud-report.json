@@ -1,0 +1,662 @@
+{
+  "phase": 4,
+  "capturedAt": "2026-06-28T20:39:14.439Z",
+  "chrome": "Chrome/149.0.7827.197",
+  "ok": true,
+  "results": [
+    {
+      "name": "390x844-portrait",
+      "width": 390,
+      "height": 844,
+      "mobile": true,
+      "file": "docs/phase4-screenshots/phase4-hud-390x844-portrait.png",
+      "events": [],
+      "fps": 87,
+      "evaluation": {
+        "lang": "he",
+        "dir": "rtl",
+        "startHidden": true,
+        "endHidden": true,
+        "questionHidden": true,
+        "runtimeErrors": [],
+        "scroll": {
+          "width": 390,
+          "height": 844,
+          "xOverflow": false,
+          "yOverflow": false
+        },
+        "rects": {
+          ".hud": {
+            "x": 10,
+            "y": 5,
+            "width": 370,
+            "height": 76,
+            "visible": true
+          },
+          ".hud-group-main": {
+            "x": 103,
+            "y": 5,
+            "width": 277,
+            "height": 40,
+            "visible": true
+          },
+          ".hud-actions": {
+            "x": 10,
+            "y": 5,
+            "width": 88,
+            "height": 40,
+            "visible": true
+          },
+          ".metric-score": {
+            "x": 313,
+            "y": 4,
+            "width": 67,
+            "height": 40,
+            "visible": true
+          },
+          ".metric-combo": {
+            "x": 244,
+            "y": 5,
+            "width": 66,
+            "height": 40,
+            "visible": true
+          },
+          ".metric-lives": {
+            "x": 173,
+            "y": 5,
+            "width": 66,
+            "height": 40,
+            "visible": true
+          },
+          ".metric-progress": {
+            "x": 103,
+            "y": 5,
+            "width": 66,
+            "height": 40,
+            "visible": true
+          },
+          "#mission-card": {
+            "x": 103,
+            "y": 49,
+            "width": 277,
+            "height": 26,
+            "visible": true
+          },
+          ".progress-wrap": {
+            "x": 103,
+            "y": 49,
+            "width": 277,
+            "height": 5,
+            "visible": true
+          },
+          "#pause-button": {
+            "x": 54,
+            "y": 5,
+            "width": 44,
+            "height": 40,
+            "visible": true
+          },
+          "#sound-button": {
+            "x": 6,
+            "y": 5,
+            "width": 44,
+            "height": 40,
+            "visible": true
+          },
+          ".stage": {
+            "x": 0,
+            "y": 0,
+            "width": 390,
+            "height": 844,
+            "visible": true
+          },
+          "#game-canvas": {
+            "x": 0,
+            "y": 0,
+            "width": 390,
+            "height": 844,
+            "visible": true
+          }
+        },
+        "outOfBounds": [],
+        "overflowingText": [],
+        "visibleRequired": true,
+        "secondaryHidden": true,
+        "noUnicodeLives": true,
+        "progressRole": "progressbar",
+        "progressNow": "4",
+        "pauseReadable": true,
+        "soundReadable": true,
+        "canvasAreaRatio": 1,
+        "hudHeightRatio": 0.09004739336492891
+      }
+    },
+    {
+      "name": "430x932-portrait",
+      "width": 430,
+      "height": 932,
+      "mobile": true,
+      "file": "docs/phase4-screenshots/phase4-hud-430x932-portrait.png",
+      "events": [],
+      "fps": 83,
+      "evaluation": {
+        "lang": "he",
+        "dir": "rtl",
+        "startHidden": true,
+        "endHidden": true,
+        "questionHidden": true,
+        "runtimeErrors": [],
+        "scroll": {
+          "width": 430,
+          "height": 932,
+          "xOverflow": false,
+          "yOverflow": false
+        },
+        "rects": {
+          ".hud": {
+            "x": 10,
+            "y": 5,
+            "width": 410,
+            "height": 76,
+            "visible": true
+          },
+          ".hud-group-main": {
+            "x": 103,
+            "y": 5,
+            "width": 317,
+            "height": 40,
+            "visible": true
+          },
+          ".hud-actions": {
+            "x": 10,
+            "y": 5,
+            "width": 88,
+            "height": 40,
+            "visible": true
+          },
+          ".metric-score": {
+            "x": 343,
+            "y": 4,
+            "width": 78,
+            "height": 41,
+            "visible": true
+          },
+          ".metric-combo": {
+            "x": 264,
+            "y": 5,
+            "width": 76,
+            "height": 40,
+            "visible": true
+          },
+          ".metric-lives": {
+            "x": 183,
+            "y": 5,
+            "width": 76,
+            "height": 40,
+            "visible": true
+          },
+          ".metric-progress": {
+            "x": 103,
+            "y": 5,
+            "width": 76,
+            "height": 40,
+            "visible": true
+          },
+          "#mission-card": {
+            "x": 103,
+            "y": 49,
+            "width": 317,
+            "height": 26,
+            "visible": true
+          },
+          ".progress-wrap": {
+            "x": 103,
+            "y": 49,
+            "width": 317,
+            "height": 5,
+            "visible": true
+          },
+          "#pause-button": {
+            "x": 54,
+            "y": 5,
+            "width": 44,
+            "height": 40,
+            "visible": true
+          },
+          "#sound-button": {
+            "x": 6,
+            "y": 5,
+            "width": 44,
+            "height": 40,
+            "visible": true
+          },
+          ".stage": {
+            "x": 0,
+            "y": 0,
+            "width": 430,
+            "height": 932,
+            "visible": true
+          },
+          "#game-canvas": {
+            "x": 0,
+            "y": 0,
+            "width": 430,
+            "height": 932,
+            "visible": true
+          }
+        },
+        "outOfBounds": [],
+        "overflowingText": [],
+        "visibleRequired": true,
+        "secondaryHidden": true,
+        "noUnicodeLives": true,
+        "progressRole": "progressbar",
+        "progressNow": "8",
+        "pauseReadable": true,
+        "soundReadable": true,
+        "canvasAreaRatio": 1,
+        "hudHeightRatio": 0.0815450643776824
+      }
+    },
+    {
+      "name": "844x390-landscape",
+      "width": 844,
+      "height": 390,
+      "mobile": true,
+      "file": "docs/phase4-screenshots/phase4-hud-844x390-landscape.png",
+      "events": [],
+      "fps": 97,
+      "evaluation": {
+        "lang": "he",
+        "dir": "rtl",
+        "startHidden": true,
+        "endHidden": true,
+        "questionHidden": true,
+        "runtimeErrors": [],
+        "scroll": {
+          "width": 844,
+          "height": 390,
+          "xOverflow": false,
+          "yOverflow": false
+        },
+        "rects": {
+          ".hud": {
+            "x": 7,
+            "y": 5,
+            "width": 830,
+            "height": 54,
+            "visible": true
+          },
+          ".hud-group-main": {
+            "x": 12,
+            "y": 5,
+            "width": 825,
+            "height": 72,
+            "visible": true
+          },
+          ".hud-actions": {
+            "x": 756,
+            "y": 165,
+            "width": 80,
+            "height": 100,
+            "visible": true
+          },
+          ".metric-score": {
+            "x": 771,
+            "y": 4,
+            "width": 66,
+            "height": 74,
+            "visible": true
+          },
+          ".metric-combo": {
+            "x": 694,
+            "y": 5,
+            "width": 74,
+            "height": 72,
+            "visible": true
+          },
+          ".metric-lives": {
+            "x": 636,
+            "y": 5,
+            "width": 54,
+            "height": 72,
+            "visible": true
+          },
+          ".metric-progress": {
+            "x": 574,
+            "y": 5,
+            "width": 58,
+            "height": 72,
+            "visible": true
+          },
+          "#mission-card": {
+            "x": 12,
+            "y": 5,
+            "width": 558,
+            "height": 72,
+            "visible": true
+          },
+          ".progress-wrap": {
+            "x": 12,
+            "y": 81,
+            "width": 825,
+            "height": 5,
+            "visible": true
+          },
+          "#pause-button": {
+            "x": 798,
+            "y": 165,
+            "width": 38,
+            "height": 48,
+            "visible": true
+          },
+          "#sound-button": {
+            "x": 756,
+            "y": 165,
+            "width": 38,
+            "height": 48,
+            "visible": true
+          },
+          ".stage": {
+            "x": 0,
+            "y": 0,
+            "width": 844,
+            "height": 390,
+            "visible": true
+          },
+          "#game-canvas": {
+            "x": 0,
+            "y": 0,
+            "width": 844,
+            "height": 390,
+            "visible": true
+          }
+        },
+        "outOfBounds": [],
+        "overflowingText": [],
+        "visibleRequired": true,
+        "secondaryHidden": true,
+        "noUnicodeLives": true,
+        "progressRole": "progressbar",
+        "progressNow": "12",
+        "pauseReadable": true,
+        "soundReadable": true,
+        "canvasAreaRatio": 1,
+        "hudHeightRatio": 0.13846153846153847
+      }
+    },
+    {
+      "name": "1280x720-desktop",
+      "width": 1280,
+      "height": 720,
+      "mobile": false,
+      "file": "docs/phase4-screenshots/phase4-hud-1280x720-desktop.png",
+      "events": [],
+      "fps": 47,
+      "evaluation": {
+        "lang": "he",
+        "dir": "rtl",
+        "startHidden": true,
+        "endHidden": true,
+        "questionHidden": true,
+        "runtimeErrors": [],
+        "scroll": {
+          "width": 1280,
+          "height": 720,
+          "xOverflow": false,
+          "yOverflow": false
+        },
+        "rects": {
+          ".hud": {
+            "x": 412,
+            "y": 8,
+            "width": 860,
+            "height": 95,
+            "visible": true
+          },
+          ".hud-group-main": {
+            "x": 581,
+            "y": 8,
+            "width": 691,
+            "height": 81,
+            "visible": true
+          },
+          ".hud-actions": {
+            "x": 412,
+            "y": 8,
+            "width": 161,
+            "height": 94,
+            "visible": true
+          },
+          ".metric-score": {
+            "x": 1173,
+            "y": 8,
+            "width": 99,
+            "height": 81,
+            "visible": true
+          },
+          ".metric-combo": {
+            "x": 1095,
+            "y": 8,
+            "width": 72,
+            "height": 81,
+            "visible": true
+          },
+          ".metric-lives": {
+            "x": 1017,
+            "y": 8,
+            "width": 72,
+            "height": 81,
+            "visible": true
+          },
+          ".metric-progress": {
+            "x": 926,
+            "y": 8,
+            "width": 85,
+            "height": 81,
+            "visible": true
+          },
+          "#mission-card": {
+            "x": 581,
+            "y": 8,
+            "width": 339,
+            "height": 81,
+            "visible": true
+          },
+          ".progress-wrap": {
+            "x": 581,
+            "y": 95,
+            "width": 691,
+            "height": 8,
+            "visible": true
+          },
+          "#pause-button": {
+            "x": 495,
+            "y": 8,
+            "width": 77,
+            "height": 44,
+            "visible": true
+          },
+          "#sound-button": {
+            "x": 412,
+            "y": 8,
+            "width": 77,
+            "height": 44,
+            "visible": true
+          },
+          ".stage": {
+            "x": 0,
+            "y": 0,
+            "width": 1280,
+            "height": 720,
+            "visible": true
+          },
+          "#game-canvas": {
+            "x": 0,
+            "y": 0,
+            "width": 1280,
+            "height": 720,
+            "visible": true
+          }
+        },
+        "outOfBounds": [],
+        "overflowingText": [],
+        "visibleRequired": true,
+        "secondaryHidden": true,
+        "noUnicodeLives": true,
+        "progressRole": "progressbar",
+        "progressNow": "8",
+        "pauseReadable": true,
+        "soundReadable": true,
+        "canvasAreaRatio": 1,
+        "hudHeightRatio": 0.13194444444444445
+      }
+    },
+    {
+      "name": "1440x900-desktop",
+      "width": 1440,
+      "height": 900,
+      "mobile": false,
+      "file": "docs/phase4-screenshots/phase4-hud-1440x900-desktop.png",
+      "events": [],
+      "fps": 40,
+      "evaluation": {
+        "lang": "he",
+        "dir": "rtl",
+        "startHidden": true,
+        "endHidden": true,
+        "questionHidden": true,
+        "runtimeErrors": [],
+        "scroll": {
+          "width": 1440,
+          "height": 900,
+          "xOverflow": false,
+          "yOverflow": false
+        },
+        "rects": {
+          ".hud": {
+            "x": 572,
+            "y": 8,
+            "width": 860,
+            "height": 95,
+            "visible": true
+          },
+          ".hud-group-main": {
+            "x": 741,
+            "y": 8,
+            "width": 691,
+            "height": 81,
+            "visible": true
+          },
+          ".hud-actions": {
+            "x": 572,
+            "y": 8,
+            "width": 161,
+            "height": 94,
+            "visible": true
+          },
+          ".metric-score": {
+            "x": 1334,
+            "y": 8,
+            "width": 98,
+            "height": 81,
+            "visible": true
+          },
+          ".metric-combo": {
+            "x": 1256,
+            "y": 8,
+            "width": 72,
+            "height": 81,
+            "visible": true
+          },
+          ".metric-lives": {
+            "x": 1178,
+            "y": 8,
+            "width": 72,
+            "height": 81,
+            "visible": true
+          },
+          ".metric-progress": {
+            "x": 1087,
+            "y": 8,
+            "width": 84,
+            "height": 81,
+            "visible": true
+          },
+          "#mission-card": {
+            "x": 741,
+            "y": 8,
+            "width": 341,
+            "height": 81,
+            "visible": true
+          },
+          ".progress-wrap": {
+            "x": 741,
+            "y": 95,
+            "width": 691,
+            "height": 8,
+            "visible": true
+          },
+          "#pause-button": {
+            "x": 655,
+            "y": 8,
+            "width": 77,
+            "height": 44,
+            "visible": true
+          },
+          "#sound-button": {
+            "x": 572,
+            "y": 8,
+            "width": 77,
+            "height": 44,
+            "visible": true
+          },
+          ".stage": {
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 900,
+            "visible": true
+          },
+          "#game-canvas": {
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 900,
+            "visible": true
+          }
+        },
+        "outOfBounds": [],
+        "overflowingText": [],
+        "visibleRequired": true,
+        "secondaryHidden": true,
+        "noUnicodeLives": true,
+        "progressRole": "progressbar",
+        "progressNow": "4",
+        "pauseReadable": true,
+        "soundReadable": true,
+        "canvasAreaRatio": 1,
+        "hudHeightRatio": 0.10555555555555556
+      }
+    }
+  ],
+  "acceptance": {
+    "ok": true,
+    "checks": {
+      "started": true,
+      "mobileSwipeStillPlaying": true,
+      "paused": true,
+      "resumed": true,
+      "soundToggle": true,
+      "questionDialog": true,
+      "correctAnswer": true,
+      "wrongAnswer": true,
+      "timeoutObserved": true,
+      "gameOverObserved": true,
+      "noRuntimeErrors": true,
+      "noConsoleErrors": true
+    },
+    "events": [],
+    "runtimeErrors": []
+  }
+}

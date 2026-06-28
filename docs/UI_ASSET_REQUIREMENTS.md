@@ -319,3 +319,30 @@ Additional missing art for later phases:
 - Character-specific blink, tap, excited, worried, victory, defeat, and hit states.
 - Final Nabatick production animation set to replace reference-status files.
 - Optional Rive/Spine files only if the project chooses those pipelines later.
+
+## Phase 4 Gameplay HUD Asset Status
+
+Phase 4 did not add placeholder art and did not delete or replace existing assets.
+
+Assets used in Phase 4:
+
+| Asset | Current file | Status |
+| --- | --- | --- |
+| HUD icon sprite | `ui/icons.svg` | Used for score, combo, lives, progress, mission, pause, and sound controls. |
+| Gameplay canvas art | Existing gameplay assets | Preserved; the maze and character/enemy renders still use the current gameplay loading paths. |
+| HUD feedback | CSS animation only | Implemented as lightweight UI feedback, not as new bitmap art. |
+
+Unicode/icon cleanup completed in Phase 4:
+
+- The gameplay lives display no longer uses heart glyphs.
+- Pause/sound HUD fallbacks no longer depend on production Unicode symbols.
+
+Missing or incomplete for later phases:
+
+- Branded HUD sound assets for score gain, combo milestone, life loss, mission progress, mission completion, and wave/level transition.
+- Dedicated mission-complete visual art or particles beyond CSS feedback.
+- World-specific HUD accent assets, if future design requires them.
+- Character animation states that could visually react to eat, hit, victory, and defeat inside gameplay.
+- Dedicated level/wave transition art.
+
+Phase 4 keeps the HUD functional without paid tools or missing asset dependencies. Future animation/audio work should wire into the existing HUD feedback hooks instead of changing gameplay rules.

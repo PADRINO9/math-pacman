@@ -186,3 +186,74 @@ Commands run for Phase 3 QA included:
 - `node tools/phase2_home_verification.mjs --ci`.
 - `node tools/phase3_hero_verification.mjs --ci`.
 - Attempted `pnpm run build`, blocked by restricted network while trying to install missing Playwright packages.
+
+## Phase 4 Gameplay HUD QA Addendum
+
+Date: 2026-06-28
+Phase: 4 gameplay HUD only
+
+Automated checks:
+
+| Check | Result | Notes |
+| --- | --- | --- |
+| Direct JS syntax checks | Pass | `game.js` and `tools/phase4_hud_verification.mjs` pass `node --check`. |
+| Build-script syntax checks | Pass | The files named by the `build` script were checked individually with the bundled Node executable. |
+| Node systems tests | Pass | 11/11 in `tests/kaflul-systems.test.js`. |
+| Phase 4 HUD verification | Pass | Required screenshots, console/runtime checks, overflow checks, RTL checks, FPS sampling, touch/swipe, keyboard session, pause/resume, sound toggle, question dialog, correct answer, wrong answer, timeout, and game over passed. |
+| Full package-manager run | Blocked | `pnpm run build` attempted to install missing Playwright packages from the registry and was stopped under restricted network. Partial install artifacts were removed. |
+
+Required Phase 4 screenshots:
+
+| Viewport | Screenshot | FPS |
+| --- | --- | ---: |
+| 390x844 portrait | `docs/phase4-screenshots/phase4-hud-390x844-portrait.png` | 87 |
+| 430x932 portrait | `docs/phase4-screenshots/phase4-hud-430x932-portrait.png` | 83 |
+| 844x390 landscape | `docs/phase4-screenshots/phase4-hud-844x390-landscape.png` | 97 |
+| 1280x720 desktop | `docs/phase4-screenshots/phase4-hud-1280x720-desktop.png` | 47 |
+| 1440x900 desktop | `docs/phase4-screenshots/phase4-hud-1440x900-desktop.png` | 40 |
+
+Report file:
+
+- `docs/phase4-screenshots/phase4-hud-report.json`
+
+Phase 4 acceptance checks passed:
+
+- Game started.
+- Mobile swipe left gameplay running.
+- Pause worked.
+- Resume worked.
+- Sound toggle worked.
+- Question dialog opened.
+- Correct answer worked.
+- Wrong answer worked.
+- Timeout was observed.
+- Game over was observed.
+- Console errors: 0.
+- Runtime errors: 0.
+- Document overflow: none at all required viewports.
+- HUD out-of-bounds elements: 0.
+- Checked HUD text overflow: 0.
+- HUD screenshots were captured with the question dialog hidden.
+- Document language/direction remained `he`/`rtl`.
+
+Manual screenshot inspection notes:
+
+- 390x844 and 430x932 portrait keep the maze visible behind a compact HUD; the mission and progress rail remain readable.
+- 844x390 landscape keeps the HUD shallow enough that the playfield remains dominant.
+- 1280x720 and 1440x900 desktop keep the HUD visually secondary to the canvas.
+- Pause and sound controls remain readable without Unicode production icons.
+
+Commands run for Phase 4 QA included:
+
+- `node --check game.js`.
+- `node --check tools/phase4_hud_verification.mjs`.
+- Individual `node --check` commands for the files listed in the `build` script.
+- `node --test tests/kaflul-systems.test.js`.
+- `node tools/phase4_hud_verification.mjs --ci`.
+- Attempted `pnpm run build`, blocked by restricted network while trying to install missing Playwright packages.
+- `git diff --check`.
+
+Remaining QA gaps:
+
+- Full 100-answer victory and all world-transition branches were not exhaustively automated in this phase because they are long gameplay journeys. Existing progression logic was preserved, and the Phase 4 verifier covered progress, timeout, and game-over paths.
+- Branded audio feedback is not yet testable because no final HUD sound assets exist.

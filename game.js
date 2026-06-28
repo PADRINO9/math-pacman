@@ -11,6 +11,7 @@
   const TILE = 24;
   const COLS = WIDTH / TILE;
   const ROWS = HEIGHT / TILE;
+  const SVG_NS = "http://www.w3.org/2000/svg";
   const MOBILE_RUNTIME = {
     coarse: false,
     mode: "desktop",
@@ -337,6 +338,7 @@
   const els = {
     correct: document.getElementById("correct-answers"),
     targetCorrect: document.getElementById("target-correct"),
+    hudStageLabel: document.getElementById("hud-progress-stage"),
     levelNumber: document.getElementById("level-number"),
     worldName: document.getElementById("world-name"),
     score: document.getElementById("score"),
@@ -697,8 +699,19 @@
     lastFocusBeforeHeroGallery: null,
     heroGalleryCharacterId: null,
     heroGallerySwipeStart: null,
-    heroGalleryReactionTimerId: null
+    heroGalleryReactionTimerId: null,
+    hudSnapshot: {
+      score: null,
+      combo: null,
+      comboMultiplierPct: null,
+      lives: null,
+      missionKey: null,
+      missionProgress: null,
+      progressPercent: null,
+      correctAnswers: null
+    }
   };
+  const hudFeedbackTimers = new WeakMap();
 
   function cellKey(x, y) {
     return `${x},${y}`;
@@ -1200,6 +1213,7 @@
     state.hitsTaken = 0;
     state.finalResult = null;
     state.latestLeaderboardEntryId = null;
+    resetHudSnapshot();
     assignMission();
     enterLevel(0);
 
@@ -2112,23 +2126,27 @@
   function updateSoundButton() {
     const label = state.soundEnabled ? "צלילים פועלים" : "צלילים כבויים";
     const icon = state.soundEnabled ? "sound-on" : "sound-off";
-    const fallback = state.soundEnabled ? "♪" : "×";
-    setIconButton(els.sound, icon, label, fallback);
+    const fallback = state.soundEnabled ? "צלילים" : "שקט";
+    setIconButton(els.sound, icon, label, fallback, state.soundEnabled ? "צלילים" : "שקט");
     setIconButton(els.menuSound, icon, label, fallback);
   }
 
   function updatePauseButton() {
     const paused = state.phase === "paused";
-    setIconButton(els.pause, paused ? "play" : "pause", paused ? "המשך משחק" : "השהיה", paused ? "▶" : "Ⅱ");
+    setIconButton(els.pause, paused ? "play" : "pause", paused ? "המשך משחק" : "השהיה", paused ? "המשך" : "השהיה");
   }
 
-  function setIconButton(button, icon, label, fallbackText) {
+  function setIconButton(button, icon, label, fallbackText, visibleLabel = label) {
     if (!button) {
       return;
     }
 
     button.dataset.icon = icon;
     button.setAttribute("aria-label", label);
+    const labelSlot = button.querySelector("[data-icon-label]");
+    if (labelSlot) {
+      labelSlot.textContent = visibleLabel;
+    }
 
     const use = button.querySelector("use");
     if (use) {
@@ -2224,13 +2242,163 @@
     return `${(ms / 1000).toFixed(1)}ש׳`;
   }
 
+  function resetHudSnapshot() {
+    state.hudSnapshot = {
+      score: null,
+      combo: null,
+      comboMultiplierPct: null,
+      lives: null,
+      missionKey: null,
+      missionProgress: null,
+      progressPercent: null,
+      correctAnswers: null
+    };
+  }
+
+  function createHudSvgIcon(symbolId) {
+    const svg = document.createElementNS(SVG_NS, "svg");
+    svg.classList.add("ui-icon");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+    const use = document.createElementNS(SVG_NS, "use");
+    use.setAttribute("href", `${CONFIG.iconSprite}#${symbolId}`);
+    svg.append(use);
+    return svg;
+  }
+
+  function renderLivesHud() {
+    if (!els.lives) {
+      return;
+    }
+
+    els.lives.replaceChildren();
+    els.lives.setAttribute("aria-label", `${state.lives} חיים`);
+    const count = Math.max(0, state.lives);
+    if (count === 0) {
+      els.lives.textContent = "0";
+      return;
+    }
+
+    for (let index = 0; index < count; index += 1) {
+      const icon = document.createElement("span");
+      icon.className = "hud-life-icon";
+      icon.setAttribute("aria-hidden", "true");
+      icon.append(createHudSvgIcon("lives"));
+      els.lives.append(icon);
+    }
+  }
+
+  function getHudMissionKey() {
+    if (!state.mission) {
+      return "none";
+    }
+    return `${state.mission.type}:${state.mission.label}:${state.mission.target}:${state.mission.startScore}`;
+  }
+
+  function animateHudFeedback(element, className, message, duration = 920) {
+    if (!element) {
+      return;
+    }
+
+    if (message) {
+      element.dataset.hudFeedback = message;
+    }
+    element.classList.remove(className);
+    void element.offsetWidth;
+    element.classList.add(className);
+
+    const previousTimer = hudFeedbackTimers.get(element);
+    if (previousTimer) {
+      window.clearTimeout(previousTimer);
+    }
+
+    const timerId = window.setTimeout(() => {
+      element.classList.remove(className);
+      if (message && element.dataset.hudFeedback === message) {
+        delete element.dataset.hudFeedback;
+      }
+      hudFeedbackTimers.delete(element);
+    }, duration);
+    hudFeedbackTimers.set(element, timerId);
+  }
+
+  function syncHudFeedback(progressPercent, missionProgress) {
+    const snapshot = state.hudSnapshot || {};
+    const scoreMetric = els.score?.closest(".metric");
+    const comboMetric = els.combo?.closest(".metric");
+    const livesMetric = els.lives?.closest(".metric");
+    const missionKey = getHudMissionKey();
+    const comboMultiplierPct = state.comboState.multiplierPct || 100;
+
+    if (snapshot.score !== null && state.score !== snapshot.score) {
+      const delta = state.score - snapshot.score;
+      animateHudFeedback(scoreMetric, "hud-score-change", delta > 0 ? `+${numberFormat.format(delta)}` : numberFormat.format(delta));
+    }
+
+    if (snapshot.combo !== null && state.combo > snapshot.combo) {
+      if (state.combo >= 3 && (state.combo % 5 === 0 || comboMultiplierPct > (snapshot.comboMultiplierPct || 100))) {
+        animateHudFeedback(comboMetric, "hud-combo-milestone", `רצף ${state.combo}`);
+      } else {
+        animateHudFeedback(comboMetric, "metric-pulse", "");
+      }
+    }
+
+    if (snapshot.lives !== null && state.lives !== snapshot.lives) {
+      animateHudFeedback(
+        livesMetric,
+        state.lives < snapshot.lives ? "hud-life-loss" : "hud-life-gain",
+        state.lives < snapshot.lives ? "חיים-" : "+חיים"
+      );
+    }
+
+    if (snapshot.progressPercent !== null && progressPercent !== snapshot.progressPercent) {
+      const wrappedProgress = state.correctAnswers > (snapshot.correctAnswers || 0) && progressPercent < snapshot.progressPercent;
+      animateHudFeedback(els.progressWrap, wrappedProgress ? "hud-progress-complete" : "progress-pulse", wrappedProgress ? "גל חדש" : "");
+    }
+
+    if (
+      snapshot.missionKey === missionKey
+      && snapshot.missionProgress !== null
+      && missionProgress !== snapshot.missionProgress
+    ) {
+      const missionDelta = missionProgress - snapshot.missionProgress;
+      animateHudFeedback(
+        els.missionCard,
+        missionDelta >= 0 ? "hud-mission-progress" : "hud-mission-reset",
+        missionDelta >= 0 ? "משימה +" : "משימה אופסה"
+      );
+    }
+
+    state.hudSnapshot = {
+      score: state.score,
+      combo: state.combo,
+      comboMultiplierPct,
+      lives: state.lives,
+      missionKey,
+      missionProgress,
+      progressPercent,
+      correctAnswers: state.correctAnswers
+    };
+  }
+
   function updateHud() {
     const level = getCurrentLevel();
     const mode = getModeSettings();
     const difficulty = getDifficultySettings();
     const arcadeWave = getArcadeWave();
-    els.correct.textContent = state.correctAnswers;
-    els.targetCorrect.textContent = state.mode === "arcade" ? `/גל ${arcadeWave}` : `/${CONFIG.targetCorrect}`;
+    const progressTarget = state.mode === "arcade" ? CONFIG.answersPerLevel : CONFIG.targetCorrect;
+    const progressStageLabel = state.mode === "arcade" ? `גל ${arcadeWave}` : `שלב ${state.levelIndex + 1}`;
+    const progressValue = state.mode === "arcade"
+      ? state.correctAnswers % CONFIG.answersPerLevel
+      : state.correctAnswers;
+    const progressPercent = progressTarget > 0 ? progressValue / progressTarget * 100 : 0;
+    const missionProgress = getMissionProgress();
+
+    els.correct.textContent = progressValue;
+    els.targetCorrect.textContent = `/${progressTarget}`;
+    if (els.hudStageLabel) {
+      els.hudStageLabel.textContent = progressStageLabel;
+    }
     if (els.levelNumber) {
       els.levelNumber.textContent = state.mode === "arcade" ? `${arcadeWave}` : `${state.levelIndex + 1}`;
     }
@@ -2248,15 +2416,16 @@
     els.combo.textContent = state.comboState.multiplierPct > 100
       ? `${state.combo} · ×${(state.comboState.multiplierPct / 100).toFixed(1)}`
       : String(state.combo);
-    const hearts = "♥".repeat(Math.max(0, state.lives));
-    els.lives.textContent = hearts || "0";
-    els.lives.setAttribute("aria-label", `${state.lives} חיים`);
-    const progressPercent = state.mode === "arcade"
-      ? (state.correctAnswers % CONFIG.answersPerLevel) / CONFIG.answersPerLevel * 100
-      : state.correctAnswers / CONFIG.targetCorrect * 100;
-    els.progress.style.width = `${Math.min(100, progressPercent)}%`;
+    renderLivesHud();
+    const boundedProgress = Math.min(100, progressPercent);
+    els.progress.style.width = `${boundedProgress}%`;
+    if (els.progressWrap) {
+      els.progressWrap.setAttribute("aria-valuenow", String(Math.round(boundedProgress)));
+      els.progressWrap.setAttribute("aria-valuetext", `${progressStageLabel}: ${progressValue} מתוך ${progressTarget}`);
+    }
     els.bestScore.textContent = numberFormat.format(state.bestScore);
     updateMissionHud();
+    syncHudFeedback(boundedProgress, missionProgress);
   }
 
   function updateMissionHud() {
@@ -2343,6 +2512,7 @@
     const award = awardScore({ type: "mission", value: CONFIG.missionBonus });
     playMissionSound();
     pulseElement(els.missionCard, "metric-pulse");
+    animateHudFeedback(els.missionCard, "hud-mission-complete", "משימה הושלמה", 1200);
     pulseElement(els.progressWrap, "progress-pulse");
 
     if (state.player) {
@@ -4112,17 +4282,56 @@
     ctx.restore();
   }
 
+  function roundRect(renderContext, x, y, width, height, radius) {
+    const r = Math.min(radius, width / 2, height / 2);
+    renderContext.beginPath();
+    renderContext.moveTo(x + r, y);
+    renderContext.lineTo(x + width - r, y);
+    renderContext.quadraticCurveTo(x + width, y, x + width, y + r);
+    renderContext.lineTo(x + width, y + height - r);
+    renderContext.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+    renderContext.lineTo(x + r, y + height);
+    renderContext.quadraticCurveTo(x, y + height, x, y + height - r);
+    renderContext.lineTo(x, y + r);
+    renderContext.quadraticCurveTo(x, y, x + r, y);
+    renderContext.closePath();
+  }
+
   function drawPaused() {
+    const mode = getModeSettings();
+    const difficulty = getDifficultySettings();
+    const level = getCurrentLevel();
+    const missionProgress = getMissionProgress();
+    const missionLine = state.mission
+      ? `${state.mission.label} · ${Math.min(missionProgress, state.mission.target)}/${state.mission.target}`
+      : "משימה חדשה בדרך";
+
     ctx.save();
     ctx.fillStyle = "rgba(0, 0, 0, 0.42)";
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    ctx.fillStyle = "rgba(2, 6, 18, 0.76)";
+    ctx.strokeStyle = "rgba(104, 231, 255, 0.34)";
+    ctx.lineWidth = 2;
+    roundRect(ctx, WIDTH / 2 - 250, HEIGHT / 2 - 92, 500, 184, 28);
+    ctx.fill();
+    ctx.stroke();
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "#ffd84a";
     ctx.shadowColor = "rgba(255, 216, 74, 0.42)";
     ctx.shadowBlur = 18;
     ctx.font = "700 54px Arial, sans-serif";
-    ctx.fillText("השהיה", WIDTH / 2, HEIGHT / 2);
+    ctx.fillText("השהיה", WIDTH / 2, HEIGHT / 2 - 45);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#f7fbff";
+    ctx.font = "700 24px Arial, sans-serif";
+    ctx.fillText(`${mode.shortLabel} · ${difficulty.label} · ${level.name}`, WIDTH / 2, HEIGHT / 2 + 4);
+    ctx.fillStyle = "#68e7ff";
+    ctx.font = "700 20px Arial, sans-serif";
+    ctx.fillText(missionLine, WIDTH / 2, HEIGHT / 2 + 42);
+    ctx.fillStyle = "#dce9ff";
+    ctx.font = "700 17px Arial, sans-serif";
+    ctx.fillText("לחצו רווח, Esc או על כפתור ההמשך", WIDTH / 2, HEIGHT / 2 + 72);
     ctx.restore();
   }
 

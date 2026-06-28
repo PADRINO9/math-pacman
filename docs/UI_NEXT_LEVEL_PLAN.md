@@ -308,3 +308,35 @@ Deferred to later phases:
 - Any Phase 4 work.
 
 Phase 4 may start only after the Phase 3 gallery, asset manifest, and QA report are reviewed and accepted.
+
+## Phase 4 Completion Notes
+
+Phase 4 redesigned only the gameplay HUD. It did not change scoring rules, lives rules, combo rules, mission logic, progression logic, question generation, enemy behavior, movement behavior, win/loss conditions, save schema, or leaderboard behavior.
+
+Completed:
+
+- Rebuilt the always-visible HUD around score, combo, lives, wave/level progress, current mission, pause, and sound.
+- Moved mode, difficulty, world, level number, and detailed mission context out of the always-visible HUD into secondary/pause-context surfaces.
+- Replaced gameplay life hearts with SVG sprite icons from the existing icon infrastructure.
+- Added HUD feedback hooks for score changes, combo milestones, life loss/gain, mission progress, mission completion, and wave/level progress.
+- Added accessible progressbar metadata and readable pause/sound control labels.
+- Added responsive HUD layouts for mobile portrait, mobile landscape, and desktop while keeping the canvas/playfield visually dominant.
+- Added `tools/phase4_hud_verification.mjs` for required viewport screenshots, console/runtime checks, RTL checks, HUD visibility checks, FPS sampling, and gameplay-session acceptance.
+- Added Phase 4 screenshot artifacts under `docs/phase4-screenshots/`.
+
+Gameplay-adjacent but non-rule changes:
+
+- The pause canvas overlay now displays secondary context: mode, difficulty, world, mission progress, and resume instructions.
+- Mobile gameplay stage sizing is forced to the full visual viewport while the start screen is hidden, so the maze remains dominant behind the compact HUD.
+- Arcade HUD progress now displays current wave progress out of the wave target instead of total correct answers; total correct-answer state remains unchanged internally.
+
+Deferred to later phases:
+
+- Full motion system.
+- Full audio asset system.
+- Gameplay character animation upgrades.
+- Results screen redesign.
+- Question-dialog redesign.
+- World transition presentation redesign.
+
+Phase 5 must not assume any gameplay-rule change from Phase 4. Phase 4 is a visual and interaction-shell HUD phase only.

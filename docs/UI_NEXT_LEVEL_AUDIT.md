@@ -741,3 +741,44 @@ Current Phase 3 risks:
 - Tap and selected responses are UI feedback, not character animation states.
 - Rive and Spine are adapter-compatible but no runtime or approved files are bundled.
 - Character-specific best can only be shown from existing leaderboard entries with character metadata; the current `personalBests` store is not character-specific.
+
+## Phase 4 Gameplay HUD Addendum
+
+Date: 2026-06-28
+
+Phase 4 changed the gameplay HUD presentation only. It preserved gameplay and persistence behavior.
+
+Verified preserved behavior:
+
+- Game starts from the existing home action.
+- Desktop keyboard play remains functional in the scripted session.
+- Mobile touch/swipe play remains functional in the scripted session.
+- Pause and resume still use the existing state path.
+- Sound toggle still updates existing sound state.
+- Question dialog still opens.
+- Correct answers still increase score/progress through existing logic.
+- Wrong answers and timeouts still reduce lives through existing logic.
+- Game over still appears through the existing end-screen path.
+- No console or runtime errors were reported by the Phase 4 CDP verifier.
+
+Verified UI improvements:
+
+- Always-visible HUD is limited to score, combo, lives, wave/level progress, current mission, pause, and sound.
+- Secondary mode/difficulty/world/level context is hidden from the active HUD and exposed in the pause overlay.
+- Lives use SVG icons instead of text hearts.
+- Progress rail has `role="progressbar"` and updated ARIA values.
+- Pause and sound controls have readable Hebrew text in addition to icons.
+- Required viewport screenshots show no document overflow, out-of-bounds HUD elements, or checked text overflow.
+
+Gameplay-adjacent visual changes:
+
+- `drawPaused` now renders a richer pause card with secondary context and resume instructions.
+- Mobile gameplay stage sizing now fills the visual viewport while the start screen is hidden.
+- Arcade progress display now shows current-wave progress in the HUD; total correct answers remain unchanged in state.
+
+Remaining Phase 4 risks:
+
+- Full victory and world-transition journeys were not exhaustively played to 100 correct answers in automation; the HUD progress path and existing results path were smoke-verified instead.
+- HUD feedback uses CSS animation classes, not final motion-system tokens.
+- HUD sound hooks still use existing tone behavior; no branded sound files exist yet.
+- Future question-dialog redesign must re-check that HUD overlays do not compete with the dialog on very small portrait screens.

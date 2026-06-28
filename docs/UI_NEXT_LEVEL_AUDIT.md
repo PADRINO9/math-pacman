@@ -782,3 +782,36 @@ Remaining Phase 4 risks:
 - HUD feedback uses CSS animation classes, not final motion-system tokens.
 - HUD sound hooks still use existing tone behavior; no branded sound files exist yet.
 - Future question-dialog redesign must re-check that HUD overlays do not compete with the dialog on very small portrait screens.
+
+## Phase 5 Secondary Screens Addendum
+
+Date: 2026-06-28
+
+Phase 5 unified secondary screens while preserving gameplay and persistence behavior.
+
+Verified preserved behavior:
+
+- Character, mode, difficulty, nickname, and sound selections remain persisted through the existing storage/save paths.
+- Game start still works from the home action and the pre-game sheet.
+- Pause/resume still uses existing phase/timer behavior.
+- Safe restart from pause uses the existing retry path.
+- Return to menu still uses the existing start-screen path.
+- Results still open through the existing game-over flow.
+- Leaderboard still renders existing local entries and highlights the current player.
+- Progress screen shows only stored unlock and best-score data.
+
+Verified UI improvements:
+
+- Pre-game, mode, difficulty, settings, pause, results, leaderboard, and progress surfaces now share a single Phase 5 visual foundation.
+- All Phase 5 secondary screens have focus trapping, Escape close behavior, and focus restoration.
+- Difficulty choices expose player-facing differences and score multipliers without unnecessary technical configuration values.
+- Legendary locked state is documented in the UI without changing unlock logic.
+- Leaderboard includes loading, empty, error, refresh, local/public distinction, filters, and current-player highlight states.
+- Results hierarchy now puts result emotion, score/record, rank/progression, stats, actions, and score breakdown in a clearer order.
+
+Current Phase 5 risks:
+
+- The Playwright test dependency is not installed locally; browser coverage is provided by the custom CDP verifier.
+- Legacy mobile hotfix styles still exist and can influence form density; they should not be deleted without a dedicated cleanup phase.
+- Public leaderboard UI states are present, but remote public leaderboard behavior is not implemented.
+- Full progression/reward systems remain unsupported and must not be represented until real stored data exists.

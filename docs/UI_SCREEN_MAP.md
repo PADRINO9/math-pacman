@@ -401,3 +401,46 @@ Phase 4 verification coverage:
 - Game over.
 - Required viewport screenshots: 390x844, 430x932, 844x390, 1280x720, 1440x900.
 - RTL, overflow, text clipping, console errors, runtime errors, and sampled frame rate.
+
+## Phase 5 Secondary Screen Map
+
+Phase 5 redesigns and unifies secondary screens only. The home hub, hero gallery, gameplay rules, gameplay canvas, question generation, save schema, and leaderboard data model remain preserved.
+
+Current Phase 5 secondary regions:
+
+| Screen | Production selectors | Purpose |
+| --- | --- | --- |
+| Pre-game sheet | `#pregame-panel`, `#pregame-start-button` | Compact confirmation of character, mode, difficulty, score multiplier/rule, and start action. |
+| Mode selection | `#mode-panel`, `input[name="game-mode"]` | Explains Arcade and Adventure in player-facing language without exposing technical values. |
+| Difficulty selection | `#difficulty-panel`, `input[name="difficulty"]`, `.difficulty-lock-copy` | Shows difficulty, relevant gameplay differences, score multiplier, and truthful locked-state requirement. |
+| Player settings | `#settings-panel`, `#player-name-input`, `#settings-sound-button` | Supports existing nickname and sound behavior only. |
+| Pause screen | `#pause-screen`, `#pause-resume-button`, `#pause-retry-button`, `#pause-sound-button`, `#pause-menu-button` | Overlay pause controls while preserving timer/state behavior. |
+| Results screen | `#end-screen`, `.results-panel`, `#score-breakdown` | Prioritizes result, score/record, rank/progression, stats, actions, and secondary breakdown. |
+| Leaderboard | `#leaderboard-dialog`, `#leaderboard-list`, `#leaderboard-empty-state`, `#leaderboard-error-state`, `#leaderboard-refresh` | Local leaderboard with current-player highlight, filters, loading/empty/error states, and refresh. |
+| Progress | `#progress-panel`, `#progress-unlocked-difficulties`, `#progress-best-list` | Shows only stored local unlock and best-score data. |
+
+Shared foundations used by Phase 5:
+
+- `ui/secondary-screens.css` scopes shared panel, button, dialog, results, leaderboard, pause, and progress styling to secondary screens.
+- Existing Phase 1 tokens and SVG icon sprite remain the base design system.
+- Existing `openMenuSheet` and `closeMenuSheets` state handling now cover pre-game and progress sheets.
+- Dialog focus is trapped, Escape closes the active secondary surface, and focus restoration returns to the trigger.
+
+State preservation:
+
+- Character, mode, difficulty, nickname, and sound still use the existing persisted storage keys and save settings.
+- Pause/resume still flows through `togglePause`.
+- Restart from pause uses the existing safe `retryGame` path.
+- Results still render through the existing `showEndScreen` path.
+- Leaderboard entries still use local save data and existing sorting/filtering logic.
+- Progress screen does not invent currencies, achievements, rewards, or unsupported levels.
+
+Phase 5 verification coverage:
+
+- Required screenshots were captured for every Phase 5 secondary screen at 390x844, 430x932, 844x390, 1280x720, and 1440x900.
+- Open/close behavior passed for every secondary screen.
+- Focus trap passed for every secondary screen.
+- Escape behavior passed for every secondary screen.
+- Nickname, character, mode, difficulty, and sound persistence were preserved.
+- Pause and results screenshots were reached from an actual gameplay flow.
+- RTL, document overflow, checked text overflow, console errors, and runtime errors passed in `tools/phase5_secondary_verification.mjs`.

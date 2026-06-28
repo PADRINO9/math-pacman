@@ -377,6 +377,7 @@
     difficultyControlButton: document.getElementById("difficulty-control-button"),
     characterControlButton: document.getElementById("character-control-button"),
     profileControlButton: document.getElementById("profile-control-button"),
+    pregameOpenButton: document.getElementById("pregame-open-button"),
     menuSettingsButton: document.getElementById("menu-settings-button"),
     menuLeaderboardLink: document.getElementById("menu-leaderboard-link"),
     homeProgressCard: document.querySelector(".home-progress-card"),
@@ -402,12 +403,40 @@
     heroGalleryAssetNote: document.getElementById("hero-gallery-asset-note"),
     heroGallerySelect: document.getElementById("hero-gallery-select"),
     heroGallerySelectLabel: document.getElementById("hero-gallery-select-label"),
+    pregamePanel: document.getElementById("pregame-panel"),
+    pregameCharacterButton: document.getElementById("pregame-character-button"),
+    pregameModeButton: document.getElementById("pregame-mode-button"),
+    pregameDifficultyButton: document.getElementById("pregame-difficulty-button"),
+    pregameStartButton: document.getElementById("pregame-start-button"),
+    pregameCharacterLabel: document.getElementById("pregame-character-label"),
+    pregameModeLabel: document.getElementById("pregame-mode-label"),
+    pregameDifficultyLabel: document.getElementById("pregame-difficulty-label"),
+    pregameMultiplierLabel: document.getElementById("pregame-multiplier-label"),
+    pregameRuleCopy: document.getElementById("pregame-rule-copy"),
+    pregameImportantRule: document.getElementById("pregame-important-rule"),
     modePanel: document.getElementById("mode-panel"),
     difficultyPanel: document.getElementById("difficulty-panel"),
     settingsPanel: document.getElementById("settings-panel"),
+    settingsSoundButton: document.getElementById("settings-sound-button"),
+    settingsSoundLabel: document.getElementById("settings-sound-label"),
     settingsSaveButton: document.getElementById("settings-save-button"),
+    progressPanel: document.getElementById("progress-panel"),
+    progressUnlockedDifficulties: document.getElementById("progress-unlocked-difficulties"),
+    progressCurrentBest: document.getElementById("progress-current-best"),
+    progressBestList: document.getElementById("progress-best-list"),
     menuSheets: Array.from(document.querySelectorAll(".menu-sheet")),
     panelCloseButtons: Array.from(document.querySelectorAll("[data-close-panel]")),
+    pauseScreen: document.getElementById("pause-screen"),
+    pauseSummary: document.getElementById("pause-summary"),
+    pauseMissionTitle: document.getElementById("pause-mission-title"),
+    pauseMissionProgress: document.getElementById("pause-mission-progress"),
+    pauseResumeButton: document.getElementById("pause-resume-button"),
+    pauseRetryButton: document.getElementById("pause-retry-button"),
+    pauseSoundButton: document.getElementById("pause-sound-button"),
+    pauseSoundLabel: document.getElementById("pause-sound-label"),
+    pauseMenuButton: document.getElementById("pause-menu-button"),
+    pauseNameInput: document.getElementById("pause-player-name-input"),
+    pauseSaveNameButton: document.getElementById("pause-save-name-button"),
     endScreen: document.getElementById("end-screen"),
     winnerTrophy: document.getElementById("winner-trophy"),
     newRecordBadge: document.getElementById("new-record-badge"),
@@ -447,6 +476,8 @@
     leaderboardClose: document.getElementById("leaderboard-close"),
     leaderboardList: document.getElementById("leaderboard-list"),
     leaderboardStatus: document.getElementById("leaderboard-status"),
+    leaderboardEmptyState: document.getElementById("leaderboard-empty-state"),
+    leaderboardErrorState: document.getElementById("leaderboard-error-state"),
     leaderboardRefresh: document.getElementById("leaderboard-refresh"),
     leaderboardModeFilter: document.getElementById("leaderboard-mode-filter"),
     leaderboardDifficultyFilter: document.getElementById("leaderboard-difficulty-filter"),
@@ -695,6 +726,7 @@
     finalResult: null,
     latestLeaderboardEntryId: null,
     lastFocusBeforeLeaderboard: null,
+    lastFocusBeforePause: null,
     lastFocusBeforeMenuSheet: null,
     lastFocusBeforeHeroGallery: null,
     heroGalleryCharacterId: null,
@@ -1292,6 +1324,96 @@
     return `×${Number.isInteger(multiplier) ? multiplier : multiplier.toFixed(1)}`;
   }
 
+  function modeRuleText(modeId = state.mode) {
+    return normalizeGameMode(modeId) === "adventure"
+      ? "הרפתקה: מסלול של 100 תשובות דרך ארבעת העולמות."
+      : "ארקייד: הישרדות בגלים עם שיא מקומי וקצב שעולה בהדרגה.";
+  }
+
+  function difficultyRuleText(difficulty = getDifficultySettings()) {
+    return `${difficulty.answerTimeLimit} שניות לכל תרגיל · ${difficulty.initialLives} חיים`;
+  }
+
+  function getUnlockedDifficultyLabels() {
+    const unlocked = state.save.unlockedDifficulties || [];
+    return unlocked
+      .map((difficultyId) => CONFIG.difficulty[normalizeDifficulty(difficultyId)]?.label)
+      .filter(Boolean)
+      .join(", ");
+  }
+
+  function updatePregamePanel() {
+    const mode = getModeSettings();
+    const difficulty = getDifficultySettings();
+    if (els.pregameCharacterLabel) {
+      els.pregameCharacterLabel.textContent = characterLabel();
+    }
+    if (els.pregameModeLabel) {
+      els.pregameModeLabel.textContent = mode.shortLabel;
+    }
+    if (els.pregameDifficultyLabel) {
+      els.pregameDifficultyLabel.textContent = `${difficulty.label} ${scoreMultiplierLabel(difficulty)}`;
+    }
+    if (els.pregameMultiplierLabel) {
+      els.pregameMultiplierLabel.textContent = scoreMultiplierLabel(difficulty);
+    }
+    if (els.pregameRuleCopy) {
+      els.pregameRuleCopy.textContent = modeRuleText(mode.id);
+    }
+    if (els.pregameImportantRule) {
+      els.pregameImportantRule.textContent = difficultyRuleText(difficulty);
+    }
+  }
+
+  function updateProgressPanel() {
+    if (els.progressUnlockedDifficulties) {
+      els.progressUnlockedDifficulties.textContent = getUnlockedDifficultyLabels() || "רגיל";
+    }
+    if (els.progressCurrentBest) {
+      els.progressCurrentBest.textContent = numberFormat.format(getPersonalBestForSelection());
+    }
+    if (!els.progressBestList) {
+      return;
+    }
+
+    const bests = Object.values(state.save.personalBests || {})
+      .filter((entry) => entry && Number(entry.score) > 0)
+      .sort((a, b) => Number(b.score) - Number(a.score))
+      .slice(0, 8);
+
+    els.progressBestList.replaceChildren();
+    if (!bests.length) {
+      const empty = document.createElement("li");
+      empty.className = "progress-empty";
+      empty.textContent = "עוד אין שיאים שמורים.";
+      els.progressBestList.append(empty);
+      return;
+    }
+
+    bests.forEach((entry) => {
+      const item = document.createElement("li");
+      const title = document.createElement("span");
+      const score = document.createElement("strong");
+      const detail = document.createElement("small");
+      title.textContent = `${modeLabel(entry.mode)} · ${difficultyLabel(entry.difficulty)}`;
+      score.textContent = numberFormat.format(entry.score);
+      detail.textContent = `שלב/גל ${entry.reachedStage || 1} · דיוק ${entry.accuracy || 0}% · רצף ${entry.maxCombo || 0}`;
+      item.append(title, score, detail);
+      els.progressBestList.append(item);
+    });
+  }
+
+  function updateDifficultyLockCopy() {
+    const lockedLegendary = els.difficultyInputs.find((input) => input.value === "legendary");
+    const copy = lockedLegendary?.closest("label")?.querySelector(".difficulty-lock-copy");
+    if (!copy) {
+      return;
+    }
+    copy.textContent = SYSTEMS.isDifficultyUnlocked(state.save, "legendary")
+      ? "פתוח"
+      : `נעול: ${SYSTEMS.LEGENDARY_UNLOCK_RULE.label}`;
+  }
+
   function updatePlayerGreeting() {
     if (!els.playerGreeting) {
       return;
@@ -1451,13 +1573,13 @@
     state.lastFocusBeforeHeroGallery = null;
   }
 
-  function openHeroGallery(characterId = state.characterId) {
+  function openHeroGallery(characterId = state.characterId, trigger = document.activeElement) {
     if (!els.heroGallery) {
       focusSelectedCharacter();
       return;
     }
     closeMenuSheets({ restoreFocus: false });
-    state.lastFocusBeforeHeroGallery = document.activeElement;
+    state.lastFocusBeforeHeroGallery = trigger;
     state.heroGalleryCharacterId = normalizeCharacterId(characterId);
     els.heroGallery.hidden = false;
     els.playerForm.classList.add("hero-gallery-open");
@@ -1587,6 +1709,9 @@
     updatePlayerGreeting();
     updateBestScorePreview();
     updateMenuLeaderboardPreview();
+    updatePregamePanel();
+    updateProgressPanel();
+    updatePauseScreen();
   }
 
   function getSelectedMode() {
@@ -1664,6 +1789,7 @@
       input.closest("label")?.setAttribute("title", isLocked ? SYSTEMS.LEGENDARY_UNLOCK_RULE.label : "");
       input.checked = input.value === state.difficulty;
     }
+    updateDifficultyLockCopy();
   }
 
   function setHomeNavActive(activeButton) {
@@ -1696,16 +1822,11 @@
   }
 
   function focusHomeProgress() {
-    els.homeProgressCard?.focus({ preventScroll: true });
-    pulseHomeElement(els.homeProgressCard);
-    setHomeNavActive(els.homeNavProgress);
+    openProgressPanel(els.homeNavProgress || els.homeProgressCard);
   }
 
   function focusHomeGameAction() {
-    closeHeroGallery({ restoreFocus: false });
-    els.startButton?.focus({ preventScroll: true });
-    pulseHomeElement(els.startButton);
-    setHomeNavActive(els.homeNavGame);
+    openPregamePanel(els.homeNavGame || els.pregameOpenButton || els.startButton);
   }
 
   function setTimeLimitEnabled(enabled, persist = true) {
@@ -1738,6 +1859,9 @@
   }
 
   function getMenuSheetTrigger(sheet) {
+    if (sheet === els.pregamePanel) {
+      return els.pregameOpenButton || els.homeNavGame || els.startButton;
+    }
     if (sheet === els.modePanel) {
       return els.modeControlButton;
     }
@@ -1747,7 +1871,53 @@
     if (sheet === els.settingsPanel) {
       return els.profileControlButton || els.menuSettingsButton;
     }
+    if (sheet === els.progressPanel) {
+      return els.homeNavProgress || els.homeProgressCard;
+    }
     return null;
+  }
+
+  const FOCUSABLE_SELECTOR = [
+    "a[href]",
+    "button:not([disabled])",
+    "input:not([disabled])",
+    "select:not([disabled])",
+    "textarea:not([disabled])",
+    "[tabindex]:not([tabindex='-1'])"
+  ].join(",");
+
+  function getFocusableElements(container) {
+    return Array.from(container?.querySelectorAll?.(FOCUSABLE_SELECTOR) || [])
+      .filter((element) => {
+        if (!(element instanceof HTMLElement)) {
+          return false;
+        }
+        if (element.matches("input[type='radio']")) {
+          return true;
+        }
+        const style = window.getComputedStyle(element);
+        return style.display !== "none" && style.visibility !== "hidden" && element.getClientRects().length > 0;
+      });
+  }
+
+  function trapFocus(container, event) {
+    if (event.key !== "Tab") {
+      return;
+    }
+    const focusable = getFocusableElements(container);
+    if (!focusable.length) {
+      event.preventDefault();
+      container?.focus?.({ preventScroll: true });
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const currentIndex = focusable.indexOf(document.activeElement);
+    const nextIndex = event.shiftKey
+      ? (currentIndex <= 0 ? focusable.length - 1 : currentIndex - 1)
+      : (currentIndex === -1 || document.activeElement === last ? 0 : currentIndex + 1);
+    event.preventDefault();
+    focusable[nextIndex].focus({ preventScroll: true });
   }
 
   function closeMenuSheets(options = {}) {
@@ -1763,22 +1933,42 @@
   }
 
   function focusMenuSheet(sheet) {
-    const target = sheet.querySelector("input:checked:not(:disabled)")
+    const target = sheet.querySelector("[data-close-panel]")
+      || sheet.querySelector("input:checked:not(:disabled)")
       || sheet.querySelector("input:not(:disabled)")
       || sheet.querySelector("button:not([data-close-panel])")
-      || sheet.querySelector("[data-close-panel]");
-    window.setTimeout(() => target?.focus({ preventScroll: true }), 0);
+      || sheet;
+    target?.focus({ preventScroll: true });
+    window.setTimeout(() => target?.focus({ preventScroll: true }), 30);
   }
 
   function openMenuSheet(sheet, trigger) {
     if (!sheet) {
       return;
     }
+    if (sheet === els.pregamePanel) {
+      updatePregamePanel();
+    }
+    if (sheet === els.progressPanel) {
+      updateProgressPanel();
+    }
     state.lastFocusBeforeMenuSheet = trigger || document.activeElement;
     closeMenuSheets({ restoreFocus: false });
     sheet.hidden = false;
     getMenuSheetTrigger(sheet)?.setAttribute("aria-expanded", "true");
     focusMenuSheet(sheet);
+  }
+
+  function openPregamePanel(trigger = els.pregameOpenButton) {
+    closeHeroGallery({ restoreFocus: false });
+    setHomeNavActive(els.homeNavGame);
+    openMenuSheet(els.pregamePanel, trigger);
+  }
+
+  function openProgressPanel(trigger = els.homeNavProgress) {
+    closeHeroGallery({ restoreFocus: false });
+    setHomeNavActive(els.homeNavProgress);
+    openMenuSheet(els.progressPanel, trigger);
   }
 
   function saveNicknameFromSettings() {
@@ -1798,6 +1988,28 @@
     closeMenuSheets();
   }
 
+  function saveNicknameFromPause() {
+    if (!els.pauseNameInput) {
+      return;
+    }
+    const nickname = normalizePlayerName(els.pauseNameInput.value);
+    if (!nickname.ok) {
+      els.nameError.textContent = nickname.error;
+      els.pauseNameInput.focus({ preventScroll: true });
+      return;
+    }
+
+    state.playerName = nickname.value;
+    state.save.player.nickname = nickname.value;
+    storage.set(CONFIG.storageKeys.nickname, nickname.value);
+    persistSave();
+    els.playerNameInput.value = nickname.value;
+    els.nameError.textContent = "";
+    syncMenuSummary();
+    updatePauseScreen();
+    playTone(520, 0.05, "triangle", 0.03);
+  }
+
   function setLeaderboardStatus(message, isError = false) {
     if (!els.leaderboardStatus) {
       return;
@@ -1805,6 +2017,12 @@
 
     els.leaderboardStatus.textContent = message;
     els.leaderboardStatus.style.color = isError ? "var(--red)" : "";
+    if (els.leaderboardErrorState) {
+      els.leaderboardErrorState.hidden = !isError;
+    }
+    if (isError && els.leaderboardEmptyState) {
+      els.leaderboardEmptyState.hidden = true;
+    }
   }
 
   function modeLabel(modeId) {
@@ -1855,7 +2073,13 @@
       empty.className = "leaderboard-placeholder";
       empty.textContent = "עדיין אין שיאים. אפשר להיות הראשון בטבלה.";
       els.leaderboardList.append(empty);
+      if (els.leaderboardEmptyState) {
+        els.leaderboardEmptyState.hidden = false;
+      }
       return;
+    }
+    if (els.leaderboardEmptyState) {
+      els.leaderboardEmptyState.hidden = true;
     }
 
     scores.slice(0, CONFIG.leaderboard.limit).forEach((entry, index) => {
@@ -1927,17 +2151,27 @@
     if (els.leaderboardRefresh) {
       els.leaderboardRefresh.disabled = true;
     }
+    if (els.leaderboardErrorState) {
+      els.leaderboardErrorState.hidden = true;
+    }
+    setLeaderboardStatus("מרענן את הטבלה המקומית...");
 
-    const entries = SYSTEMS.getLeaderboardEntries(state.save, {
-      mode: els.leaderboardModeFilter?.value || "all",
-      difficulty: els.leaderboardDifficultyFilter?.value || "all",
-      limit: CONFIG.leaderboard.limit
-    });
-    renderLeaderboard(entries);
-    setLeaderboardStatus(entries.length ? "הטבלה המקומית מעודכנת." : "עדיין אין שיאים בקטגוריה הזאת.");
-    state.leaderboardLoading = false;
-    if (els.leaderboardRefresh) {
-      els.leaderboardRefresh.disabled = false;
+    try {
+      const entries = SYSTEMS.getLeaderboardEntries(state.save, {
+        mode: els.leaderboardModeFilter?.value || "all",
+        difficulty: els.leaderboardDifficultyFilter?.value || "all",
+        limit: CONFIG.leaderboard.limit
+      });
+      renderLeaderboard(entries);
+      setLeaderboardStatus(entries.length ? "הטבלה המקומית מעודכנת." : "עדיין אין שיאים בקטגוריה הזאת.");
+    } catch {
+      renderLeaderboard([]);
+      setLeaderboardStatus("לא הצלחנו לרענן את הטבלה כרגע.", true);
+    } finally {
+      state.leaderboardLoading = false;
+      if (els.leaderboardRefresh) {
+        els.leaderboardRefresh.disabled = false;
+      }
     }
   }
 
@@ -2048,6 +2282,7 @@
     setDifficulty(getSelectedDifficulty());
     persistSave();
     closeMenuSheets({ restoreFocus: false });
+    hidePauseScreen();
     els.nameError.textContent = "";
     setupGame();
     setPhase("playing");
@@ -2069,6 +2304,7 @@
     state.playerName = SYSTEMS.safeNickname(state.save.player.nickname);
     els.endScreen.hidden = true;
     els.questionDialog.hidden = true;
+    hidePauseScreen();
     els.startScreen.hidden = false;
     els.startScreen.classList.add("screen-visible");
     els.winnerTrophy.hidden = true;
@@ -2095,11 +2331,59 @@
     startGame();
   }
 
+  function updatePauseScreen() {
+    if (!els.pauseScreen) {
+      return;
+    }
+    const mode = getModeSettings();
+    const difficulty = getDifficultySettings();
+    const level = getCurrentLevel();
+    const missionProgress = getMissionProgress();
+    const missionTarget = state.mission?.target || 0;
+    if (els.pauseSummary) {
+      els.pauseSummary.textContent = `${mode.shortLabel} · ${difficulty.label} ${scoreMultiplierLabel(difficulty)} · ${level.name}`;
+    }
+    if (els.pauseMissionTitle) {
+      els.pauseMissionTitle.textContent = state.mission?.label || "משימה חדשה בדרך";
+    }
+    if (els.pauseMissionProgress) {
+      els.pauseMissionProgress.textContent = missionTarget
+        ? `${Math.min(missionProgress, missionTarget)}/${missionTarget}`
+        : "-";
+    }
+    if (els.pauseNameInput && document.activeElement !== els.pauseNameInput) {
+      els.pauseNameInput.value = SYSTEMS.safeNickname(state.playerName || state.save.player.nickname);
+    }
+  }
+
+  function showPauseScreen() {
+    if (!els.pauseScreen) {
+      return;
+    }
+    state.lastFocusBeforePause = document.activeElement;
+    updatePauseScreen();
+    els.pauseScreen.hidden = false;
+    window.setTimeout(() => els.pauseResumeButton?.focus({ preventScroll: true }), 0);
+  }
+
+  function hidePauseScreen(options = {}) {
+    if (!els.pauseScreen) {
+      return;
+    }
+    const { restoreFocus = false } = options;
+    els.pauseScreen.hidden = true;
+    if (restoreFocus && state.lastFocusBeforePause instanceof HTMLElement) {
+      state.lastFocusBeforePause.focus({ preventScroll: true });
+    }
+    state.lastFocusBeforePause = null;
+  }
+
   function togglePause() {
     if (state.phase === "playing") {
       setPhase("paused");
       resetJoystick();
       updatePauseButton();
+      showPauseScreen();
       playTone(220, 0.06, "sine", 0.035);
       return;
     }
@@ -2107,6 +2391,7 @@
     if (state.phase === "paused") {
       setPhase("playing");
       updatePauseButton();
+      hidePauseScreen({ restoreFocus: true });
       state.lastTime = performance.now();
       playTone(440, 0.06, "sine", 0.035);
     }
@@ -2129,6 +2414,14 @@
     const fallback = state.soundEnabled ? "צלילים" : "שקט";
     setIconButton(els.sound, icon, label, fallback, state.soundEnabled ? "צלילים" : "שקט");
     setIconButton(els.menuSound, icon, label, fallback);
+    setIconButton(els.settingsSoundButton, icon, label, fallback, label);
+    setIconButton(els.pauseSoundButton, icon, label, fallback, state.soundEnabled ? "צלילים" : "שקט");
+    if (els.settingsSoundLabel) {
+      els.settingsSoundLabel.textContent = label;
+    }
+    if (els.pauseSoundLabel) {
+      els.pauseSoundLabel.textContent = state.soundEnabled ? "צלילים" : "שקט";
+    }
   }
 
   function updatePauseButton() {
@@ -3654,10 +3947,12 @@
     state.currentEnemyId = null;
     state.question = null;
     els.questionDialog.hidden = true;
+    hidePauseScreen();
     els.endScreen.hidden = false;
     renderResults(result);
 
     updatePublishScorePanel();
+    window.setTimeout(() => els.retryButton?.focus({ preventScroll: true }), 0);
 
     if (won || result.newRecord) {
       state.fireworkTimer = 0;
@@ -4356,6 +4651,14 @@
       return;
     }
 
+    if (state.phase === "ended") {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        showStartScreen();
+      }
+      return;
+    }
+
     if (event.key === " " || event.key === "Escape") {
       event.preventDefault();
       togglePause();
@@ -4537,13 +4840,21 @@
     });
   });
   els.timeLimitToggle?.addEventListener("click", toggleTimeLimit);
-  els.characterControlButton?.addEventListener("click", () => openHeroGallery(state.characterId));
+  els.characterControlButton?.addEventListener("click", () => openHeroGallery(state.characterId, els.characterControlButton));
+  els.pregameOpenButton?.addEventListener("click", () => openPregamePanel(els.pregameOpenButton));
+  els.pregameCharacterButton?.addEventListener("click", () => {
+    closeMenuSheets({ restoreFocus: false });
+    openHeroGallery(state.characterId, els.characterControlButton);
+  });
+  els.pregameModeButton?.addEventListener("click", () => openMenuSheet(els.modePanel, els.modeControlButton));
+  els.pregameDifficultyButton?.addEventListener("click", () => openMenuSheet(els.difficultyPanel, els.difficultyControlButton));
+  els.pregameStartButton?.addEventListener("click", startGame);
   els.modeControlButton?.addEventListener("click", () => openMenuSheet(els.modePanel, els.modeControlButton));
   els.difficultyControlButton?.addEventListener("click", () => openMenuSheet(els.difficultyPanel, els.difficultyControlButton));
   els.profileControlButton?.addEventListener("click", () => openMenuSheet(els.settingsPanel, els.profileControlButton));
   els.menuSettingsButton?.addEventListener("click", () => openMenuSheet(els.settingsPanel, els.menuSettingsButton));
   els.homeNavGame?.addEventListener("click", focusHomeGameAction);
-  els.homeNavCharacters?.addEventListener("click", () => openHeroGallery(state.characterId));
+  els.homeNavCharacters?.addEventListener("click", () => openHeroGallery(state.characterId, els.homeNavCharacters));
   els.homeNavProgress?.addEventListener("click", focusHomeProgress);
   els.homeNavChampions?.addEventListener("click", () => {
     setHomeNavActive(els.homeNavChampions);
@@ -4567,12 +4878,26 @@
     els.heroGalleryStage?.addEventListener("touchend", handleHeroGalleryTouchEnd, { passive: true });
   }
   els.settingsSaveButton?.addEventListener("click", saveNicknameFromSettings);
+  els.settingsSoundButton?.addEventListener("click", toggleSound);
+  els.pauseResumeButton?.addEventListener("click", togglePause);
+  els.pauseRetryButton?.addEventListener("click", retryGame);
+  els.pauseSoundButton?.addEventListener("click", toggleSound);
+  els.pauseMenuButton?.addEventListener("click", showStartScreen);
+  els.pauseSaveNameButton?.addEventListener("click", saveNicknameFromPause);
   els.panelCloseButtons.forEach((button) => {
     button.addEventListener("click", () => closeMenuSheets());
   });
   els.menuSheets.forEach((sheet) => {
     sheet.addEventListener("click", (event) => {
       if (event.target === sheet) {
+        closeMenuSheets();
+      }
+    });
+    sheet.addEventListener("keydown", (event) => {
+      trapFocus(sheet, event);
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
         closeMenuSheets();
       }
     });
@@ -4583,6 +4908,30 @@
   els.leaderboardDialog?.addEventListener("click", (event) => {
     if (event.target === els.leaderboardDialog) {
       closeLeaderboard();
+    }
+  });
+  els.leaderboardDialog?.addEventListener("keydown", (event) => {
+    trapFocus(els.leaderboardDialog, event);
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      closeLeaderboard();
+    }
+  });
+  els.pauseScreen?.addEventListener("keydown", (event) => {
+    trapFocus(els.pauseScreen, event);
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      togglePause();
+    }
+  });
+  els.endScreen?.addEventListener("keydown", (event) => {
+    trapFocus(els.endScreen, event);
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      showStartScreen();
     }
   });
   els.leaderboardRefresh?.addEventListener("click", loadLeaderboard);

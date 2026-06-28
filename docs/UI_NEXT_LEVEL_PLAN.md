@@ -340,3 +340,40 @@ Deferred to later phases:
 - World transition presentation redesign.
 
 Phase 5 must not assume any gameplay-rule change from Phase 4. Phase 4 is a visual and interaction-shell HUD phase only.
+
+## Phase 5 Completion Notes
+
+Phase 5 redesigned and unified only the secondary screens. It did not begin Phase 6, redesign the home hub, redesign the hero gallery, change gameplay rules, change save schema, or replace existing assets.
+
+Completed:
+
+- Added a dedicated pre-game sheet with character, mode, difficulty, multiplier/rule context, and a primary start action.
+- Upgraded mode selection with concise player-facing Arcade and Adventure explanations.
+- Upgraded difficulty selection with meaningful gameplay differences, score multipliers, and a truthful Legendary locked-state requirement.
+- Unified player settings around the existing nickname and sound behavior only.
+- Added a real pause screen overlay with resume, safe restart, sound, settings/nickname, and return-to-menu actions while preserving timer/state behavior.
+- Reworked the results screen hierarchy around emotional result, score/record, rank/progression, concise statistics, retry/return actions, and secondary score breakdown.
+- Upgraded leaderboard presentation with current-player highlighting, readable ranks, local/public distinction, loading, empty, error, and refresh states.
+- Added a progress sheet that shows only real stored local unlock/best-score information.
+- Added focus trapping, Escape handling, and focus restoration for secondary dialogs.
+- Added `ui/secondary-screens.css` as the shared Phase 5 styling layer.
+- Added `tools/phase5_secondary_verification.mjs` and Phase 5 screenshot artifacts under `docs/phase5-screenshots/`.
+
+Unsupported future features kept separate:
+
+- Public online leaderboard integration beyond the current local data path.
+- Progress currencies, achievements, rewards, account levels, or invented unlock tracks.
+- Full motion system.
+- Full branded audio asset system.
+- Final character animation states.
+- Question dialog redesign.
+- Phase 6 progression or reward surfaces.
+
+Remaining technical debt:
+
+- Some legacy mobile hotfix styles still influence form-card density and should be retired only in a later approved cleanup phase.
+- Playwright package tests cannot run in this workspace until dependencies are installed; Phase 5 browser coverage uses the local CDP verifier.
+- Results and pause now share the Phase 5 visual language, but question dialog remains a later-phase surface.
+- Public/local leaderboard wording is UI-ready, but public remote behavior is not implemented and must not be implied as live.
+
+Phase 6 may start only after Phase 5 is reviewed and accepted.

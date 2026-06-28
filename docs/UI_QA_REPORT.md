@@ -257,3 +257,72 @@ Remaining QA gaps:
 
 - Full 100-answer victory and all world-transition branches were not exhaustively automated in this phase because they are long gameplay journeys. Existing progression logic was preserved, and the Phase 4 verifier covered progress, timeout, and game-over paths.
 - Branded audio feedback is not yet testable because no final HUD sound assets exist.
+
+## Phase 5 Secondary Screens QA Addendum
+
+Date: 2026-06-28
+Phase: 5 secondary screens only
+
+Automated checks:
+
+| Check | Result | Notes |
+| --- | --- | --- |
+| Direct JS syntax checks | Pass | `game.js` and `tools/phase5_secondary_verification.mjs` pass `node --check`. |
+| Build-script syntax checks | Pass | The files named by the `build` script were checked individually with the bundled Node executable. |
+| Node systems tests | Pass | 11/11 in `tests/kaflul-systems.test.js`. |
+| Phase 5 secondary verification | Pass | Required screenshots, open/close checks, focus traps, Escape behavior, RTL checks, overflow checks, persistence checks, console/runtime checks, pause flow, and results flow passed. |
+| Diff whitespace check | Pass | `git diff --check` returned clean. |
+| Package-manager test run | Blocked | `pnpm run build`/`test:node` attempted to install missing Playwright packages from the registry. The process was stopped under restricted network and partial install artifacts were removed. |
+
+Required Phase 5 screenshots:
+
+| Viewport | Screens captured |
+| --- | --- |
+| 390x844 portrait | pre-game, mode, difficulty, settings, progress, leaderboard, pause, results |
+| 430x932 portrait | pre-game, mode, difficulty, settings, progress, leaderboard, pause, results |
+| 844x390 landscape | pre-game, mode, difficulty, settings, progress, leaderboard, pause, results |
+| 1280x720 desktop | pre-game, mode, difficulty, settings, progress, leaderboard, pause, results |
+| 1440x900 desktop | pre-game, mode, difficulty, settings, progress, leaderboard, pause, results |
+
+Report file:
+
+- `docs/phase5-screenshots/phase5-secondary-report.json`
+
+Phase 5 acceptance checks passed:
+
+- Every secondary screen opened and closed correctly.
+- Focus trap passed on every secondary screen.
+- Escape closed every secondary screen and focus restored to the triggering control.
+- Touch/click activation worked in the required viewport set.
+- RTL document language/direction remained `he`/`rtl`.
+- Nickname, character, mode, difficulty, and sound persistence remained compatible.
+- Pause screen opened from an actual gameplay session.
+- Results screen opened from an actual game-over flow.
+- Console errors: 0.
+- Runtime errors: 0.
+- Checked text overflow: 0.
+- Document overflow: none at all required viewports.
+
+Manual screenshot inspection notes:
+
+- 390x844 and 430x932 portrait sheets are compact, readable, and scroll internally where the content is naturally tall.
+- 844x390 landscape remains usable with the primary actions visible and no document overflow.
+- 1280x720 and 1440x900 desktop dialogs remain visually secondary to the game scene and avoid a dashboard-like feel.
+- Pause and results screens preserve the maze/canvas context behind the overlay.
+- Progress screen shows only stored local data and does not invent rewards or unsupported progression.
+
+Commands run for Phase 5 QA included:
+
+- `node --check game.js`.
+- `node --check tools/phase5_secondary_verification.mjs`.
+- Individual `node --check` commands for the files listed in the `build` script.
+- `node --test tests/kaflul-systems.test.js`.
+- `node tools/phase5_secondary_verification.mjs --ci`.
+- `git diff --check`.
+- Attempted `pnpm run build` and `pnpm run test:node`, blocked by restricted network while trying to install missing Playwright packages.
+
+Remaining QA gaps:
+
+- The Playwright package suite in `tests/game.spec.js` was not runnable because local dependencies are not installed and registry access is blocked.
+- The public leaderboard branch remains a future integration path; Phase 5 verified the existing local leaderboard behavior and public/local distinction UI.
+- Full victory and every world-transition journey remain long-form gameplay paths outside the Phase 5 secondary-screen verifier.

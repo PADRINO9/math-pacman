@@ -35,6 +35,7 @@
   <link rel="stylesheet" href="leaderboard.css?v=20260622-1">
   <link rel="stylesheet" href="arcade-foundation.css?v=20260628-1">
   <link rel="stylesheet" href="main-menu.css?v=20260628-4">
+  <link rel="stylesheet" href="ui/secondary-screens.css?v=20260628-1">
 </head>
 <body>
   <main class="game-shell" aria-label="כפלול, משחק לוח הכפל">
@@ -122,6 +123,49 @@
 
     <section class="stage" aria-label="לוח המשחק" tabindex="-1">
       <canvas id="game-canvas" width="960" height="720"></canvas>
+
+      <section id="pause-screen" class="pause-screen secondary-dialog" role="dialog" aria-modal="true" aria-labelledby="pause-title" hidden>
+        <div class="secondary-dialog-panel pause-panel">
+          <header class="secondary-dialog-header">
+            <span class="secondary-kicker">הפסקה בטוחה</span>
+            <h2 id="pause-title">המשחק מושהה</h2>
+            <p id="pause-summary">ארקייד · רגיל · עולם הקרח</p>
+          </header>
+          <div class="pause-mission-card" aria-label="מצב המשחק בזמן ההשהיה">
+            <span>
+              <small>משימה</small>
+              <strong id="pause-mission-title">ענה נכון על 10 שאלות</strong>
+            </span>
+            <span>
+              <small>התקדמות</small>
+              <strong id="pause-mission-progress">0/10</strong>
+            </span>
+          </div>
+          <div class="pause-actions">
+            <button id="pause-resume-button" class="phase5-button phase5-button-primary" type="button">
+              <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="ui/icons.svg#play"></use></svg>
+              המשך
+            </button>
+            <button id="pause-retry-button" class="phase5-button" type="button">
+              <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="ui/icons.svg#refresh"></use></svg>
+              התחלה מחדש
+            </button>
+            <button id="pause-sound-button" class="phase5-button" type="button">
+              <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="ui/icons.svg#sound-on"></use></svg>
+              <span id="pause-sound-label" data-icon-label>צלילים</span>
+            </button>
+            <button id="pause-menu-button" class="phase5-button phase5-button-danger" type="button">חזרה לתפריט</button>
+          </div>
+          <section class="pause-settings-panel" aria-labelledby="pause-settings-title">
+            <h3 id="pause-settings-title">הגדרות</h3>
+            <label for="pause-player-name-input">כינוי</label>
+            <div class="pause-settings-row">
+              <input id="pause-player-name-input" type="text" maxlength="14" autocomplete="nickname">
+              <button id="pause-save-name-button" class="phase5-button" type="button">שמור</button>
+            </div>
+          </section>
+        </div>
+      </section>
 
       <div id="question-dialog" class="dialog" role="dialog" aria-modal="true" aria-labelledby="question-title" hidden>
         <div class="dialog-inner">
@@ -260,6 +304,7 @@
               <span class="arcade-play-label">שחק עכשיו</span>
             </button>
             <p id="menu-selection-summary">ביפלי · רגיל ×1.5 · ארקייד</p>
+            <button id="pregame-open-button" class="menu-text-button pregame-open-button" type="button" aria-expanded="false" aria-controls="pregame-panel">סקירה לפני משחק</button>
             <p id="name-error" class="form-note" aria-live="assertive"></p>
           </section>
 
@@ -381,20 +426,68 @@
             </div>
           </section>
 
-          <section id="mode-panel" class="menu-sheet" role="dialog" aria-modal="true" aria-labelledby="mode-panel-title" hidden>
+          <section id="pregame-panel" class="menu-sheet pregame-panel" role="dialog" aria-modal="true" aria-labelledby="pregame-panel-title" hidden>
+            <div class="menu-sheet-inner phase5-sheet-inner">
+              <button class="sheet-close" type="button" data-close-panel aria-label="סגור סקירה לפני משחק">
+                <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="ui/icons.svg#close"></use></svg>
+              </button>
+              <header class="phase5-sheet-header">
+                <span class="secondary-kicker">לפני שנכנסים למבוך</span>
+                <h2 id="pregame-panel-title">סיכום משחק</h2>
+                <p id="pregame-rule-copy">ארקייד: הישרדות בגלים עם שיא מקומי.</p>
+              </header>
+              <div class="pregame-summary-grid" aria-label="בחירות המשחק">
+                <button id="pregame-character-button" class="pregame-choice-card" type="button">
+                  <span class="ui-icon-wrap" aria-hidden="true"><svg class="ui-icon" focusable="false"><use href="ui/icons.svg#character"></use></svg></span>
+                  <small>דמות</small>
+                  <strong id="pregame-character-label">ביפלי</strong>
+                </button>
+                <button id="pregame-mode-button" class="pregame-choice-card" type="button">
+                  <span class="ui-icon-wrap" aria-hidden="true"><svg class="ui-icon" focusable="false"><use href="ui/icons.svg#mode"></use></svg></span>
+                  <small>מצב</small>
+                  <strong id="pregame-mode-label">ארקייד</strong>
+                </button>
+                <button id="pregame-difficulty-button" class="pregame-choice-card" type="button">
+                  <span class="ui-icon-wrap" aria-hidden="true"><svg class="ui-icon" focusable="false"><use href="ui/icons.svg#difficulty"></use></svg></span>
+                  <small>קושי</small>
+                  <strong id="pregame-difficulty-label">רגיל ×1.5</strong>
+                </button>
+              </div>
+              <div class="pregame-rule-card">
+                <span>
+                  <small>מכפיל ניקוד</small>
+                  <strong id="pregame-multiplier-label">×1.5</strong>
+                </span>
+                <span>
+                  <small>כלל חשוב</small>
+                  <strong id="pregame-important-rule">25 שניות לכל תרגיל</strong>
+                </span>
+              </div>
+              <button id="pregame-start-button" class="phase5-button phase5-button-primary pregame-start-button" type="button">
+                התחל משחק
+              </button>
+            </div>
+          </section>
+
+          <section id="mode-panel" class="menu-sheet mode-panel" role="dialog" aria-modal="true" aria-labelledby="mode-panel-title" hidden>
             <div class="menu-sheet-inner">
               <button class="sheet-close" type="button" data-close-panel aria-label="סגור בחירת מצב">
                 <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="ui/icons.svg#close"></use></svg>
               </button>
-              <h2 id="mode-panel-title">בחרו מצב משחק</h2>
+              <header class="phase5-sheet-header">
+                <span class="secondary-kicker">קצב המשחק</span>
+                <h2 id="mode-panel-title">בחרו מצב משחק</h2>
+                <p>שני המצבים משתמשים באותו מבוך כפל, אבל המטרה והלחץ שונים.</p>
+              </header>
               <fieldset class="mode-field">
-                <legend>מצב המשחק משנה את קצב ההתקדמות והניקוד</legend>
+                <legend>בחרו את החוויה שמתאימה לסיבוב הקרוב</legend>
                 <div class="mode-options" role="radiogroup" aria-label="מצב משחק">
                   <label>
                     <input type="radio" name="game-mode" value="arcade" checked>
                     <span>
                       <strong>ארקייד</strong>
                       <small>הישרדות תחרותית, מרדף אחרי ניקוד וטבלת שיאים.</small>
+                      <em>גלים · שיאים · קצב עולה</em>
                     </span>
                   </label>
                   <label>
@@ -402,6 +495,7 @@
                     <span>
                       <strong>הרפתקה</strong>
                       <small>שלבים מסודרים, התקדמות והשלמת עולמות.</small>
+                      <em>100 תשובות · עולמות · מסלול ברור</em>
                     </span>
                   </label>
                 </div>
@@ -409,55 +503,93 @@
             </div>
           </section>
 
-          <section id="difficulty-panel" class="menu-sheet" role="dialog" aria-modal="true" aria-labelledby="difficulty-panel-title" hidden>
+          <section id="difficulty-panel" class="menu-sheet difficulty-panel" role="dialog" aria-modal="true" aria-labelledby="difficulty-panel-title" hidden>
             <div class="menu-sheet-inner">
               <button class="sheet-close" type="button" data-close-panel aria-label="סגור בחירת קושי">
                 <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="ui/icons.svg#close"></use></svg>
               </button>
-              <h2 id="difficulty-panel-title">בחרו רמת קושי</h2>
+              <header class="phase5-sheet-header">
+                <span class="secondary-kicker">כמה חזק המרדף?</span>
+                <h2 id="difficulty-panel-title">בחרו רמת קושי</h2>
+                <p>הקושי משפיע על זמן לתרגיל, חיים, מהירות אויבים ומכפיל ניקוד.</p>
+              </header>
               <fieldset class="difficulty-field">
-                <legend>הקושי קובע זמן לתרגיל, מהירות אויבים ומכפיל ניקוד</legend>
+                <legend>מוצגים רק ההבדלים החשובים לשחקן</legend>
                 <div class="difficulty-options" role="radiogroup" aria-label="רמת קושי">
                   <label>
                     <input type="radio" name="difficulty" value="beginner">
-                    <span><strong>מתחילים</strong><em>×1</em><small>יותר חיים, קצב רגוע ורמזים.</small></span>
+                    <span><strong>מתחילים</strong><em>×1</em><small>4 חיים, 30 שניות, מרדף רגוע ורמזים.</small></span>
                   </label>
                   <label>
                     <input type="radio" name="difficulty" value="normal" checked>
-                    <span><strong>רגיל</strong><em>×1.5</em><small>איזון טוב לאימון יומי.</small></span>
+                    <span><strong>רגיל</strong><em>×1.5</em><small>3 חיים, 25 שניות, איזון טוב לאימון יומי.</small></span>
                   </label>
                   <label>
                     <input type="radio" name="difficulty" value="advanced">
-                    <span><strong>מתקדם</strong><em>×2</em><small>אויבים מהירים ופחות זמן.</small></span>
+                    <span><strong>מתקדם</strong><em>×2</em><small>3 חיים, 20 שניות, אויבים מהירים יותר.</small></span>
                   </label>
                   <label>
                     <input type="radio" name="difficulty" value="expert">
-                    <span><strong>מומחה</strong><em>×3</em><small>טעויות כואבות ושאלות מורכבות.</small></span>
+                    <span><strong>מומחה</strong><em>×3</em><small>2 חיים, 16 שניות, שאלות מורכבות ומרדף חד.</small></span>
                   </label>
                   <label>
                     <input type="radio" name="difficulty" value="legendary">
-                    <span><strong>אגדי</strong><em>×5</em><small>אתגר קצה לשיאים גדולים.</small></span>
+                    <span><strong>אגדי</strong><em>×5</em><small>1 חיים, 12 שניות, אתגר קצה לשיאים גדולים.</small><small class="difficulty-lock-copy"></small></span>
                   </label>
                 </div>
               </fieldset>
             </div>
           </section>
 
-          <section id="settings-panel" class="menu-sheet" role="dialog" aria-modal="true" aria-labelledby="settings-panel-title" hidden>
+          <section id="settings-panel" class="menu-sheet settings-panel" role="dialog" aria-modal="true" aria-labelledby="settings-panel-title" hidden>
             <div class="menu-sheet-inner settings-sheet">
               <button class="sheet-close" type="button" data-close-panel aria-label="סגור הגדרות">
                 <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="ui/icons.svg#close"></use></svg>
               </button>
-              <h2 id="settings-panel-title">הגדרות שחקן</h2>
+              <header class="phase5-sheet-header">
+                <span class="secondary-kicker">פרופיל מקומי</span>
+                <h2 id="settings-panel-title">הגדרות שחקן</h2>
+                <p>הכינוי והצלילים נשמרים על המכשיר הזה.</p>
+              </header>
               <label for="player-name-input">כינוי השחקן</label>
               <input id="player-name-input" type="text" maxlength="14" placeholder="אלוף כפלול" autocomplete="nickname" required>
+              <button id="settings-sound-button" class="phase5-button" type="button">
+                <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="ui/icons.svg#sound-on"></use></svg>
+                <span id="settings-sound-label" data-icon-label>צלילים פועלים</span>
+              </button>
               <button id="settings-save-button" class="menu-save-button" type="button">שמור כינוי</button>
+            </div>
+          </section>
+
+          <section id="progress-panel" class="menu-sheet progress-panel" role="dialog" aria-modal="true" aria-labelledby="progress-panel-title" hidden>
+            <div class="menu-sheet-inner phase5-sheet-inner">
+              <button class="sheet-close" type="button" data-close-panel aria-label="סגור התקדמות">
+                <svg class="ui-icon" aria-hidden="true" focusable="false"><use href="ui/icons.svg#close"></use></svg>
+              </button>
+              <header class="phase5-sheet-header">
+                <span class="secondary-kicker">נתונים שמורים בלבד</span>
+                <h2 id="progress-panel-title">התקדמות</h2>
+                <p id="progress-panel-copy">מוצגים רק שיאים ופתיחות שקיימים בשמירה המקומית.</p>
+              </header>
+              <div class="progress-real-grid">
+                <span>
+                  <small>רמות פתוחות</small>
+                  <strong id="progress-unlocked-difficulties">מתחילים, רגיל, מתקדם, מומחה</strong>
+                </span>
+                <span>
+                  <small>שיא בקטגוריה הנוכחית</small>
+                  <strong id="progress-current-best">0</strong>
+                </span>
+              </div>
+              <ol id="progress-best-list" class="progress-best-list" aria-live="polite">
+                <li class="progress-empty">עוד אין שיאים שמורים.</li>
+              </ol>
             </div>
           </section>
         </form>
       </div>
 
-      <div id="end-screen" class="screen" hidden>
+      <div id="end-screen" class="screen results-screen" role="dialog" aria-modal="true" aria-labelledby="end-title" hidden>
         <div class="screen-panel results-panel">
           <div id="winner-trophy" class="winner-trophy ui-icon-wrap" aria-hidden="true" hidden>
             <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#leaderboard"></use></svg>
@@ -529,7 +661,11 @@
               </button>
             </div>
           </div>
-          <p class="leaderboard-copy">שיאים שנשמרו על המכשיר הזה. בעתיד אפשר יהיה לחבר כאן דירוג מקוון מאובטח.</p>
+          <div class="leaderboard-scope" aria-label="מקור הטבלה">
+            <span class="leaderboard-scope-chip is-active">מקומי</span>
+            <span class="leaderboard-scope-chip">ציבורי דרך פרסום שיא</span>
+          </div>
+          <p class="leaderboard-copy">שיאים שנשמרו על המכשיר הזה. פרסום שיא משתמש בחיבור הציבורי הקיים כששרת הטבלה מוגדר.</p>
           <div class="leaderboard-filters" aria-label="סינון טבלת שיאים">
             <label>
               <span>מצב</span>
@@ -554,6 +690,14 @@
           <ol id="leaderboard-list" class="leaderboard-list" aria-live="polite">
             <li class="leaderboard-placeholder">עדיין אין שיאים מקומיים.</li>
           </ol>
+          <div id="leaderboard-empty-state" class="leaderboard-state-card" hidden>
+            <strong>אין עדיין שיאים בקטגוריה הזאת</strong>
+            <span>שחקו סיבוב, ואז השיא המקומי יופיע כאן.</span>
+          </div>
+          <div id="leaderboard-error-state" class="leaderboard-state-card is-error" hidden>
+            <strong>לא הצלחנו לרענן עכשיו</strong>
+            <span>השיאים המקומיים נשארים זמינים על המכשיר.</span>
+          </div>
           <p id="leaderboard-status" class="leaderboard-status" aria-live="polite"></p>
         </section>
       </div>

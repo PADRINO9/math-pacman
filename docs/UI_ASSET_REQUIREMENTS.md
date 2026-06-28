@@ -346,3 +346,26 @@ Missing or incomplete for later phases:
 - Dedicated level/wave transition art.
 
 Phase 4 keeps the HUD functional without paid tools or missing asset dependencies. Future animation/audio work should wire into the existing HUD feedback hooks instead of changing gameplay rules.
+
+## Phase 5 Secondary Screens Asset Status
+
+Phase 5 did not add placeholder art, delete existing assets, replace existing assets, or require paid tooling.
+
+Assets used in Phase 5:
+
+| Asset | Current file | Status |
+| --- | --- | --- |
+| UI icon sprite | `ui/icons.svg` | Used by secondary actions, close buttons, settings, sound, mode, difficulty, progress, leaderboard, pause, and results controls. |
+| Existing character art | Existing Bifly/Nabatick assets | Referenced through existing state labels and home/hero flows; no new character art was introduced. |
+| Existing gameplay canvas art | Existing gameplay assets | Preserved behind pause and results overlays. |
+| Secondary-screen feedback | CSS only | Focus, pressed, loading/empty/error, and highlighted-current-player states use CSS and existing icons. |
+
+Missing or incomplete for later phases:
+
+- Branded sheet open/close, selection, pause, resume, retry, and results sound files.
+- Final public leaderboard status art, if remote leaderboard integration is later approved.
+- Dedicated results celebration/defeat particles or bitmap effects.
+- Question-dialog-specific art and motion assets.
+- Progression/reward art only if real supported progression data is added in a later approved phase.
+
+Phase 5 keeps unsupported progression visuals out of production. Progress UI may be expanded only when the save/data model truthfully supports the new information.

@@ -46,9 +46,9 @@
       id: "nabatick",
       name: "נבטיק",
       spriteSources: {
-        idle: "assets/nabatick-idle-v2.svg",
-        eatPrepare: "assets/nabatick-eat-prepare-v2.svg",
-        eat: "assets/nabatick-eat-v2.svg"
+        idle: "assets/nabatick-idle-reference.png",
+        eatPrepare: "assets/nabatick-eat-prepare-reference.png",
+        eat: "assets/nabatick-eat-reference.png"
       },
       renderScale: 2.65,
       eatAnimationDuration: 0.34,

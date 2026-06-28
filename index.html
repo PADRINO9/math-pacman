@@ -13,14 +13,14 @@
   <meta http-equiv="Expires" content="0">
   <title>כפלול | משחק לוח הכפל</title>
   <link rel="icon" href="assets/bifly-player.png">
+  <link rel="preload" href="assets/kaflul-logo.svg" as="image">
+  <link rel="preload" href="assets/bifly-menu.png" as="image">
   <link rel="preload" href="assets/bifly-player.png" as="image">
   <link rel="preload" href="assets/bifly-eat-prepare.png" as="image">
   <link rel="preload" href="assets/bifly-eat.png" as="image">
-  <link rel="preload" href="assets/nabatick-idle-front.webp" as="image">
-  <link rel="preload" href="assets/nabatick-idle-left.webp" as="image">
-  <link rel="preload" href="assets/nabatick-idle-right.webp" as="image">
-  <link rel="preload" href="assets/nabatick-eat-prepare.webp" as="image">
-  <link rel="preload" href="assets/nabatick-eat-open.webp" as="image">
+  <link rel="preload" href="assets/nabatick-idle-reference.png" as="image">
+  <link rel="preload" href="assets/nabatick-eat-prepare-reference.png" as="image">
+  <link rel="preload" href="assets/nabatick-eat-reference.png" as="image">
   <link rel="preload" href="assets/dark-enemy.png" as="image">
   <link rel="preload" href="assets/dark-enemy-angry.png" as="image">
   <link rel="preload" href="assets/dark-enemy-surprised.png" as="image">
@@ -38,7 +38,7 @@
   <link rel="stylesheet" href="mobile-final-layout.css?v=20260621-7">
   <link rel="stylesheet" href="leaderboard.css?v=20260622-1">
   <link rel="stylesheet" href="arcade-foundation.css?v=20260627-1">
-  <link rel="stylesheet" href="main-menu.css?v=20260627-1">
+  <link rel="stylesheet" href="main-menu.css?v=20260628-1">
 </head>
 <body>
   <main class="game-shell" aria-label="כפלול, משחק לוח הכפל">
@@ -120,6 +120,7 @@
             <img class="menu-enemy enemy-a" src="assets/dark-enemy.png" alt="">
             <img class="menu-enemy enemy-b" src="assets/dark-enemy-angry.png" alt="">
             <img class="menu-enemy enemy-c" src="assets/dark-enemy.png" alt="">
+            <img class="menu-enemy enemy-core" src="assets/dark-enemy-angry.png" alt="">
             <span class="menu-particle particle-a"></span>
             <span class="menu-particle particle-b"></span>
             <span class="menu-particle particle-c"></span>
@@ -135,8 +136,8 @@
             </section>
 
             <div class="menu-logo" aria-label="כפלול, מבוך הכפל">
-              <h1>
-                <span style="--logo-color:#ffcf24">כ</span><span style="--logo-color:#ff5fea">פ</span><span style="--logo-color:#20d9ff">ל</span><span style="--logo-color:#7469ff">ו</span><span style="--logo-color:#95f11f">ל</span>
+              <h1 class="menu-logo-title">
+                <img class="menu-logo-image" src="assets/kaflul-logo.svg" alt="כפלול">
               </h1>
               <p>מבוך הכפל · משחק מחשבה · ניצחון</p>
             </div>
@@ -161,7 +162,7 @@
                 <input type="radio" name="character" value="bifly" checked>
                 <span class="character-card">
                   <span class="character-glow" aria-hidden="true"></span>
-                  <img src="assets/bifly-player.png" alt="" aria-hidden="true">
+                  <img src="assets/bifly-menu.png" alt="" aria-hidden="true">
                   <span class="character-copy">
                     <strong>ביפלי</strong>
                   </span>
@@ -172,7 +173,7 @@
                 <input type="radio" name="character" value="nabatick">
                 <span class="character-card">
                   <span class="character-glow" aria-hidden="true"></span>
-                  <img src="assets/nabatick-idle-v2.svg" alt="" aria-hidden="true">
+                  <img src="assets/nabatick-idle-reference.png" alt="" aria-hidden="true">
                   <span class="character-copy">
                     <strong>נבטיק</strong>
                   </span>
@@ -193,7 +194,7 @@
 
           <section class="menu-cta" aria-label="התחלת משחק">
             <button id="start-button" class="arcade-play-button" type="submit">שחק עכשיו</button>
-            <p id="menu-selection-summary">ביפלי · רגיל · ארקייד</p>
+            <p id="menu-selection-summary">ביפלי · רגיל ×1.5 · ארקייד</p>
             <p id="name-error" class="form-note" aria-live="assertive"></p>
           </section>
 
@@ -384,13 +385,13 @@
   </main>
 
   <script src="kaflul-systems.js?v=20260627-1"></script>
-  <script src="poster-loader.js?v=20260622-3"></script>
+  <script src="poster-loader.js?v=20260628-1"></script>
   <script src="mobile-enhancements.js?v=20260621-1"></script>
   <script src="mobile-screen-state.js?v=20260621-4"></script>
   <script src="mobile-question-state.js?v=20260621-5"></script>
   <script src="mobile-native-answer.js?v=20260621-6"></script>
-  <script src="nabatick-directional.js?v=20260622-1"></script>
+  <script src="nabatick-directional.js?v=20260628-1"></script>
   <script src="maze-enhancements.js?v=20260622-1"></script>
-  <script src="game.js?v=20260621-11"></script>
+  <script src="game.js?v=20260628-1"></script>
 </body>
 </html>

@@ -57,20 +57,6 @@
   `;
   document.head.appendChild(stateStyle);
 
-  function syncNabatickSelectionPortrait() {
-    const image = startScreen?.querySelector(
-      'input[name="character"][value="nabatick"] + .character-card img'
-    );
-    if (!image) {
-      return;
-    }
-
-    const source = "assets/nabatick-selection-sheet.svg";
-    if (!image.getAttribute("src")?.endsWith(source)) {
-      image.src = source;
-    }
-  }
-
   function syncStartScreenState() {
     if (!startScreen) {
       return;
@@ -79,7 +65,6 @@
     const isOpen = !startScreen.hidden;
     root.classList.toggle("start-screen-open", isOpen && coarseQuery.matches);
     startScreen.setAttribute("aria-hidden", String(!isOpen));
-    syncNabatickSelectionPortrait();
 
     if (isOpen) {
       startScreen.style.removeProperty("display");

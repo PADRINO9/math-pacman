@@ -8,11 +8,11 @@
 
   const originalDrawImage = Context2D.prototype.drawImage;
   const spritePaths = {
-    idleFront: "assets/nabatick-idle-front.webp",
-    idleLeft: "assets/nabatick-idle-left.webp",
-    idleRight: "assets/nabatick-idle-right.webp",
-    eatPrepare: "assets/nabatick-eat-prepare.webp",
-    eatOpen: "assets/nabatick-eat-open.webp"
+    idleFront: "assets/nabatick-idle-reference.png",
+    idleLeft: "assets/nabatick-idle-reference.png",
+    idleRight: "assets/nabatick-idle-reference.png",
+    eatPrepare: "assets/nabatick-eat-prepare-reference.png",
+    eatOpen: "assets/nabatick-eat-reference.png"
   };
   const sprites = Object.fromEntries(
     Object.entries(spritePaths).map(([name, src]) => {
@@ -45,13 +45,13 @@
 
   function sourceKind(image) {
     const source = sourcePath(image);
-    if (source.endsWith("/nabatick-idle-v2.svg")) {
+    if (source.endsWith("/nabatick-idle-reference.png") || source.endsWith("/nabatick-idle-v2.svg")) {
       return "idle";
     }
-    if (source.endsWith("/nabatick-eat-prepare-v2.svg")) {
+    if (source.endsWith("/nabatick-eat-prepare-reference.png") || source.endsWith("/nabatick-eat-prepare-v2.svg")) {
       return "eatPrepare";
     }
-    if (source.endsWith("/nabatick-eat-v2.svg")) {
+    if (source.endsWith("/nabatick-eat-reference.png") || source.endsWith("/nabatick-eat-v2.svg")) {
       return "eatOpen";
     }
     return null;

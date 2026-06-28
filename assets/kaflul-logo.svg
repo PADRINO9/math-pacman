@@ -1,0 +1,67 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 230" role="img" aria-labelledby="logo-title" xml:lang="he" direction="rtl">
+  <title id="logo-title">כפלול</title>
+  <defs>
+    <linearGradient id="logo-fill" x1="10%" y1="0%" x2="92%" y2="0%">
+      <stop offset="0%" stop-color="#9cf421"/>
+      <stop offset="20%" stop-color="#2adfff"/>
+      <stop offset="43%" stop-color="#ef55ff"/>
+      <stop offset="65%" stop-color="#7968ff"/>
+      <stop offset="84%" stop-color="#21cfff"/>
+      <stop offset="100%" stop-color="#ffd126"/>
+    </linearGradient>
+    <linearGradient id="leaf-fill" x1="10%" y1="95%" x2="90%" y2="5%">
+      <stop offset="0%" stop-color="#43b915"/>
+      <stop offset="55%" stop-color="#9af324"/>
+      <stop offset="100%" stop-color="#eaff6a"/>
+    </linearGradient>
+    <filter id="outer-glow" x="-18%" y="-32%" width="136%" height="164%">
+      <feDropShadow dx="0" dy="0" stdDeviation="7" flood-color="#7fc7ff" flood-opacity=".95"/>
+      <feDropShadow dx="0" dy="12" stdDeviation="3" flood-color="#02165f" flood-opacity=".75"/>
+      <feDropShadow dx="0" dy="22" stdDeviation="13" flood-color="#00091f" flood-opacity=".55"/>
+    </filter>
+    <filter id="leaf-glow" x="-40%" y="-40%" width="180%" height="180%">
+      <feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#a5ff2a" flood-opacity=".68"/>
+      <feDropShadow dx="0" dy="8" stdDeviation="4" flood-color="#082d05" flood-opacity=".42"/>
+    </filter>
+  </defs>
+  <g filter="url(#outer-glow)">
+    <text
+      x="380"
+      y="142"
+      text-anchor="middle"
+      dominant-baseline="middle"
+      unicode-bidi="plaintext"
+      direction="rtl"
+      font-family="Arial Rounded MT Bold, Rubik, Arial, sans-serif"
+      font-size="142"
+      font-weight="900"
+      letter-spacing="0"
+      paint-order="stroke fill"
+      stroke="#123c9d"
+      stroke-width="18"
+      stroke-linejoin="round"
+      fill="url(#logo-fill)">כפלול</text>
+    <text
+      x="380"
+      y="139"
+      text-anchor="middle"
+      dominant-baseline="middle"
+      unicode-bidi="plaintext"
+      direction="rtl"
+      font-family="Arial Rounded MT Bold, Rubik, Arial, sans-serif"
+      font-size="142"
+      font-weight="900"
+      letter-spacing="0"
+      paint-order="stroke fill"
+      stroke="#ffffff"
+      stroke-opacity=".5"
+      stroke-width="2"
+      fill="url(#logo-fill)">כפלול</text>
+  </g>
+  <g filter="url(#leaf-glow)" transform="translate(360 14) rotate(-13)">
+    <path d="M47 74C83 37 126 30 157 43c-11 36-47 63-103 68-14 1-24-11-7-37Z" fill="url(#leaf-fill)" stroke="#164f0c" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M85 97c24-24 44-40 67-52" fill="none" stroke="#dfff77" stroke-width="4" stroke-linecap="round" opacity=".72"/>
+    <path d="M30 92c10-42-1-62-22-82 39 1 67 22 75 57" fill="url(#leaf-fill)" stroke="#164f0c" stroke-width="7" stroke-linejoin="round"/>
+    <path d="M54 78C44 47 29 27 9 11" fill="none" stroke="#dfff77" stroke-width="4" stroke-linecap="round" opacity=".62"/>
+  </g>
+</svg>

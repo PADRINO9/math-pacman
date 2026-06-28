@@ -247,6 +247,57 @@
         }
       }
     },
+    motion: {
+      version: "phase6-20260629",
+      controller: "ui/motion/motion-system.js",
+      stylesheet: "ui/motion/motion.css",
+      sourceStatus: "code-generated-css-motion",
+      events: [
+        "buttonPress",
+        "buttonRelease",
+        "screenEnter",
+        "screenExit",
+        "modalOpen",
+        "modalClose",
+        "sheetOpen",
+        "sheetClose",
+        "tabChange",
+        "characterSelect",
+        "characterTap",
+        "reward",
+        "scoreCountUp",
+        "comboMilestone",
+        "missionComplete",
+        "lifeLost",
+        "worldTransition",
+        "badgeAppearance",
+        "lockedFeedback",
+        "newRecord"
+      ],
+      reducedMotion: "prefers-reduced-motion plus KaflulMotionSystem runtime class",
+      particleLimit: 10
+    },
+    uiSounds: {
+      version: "phase6-20260629",
+      controller: "ui/sounds/ui-sound-controller.js",
+      sourceStatus: "webaudio-generated-no-external-audio-files",
+      externalAudioAssets: [],
+      events: [
+        "buttonPress",
+        "panelOpen",
+        "panelClose",
+        "tabChange",
+        "characterSelected",
+        "modeSelected",
+        "difficultySelected",
+        "lockedAction",
+        "notification",
+        "reward",
+        "newRecord"
+      ],
+      respectsMute: true,
+      autoplaySafe: true
+    },
     legacyCandidates: [
       "assets/nabatick-idle.png",
       "assets/nabatick-eat.png",

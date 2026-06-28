@@ -1,0 +1,125 @@
+# Kaflul UI Sound Spec
+
+Date: 2026-06-29
+Phase: 6 UI audio system only
+
+## Scope
+
+This document defines UI-audio behavior for the completed Kaflul interface. It does not replace gameplay tones for correct answer, wrong answer, item pickup, mission logic, or other gameplay feedback.
+
+Production owners:
+
+- UI sound controller: `ui/sounds/ui-sound-controller.js`
+- Integration points: `game.js`
+- Manifest metadata: `ui/assets/asset-manifest.js`
+- Verification: `tools/phase6_motion_audio_verification.mjs`
+
+## Principles
+
+- Respect the existing mute setting.
+- Respect browser autoplay restrictions.
+- Do not create an `AudioContext` until a user gesture or explicit gesture-tagged call.
+- Avoid copyrighted, unlicensed, harsh, or repetitive sounds.
+- Keep UI sounds separate from gameplay tones.
+- Fail gracefully when WebAudio is unavailable.
+- Keep sounds short and soft enough for repeated menu navigation.
+
+## Current Source Status
+
+Phase 6 uses generated WebAudio tones only. No external audio files were added.
+
+This is intentional because no approved branded audio pack exists yet. The controller provides named sound events now, so approved sound assets can replace generated tones later without changing game state paths.
+
+## Event Map
+
+| Event | Current implementation | Purpose |
+| --- | --- | --- |
+| `buttonPress` | Short triangle tick | Generic control press. |
+| `panelOpen` | Two-note soft rise | Modal or sheet opens. |
+| `panelClose` | Short low sine | Modal or sheet closes. |
+| `tabChange` | Short triangle tick | Bottom nav, filters, and tab-like option changes. |
+| `characterSelected` | Two-note bright response | Character selection confirmation. |
+| `modeSelected` | Short mid triangle | Arcade/Adventure selection. |
+| `difficultySelected` | Two-note mid response | Difficulty selection. |
+| `lockedAction` | Low deny pair | Locked or unavailable action. |
+| `notification` | Short high sine | Save, refresh, or lightweight confirmation. |
+| `reward` | Three-note reward rise | Reward or positive result. |
+| `newRecord` | Three-note brighter rise | New record feedback. |
+
+## Mute Contract
+
+- Existing `state.soundEnabled` remains the source of truth.
+- `updateSoundButton` synchronizes `window.KaflulUiSound.setEnabled`.
+- Muted calls return `{ ok: false, reason: "muted" }`.
+- Muted calls must not create new audible output.
+- Toggling sound back on may play a quiet notification only from the user gesture that enabled sound.
+
+## Autoplay Contract
+
+- Before a user gesture, `KaflulUiSound.play("buttonPress")` must return `{ ok: false, reason: "not-unlocked" }`.
+- Pointer and keyboard activation call `unlockFromGesture`.
+- If the browser suspends the context, the controller attempts `resume()` and continues gracefully.
+- If WebAudio is not available, the controller returns `{ ok: false, reason: "audio-context-unavailable" }`.
+
+## Repetition And Throttling
+
+- Generic button press defaults to a short 55ms throttle window.
+- Other UI events default to a 90ms throttle window.
+- Throttled calls return `{ ok: false, reason: "throttled" }`.
+- Repeated tab, filter, or sheet interaction should remain quiet and non-fatiguing.
+
+## Gameplay Separation
+
+The UI controller owns menu, sheet, modal, selection, reward, and record sounds. Existing gameplay tone helpers still own:
+
+- correct answer
+- wrong answer
+- gameplay item pickup
+- mission/gameplay feedback already tied to game timing
+- fireworks/result gameplay celebration until final audio assets exist
+
+Future audio replacement must keep this separation unless a later approved phase intentionally unifies the whole audio engine.
+
+## Missing Audio Assets
+
+No approved external UI sound files exist yet.
+
+Recommended future asset pack:
+
+- button press
+- panel open
+- panel close
+- tab change
+- character selected
+- mode selected
+- difficulty selected
+- locked action
+- notification
+- reward
+- new record
+- gameplay correct answer
+- gameplay wrong answer
+- combo milestone
+- mission complete
+- life lost
+- world transition
+
+Requirements for future files:
+
+- Original or properly licensed.
+- Short, soft, and non-harsh.
+- Exported as web-friendly compressed audio plus source masters.
+- Clear naming that maps to the event table above.
+- Loudness-normalized across UI sounds.
+- Gameplay tones kept distinct from UI tones.
+
+## Verification Requirements
+
+Phase 6 verification must confirm:
+
+- `window.KaflulUiSound` is available.
+- Pre-gesture autoplay is blocked.
+- Mute is respected.
+- Re-enabling sound can unlock and play only through a gesture.
+- UI interactions do not create console/runtime errors.
+- The app remains functional when the controller returns blocked, muted, unavailable, or throttled results.

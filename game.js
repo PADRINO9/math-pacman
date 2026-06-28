@@ -790,6 +790,51 @@
     return copy;
   }
 
+  function motionSystem() {
+    return window.KaflulMotionSystem || null;
+  }
+
+  function playUiMotion(element, eventName, options = {}) {
+    return motionSystem()?.play?.(element, eventName, options) || { ok: false, duration: 0 };
+  }
+
+  function showWithMotion(element, eventName = "screenEnter", options = {}) {
+    if (!element) {
+      return;
+    }
+    const motion = motionSystem();
+    if (motion?.show) {
+      motion.show(element, eventName, options);
+      return;
+    }
+    element.hidden = false;
+  }
+
+  function hideWithMotion(element, eventName = "screenExit", options = {}) {
+    if (!element) {
+      return;
+    }
+    const motion = motionSystem();
+    if (motion?.hideAfter) {
+      motion.hideAfter(element, eventName, options);
+      return;
+    }
+    element.hidden = true;
+  }
+
+  function syncUiSoundController() {
+    window.KaflulUiSound?.setEnabled?.(state.soundEnabled);
+  }
+
+  function playUiSound(eventName, options = {}) {
+    const controller = window.KaflulUiSound;
+    if (!controller?.play) {
+      return { ok: false, reason: "missing-controller" };
+    }
+    controller.setEnabled?.(state.soundEnabled);
+    return controller.play(eventName, options);
+  }
+
   function resizeCanvas() {
     updateViewportProfile();
     const rect = canvas.getBoundingClientRect();
@@ -812,6 +857,7 @@
 
   function updateViewportProfile() {
     const coarse = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const portrait = window.innerHeight >= window.innerWidth;
     let mode = "desktop";
     let zoom = 1;
@@ -830,7 +876,7 @@
     MOBILE_RUNTIME.coarse = coarse;
     MOBILE_RUNTIME.mode = mode;
     MOBILE_RUNTIME.zoom = zoom;
-    MOBILE_RUNTIME.reducedEffects = coarse && (window.innerWidth < 900 || window.devicePixelRatio > 2);
+    MOBILE_RUNTIME.reducedEffects = prefersReducedMotion || (coarse && (window.innerWidth < 900 || window.devicePixelRatio > 2));
     document.documentElement.dataset.gameViewport = mode;
     document.documentElement.classList.toggle("mobile-low-effects", MOBILE_RUNTIME.reducedEffects);
   }
@@ -1208,6 +1254,7 @@
     if (options.announce) {
       state.player.invulnerable = 2.4;
       showLevelBanner(options.awardedLife);
+      playUiMotion(stage, "worldTransition");
       addBurst(state.player.x, state.player.y, getCurrentLevel().accent, 42, 145);
       if (options.awardedLife) {
         addFloatingText(state.player.x, state.player.y - 28, "+חיים", "#ff5f9f");
@@ -1549,7 +1596,8 @@
     const nextIndex = (currentIndex + offset + HERO_GALLERY_ORDER.length) % HERO_GALLERY_ORDER.length;
     state.heroGalleryCharacterId = HERO_GALLERY_ORDER[nextIndex];
     renderHeroGalleryCharacter("idle");
-    playTone(360 + nextIndex * 80, 0.04, "triangle", 0.025);
+    playUiMotion(els.heroGalleryCard, "tabChange");
+    playUiSound("tabChange");
     window.setTimeout(() => els.heroGallerySelect?.focus({ preventScroll: true }), 0);
   }
 
@@ -1558,9 +1606,10 @@
       return;
     }
     const { restoreFocus = true } = options;
-    els.heroGallery.hidden = true;
+    hideWithMotion(els.heroGallery, "screenExit");
     els.playerForm.classList.remove("hero-gallery-open");
     els.characterControlButton?.setAttribute("aria-expanded", "false");
+    playUiSound("panelClose");
     if (state.heroGalleryReactionTimerId) {
       window.clearTimeout(state.heroGalleryReactionTimerId);
       state.heroGalleryReactionTimerId = null;
@@ -1578,14 +1627,15 @@
       focusSelectedCharacter();
       return;
     }
-    closeMenuSheets({ restoreFocus: false });
+    closeMenuSheets({ restoreFocus: false, sound: false });
     state.lastFocusBeforeHeroGallery = trigger;
     state.heroGalleryCharacterId = normalizeCharacterId(characterId);
-    els.heroGallery.hidden = false;
+    showWithMotion(els.heroGallery, "screenEnter");
     els.playerForm.classList.add("hero-gallery-open");
     els.characterControlButton?.setAttribute("aria-expanded", "true");
     setHomeNavActive(els.homeNavCharacters);
     renderHeroGalleryCharacter("idle");
+    playUiSound("panelOpen");
     window.setTimeout(() => els.heroGallerySelect?.focus({ preventScroll: true }), 0);
   }
 
@@ -1595,7 +1645,10 @@
     setCharacter(characterId);
     els.heroGalleryCard?.classList.add("is-confirming");
     renderHeroGalleryCharacter("selected");
-    playTone(selectedChanged ? 560 : 420, 0.08, "triangle", 0.035);
+    playUiMotion(els.heroGalleryCard, "characterSelect", {
+      particles: selectedChanged ? { count: 8, color: "var(--kf-color-gold, #ffd84a)" } : false
+    });
+    playUiSound("characterSelected");
     window.setTimeout(() => {
       els.heroGalleryCard?.classList.remove("is-confirming");
       renderHeroGalleryCharacter("idle");
@@ -1610,7 +1663,7 @@
     void els.heroGalleryCard.offsetWidth;
     els.heroGalleryCard.classList.add("is-reacting");
     renderHeroGalleryCharacter("tap");
-    playTone(500, 0.05, "sine", 0.025);
+    playUiMotion(els.heroGalleryCard, "characterTap");
     if (state.heroGalleryReactionTimerId) {
       window.clearTimeout(state.heroGalleryReactionTimerId);
     }
@@ -1921,10 +1974,20 @@
   }
 
   function closeMenuSheets(options = {}) {
-    const { restoreFocus = true } = options;
+    const { restoreFocus = true, sound = true } = options;
+    let closedAnySheet = false;
     for (const sheet of els.menuSheets) {
-      sheet.hidden = true;
+      const wasOpen = !sheet.hidden;
+      if (wasOpen) {
+        closedAnySheet = true;
+        hideWithMotion(sheet, "sheetClose");
+      } else {
+        sheet.hidden = true;
+      }
       getMenuSheetTrigger(sheet)?.setAttribute("aria-expanded", "false");
+    }
+    if (closedAnySheet && sound) {
+      playUiSound("panelClose");
     }
     if (restoreFocus && state.lastFocusBeforeMenuSheet instanceof HTMLElement) {
       state.lastFocusBeforeMenuSheet.focus({ preventScroll: true });
@@ -1953,9 +2016,10 @@
       updateProgressPanel();
     }
     state.lastFocusBeforeMenuSheet = trigger || document.activeElement;
-    closeMenuSheets({ restoreFocus: false });
-    sheet.hidden = false;
+    closeMenuSheets({ restoreFocus: false, sound: false });
+    showWithMotion(sheet, "sheetOpen");
     getMenuSheetTrigger(sheet)?.setAttribute("aria-expanded", "true");
+    playUiSound("panelOpen");
     focusMenuSheet(sheet);
   }
 
@@ -2007,7 +2071,8 @@
     els.nameError.textContent = "";
     syncMenuSummary();
     updatePauseScreen();
-    playTone(520, 0.05, "triangle", 0.03);
+    playUiMotion(els.pauseSaveNameButton, "badgeAppearance");
+    playUiSound("notification");
   }
 
   function setLeaderboardStatus(message, isError = false) {
@@ -2045,17 +2110,19 @@
     if (els.leaderboardDifficultyFilter && !els.leaderboardDifficultyFilter.value) {
       els.leaderboardDifficultyFilter.value = state.difficulty;
     }
-    els.leaderboardDialog.hidden = false;
+    showWithMotion(els.leaderboardDialog, "modalOpen");
+    playUiSound("panelOpen");
     loadLeaderboard();
     window.setTimeout(() => els.leaderboardClose?.focus(), 0);
   }
 
   function closeLeaderboard() {
-    if (!els.leaderboardDialog) {
+    if (!els.leaderboardDialog || els.leaderboardDialog.hidden) {
       return;
     }
 
-    els.leaderboardDialog.hidden = true;
+    hideWithMotion(els.leaderboardDialog, "modalClose");
+    playUiSound("panelClose");
     const focusTarget = state.lastFocusBeforeLeaderboard instanceof HTMLElement
       ? state.lastFocusBeforeLeaderboard
       : els.leaderboardOpen;
@@ -2281,7 +2348,7 @@
     setCharacter(getSelectedCharacterId());
     setDifficulty(getSelectedDifficulty());
     persistSave();
-    closeMenuSheets({ restoreFocus: false });
+    closeMenuSheets({ restoreFocus: false, sound: false });
     hidePauseScreen();
     els.nameError.textContent = "";
     setupGame();
@@ -2296,7 +2363,8 @@
     updatePauseButton();
     stage.focus({ preventScroll: true });
     resumeAudio();
-    playTone(420, 0.08, "triangle", 0.04);
+    playUiMotion(stage, "screenEnter");
+    playUiSound("notification");
   }
 
   function showStartScreen() {
@@ -2305,7 +2373,7 @@
     els.endScreen.hidden = true;
     els.questionDialog.hidden = true;
     hidePauseScreen();
-    els.startScreen.hidden = false;
+    showWithMotion(els.startScreen, "screenEnter");
     els.startScreen.classList.add("screen-visible");
     els.winnerTrophy.hidden = true;
     if (els.newRecordBadge) {
@@ -2320,7 +2388,7 @@
     syncTimeLimitToggle();
     syncMenuSummary();
     closeHeroGallery({ restoreFocus: false });
-    closeMenuSheets({ restoreFocus: false });
+    closeMenuSheets({ restoreFocus: false, sound: false });
     setupGame();
     focusPlayerNameWhenUseful();
   }
@@ -2362,7 +2430,8 @@
     }
     state.lastFocusBeforePause = document.activeElement;
     updatePauseScreen();
-    els.pauseScreen.hidden = false;
+    showWithMotion(els.pauseScreen, "modalOpen");
+    playUiSound("panelOpen");
     window.setTimeout(() => els.pauseResumeButton?.focus({ preventScroll: true }), 0);
   }
 
@@ -2371,7 +2440,11 @@
       return;
     }
     const { restoreFocus = false } = options;
-    els.pauseScreen.hidden = true;
+    const wasOpen = !els.pauseScreen.hidden;
+    hideWithMotion(els.pauseScreen, "modalClose");
+    if (wasOpen && options.sound !== false) {
+      playUiSound("panelClose");
+    }
     if (restoreFocus && state.lastFocusBeforePause instanceof HTMLElement) {
       state.lastFocusBeforePause.focus({ preventScroll: true });
     }
@@ -2384,7 +2457,6 @@
       resetJoystick();
       updatePauseButton();
       showPauseScreen();
-      playTone(220, 0.06, "sine", 0.035);
       return;
     }
 
@@ -2393,7 +2465,6 @@
       updatePauseButton();
       hidePauseScreen({ restoreFocus: true });
       state.lastTime = performance.now();
-      playTone(440, 0.06, "sine", 0.035);
     }
   }
 
@@ -2404,7 +2475,7 @@
     updateSoundButton();
     if (state.soundEnabled) {
       resumeAudio();
-      playTone(520, 0.08, "triangle", 0.04);
+      playUiSound("notification", { fromGesture: true });
     }
   }
 
@@ -2416,6 +2487,7 @@
     setIconButton(els.menuSound, icon, label, fallback);
     setIconButton(els.settingsSoundButton, icon, label, fallback, label);
     setIconButton(els.pauseSoundButton, icon, label, fallback, state.soundEnabled ? "צלילים" : "שקט");
+    syncUiSoundController();
     if (els.settingsSoundLabel) {
       els.settingsSoundLabel.textContent = label;
     }
@@ -2588,6 +2660,20 @@
     return `${state.mission.type}:${state.mission.label}:${state.mission.target}:${state.mission.startScore}`;
   }
 
+  const HUD_MOTION_EVENT_BY_CLASS = {
+    "hud-score-change": "scoreCountUp",
+    "hud-combo-milestone": "comboMilestone",
+    "hud-life-loss": "lifeLost",
+    "hud-life-gain": "badgeAppearance",
+    "hud-mission-progress": "badgeAppearance",
+    "hud-mission-reset": "lockedFeedback",
+    "hud-mission-complete": "missionComplete",
+    "hud-progress-complete": "worldTransition",
+    "progress-pulse": "badgeAppearance",
+    "metric-pulse": "badgeAppearance",
+    "life-hit": "lifeLost"
+  };
+
   function animateHudFeedback(element, className, message, duration = 920) {
     if (!element) {
       return;
@@ -2599,6 +2685,7 @@
     element.classList.remove(className);
     void element.offsetWidth;
     element.classList.add(className);
+    playUiMotion(element, HUD_MOTION_EVENT_BY_CLASS[className] || "badgeAppearance");
 
     const previousTimer = hudFeedbackTimers.get(element);
     if (previousTimer) {
@@ -2806,6 +2893,9 @@
     playMissionSound();
     pulseElement(els.missionCard, "metric-pulse");
     animateHudFeedback(els.missionCard, "hud-mission-complete", "משימה הושלמה", 1200);
+    playUiMotion(els.missionCard, "missionComplete", {
+      particles: { count: 8, color: "var(--kf-color-green, #67f08b)" }
+    });
     pulseElement(els.progressWrap, "progress-pulse");
 
     if (state.player) {
@@ -3949,12 +4039,18 @@
     els.questionDialog.hidden = true;
     hidePauseScreen();
     els.endScreen.hidden = false;
+    playUiMotion(els.endScreen, "screenEnter");
     renderResults(result);
 
     updatePublishScorePanel();
     window.setTimeout(() => els.retryButton?.focus({ preventScroll: true }), 0);
 
     if (won || result.newRecord) {
+      playUiSound(result.newRecord ? "newRecord" : "reward");
+      const resultsMotionTarget = els.endScreen.querySelector(".results-panel") || els.endScreen;
+      playUiMotion(resultsMotionTarget, result.newRecord ? "newRecord" : "reward", {
+        particles: result.newRecord ? { count: 10, color: "var(--kf-color-gold, #ffd84a)" } : { count: 8 }
+      });
       state.fireworkTimer = 0;
       for (let i = 0; i < 7; i += 1) {
         spawnFirework(90 + i * 120, 90 + Math.random() * 210);
@@ -3963,6 +4059,9 @@
   }
 
   function updateFireworks(dt) {
+    if (MOBILE_RUNTIME.reducedEffects) {
+      return;
+    }
     state.fireworkTimer -= dt;
     if (state.fireworkTimer <= 0) {
       spawnFirework(80 + Math.random() * (WIDTH - 160), 80 + Math.random() * 260);
@@ -3971,7 +4070,8 @@
   }
 
   function addBurst(x, y, color, count, speed) {
-    const effectiveCount = MOBILE_RUNTIME.reducedEffects ? Math.max(3, Math.ceil(count * 0.45)) : count;
+    const maxBurstCount = MOBILE_RUNTIME.reducedEffects ? 12 : 42;
+    const effectiveCount = Math.min(maxBurstCount, MOBILE_RUNTIME.reducedEffects ? Math.max(3, Math.ceil(count * 0.45)) : count);
     for (let i = 0; i < effectiveCount; i += 1) {
       const angle = Math.random() * Math.PI * 2;
       const velocity = speed * (0.35 + Math.random() * 0.9);
@@ -4630,7 +4730,17 @@
     ctx.restore();
   }
 
+  function shouldSkipGameplayFrame() {
+    return state.phase === "start" && !els.startScreen.hidden;
+  }
+
   function gameLoop(now) {
+    if (shouldSkipGameplayFrame()) {
+      state.lastTime = now;
+      requestAnimationFrame(gameLoop);
+      return;
+    }
+
     const dt = Math.min(0.033, Math.max(0, (now - state.lastTime) / 1000 || 0));
     state.lastTime = now;
     update(dt);
@@ -4824,20 +4934,37 @@
     input.addEventListener("change", () => {
       if (input.checked) {
         setCharacter(input.value);
+        playUiMotion(input.closest(".character-card") || input.closest("label"), "characterSelect", {
+          particles: { count: 6, color: "var(--kf-color-cyan, #55edf0)" }
+        });
+        playUiSound("characterSelected");
       }
     });
   });
   els.modeInputs.forEach((input) => {
     input.addEventListener("change", () => {
       setMode(input.value);
+      playUiMotion(input.closest("label"), "tabChange");
+      playUiSound("modeSelected");
       closeMenuSheets();
     });
   });
   els.difficultyInputs.forEach((input) => {
     input.addEventListener("change", () => {
       setDifficulty(input.value);
+      playUiMotion(input.closest("label"), "tabChange");
+      playUiSound("difficultySelected");
       closeMenuSheets();
     });
+  });
+  els.difficultyPanel?.addEventListener("click", (event) => {
+    const label = event.target?.closest?.(".difficulty-options label");
+    const input = label?.querySelector?.("input[name='difficulty']");
+    if (input?.disabled) {
+      event.preventDefault();
+      playUiMotion(label, "lockedFeedback");
+      playUiSound("lockedAction", { fromGesture: true });
+    }
   });
   els.timeLimitToggle?.addEventListener("click", toggleTimeLimit);
   els.characterControlButton?.addEventListener("click", () => openHeroGallery(state.characterId, els.characterControlButton));
@@ -4853,10 +4980,17 @@
   els.difficultyControlButton?.addEventListener("click", () => openMenuSheet(els.difficultyPanel, els.difficultyControlButton));
   els.profileControlButton?.addEventListener("click", () => openMenuSheet(els.settingsPanel, els.profileControlButton));
   els.menuSettingsButton?.addEventListener("click", () => openMenuSheet(els.settingsPanel, els.menuSettingsButton));
-  els.homeNavGame?.addEventListener("click", focusHomeGameAction);
+  els.homeNavGame?.addEventListener("click", () => {
+    playUiSound("tabChange");
+    focusHomeGameAction();
+  });
   els.homeNavCharacters?.addEventListener("click", () => openHeroGallery(state.characterId, els.homeNavCharacters));
-  els.homeNavProgress?.addEventListener("click", focusHomeProgress);
+  els.homeNavProgress?.addEventListener("click", () => {
+    playUiSound("tabChange");
+    focusHomeProgress();
+  });
   els.homeNavChampions?.addEventListener("click", () => {
+    playUiSound("tabChange");
     setHomeNavActive(els.homeNavChampions);
     openLeaderboard();
   });
@@ -4934,9 +5068,18 @@
       showStartScreen();
     }
   });
-  els.leaderboardRefresh?.addEventListener("click", loadLeaderboard);
-  els.leaderboardModeFilter?.addEventListener("change", loadLeaderboard);
-  els.leaderboardDifficultyFilter?.addEventListener("change", loadLeaderboard);
+  els.leaderboardRefresh?.addEventListener("click", () => {
+    playUiSound("notification");
+    loadLeaderboard();
+  });
+  els.leaderboardModeFilter?.addEventListener("change", () => {
+    playUiSound("tabChange");
+    loadLeaderboard();
+  });
+  els.leaderboardDifficultyFilter?.addEventListener("change", () => {
+    playUiSound("tabChange");
+    loadLeaderboard();
+  });
   els.publishScoreButton?.addEventListener("click", publishScore);
   els.retryButton?.addEventListener("click", retryGame);
   els.endLeaderboardButton?.addEventListener("click", openLeaderboard);

@@ -326,3 +326,68 @@ Remaining QA gaps:
 - The Playwright package suite in `tests/game.spec.js` was not runnable because local dependencies are not installed and registry access is blocked.
 - The public leaderboard branch remains a future integration path; Phase 5 verified the existing local leaderboard behavior and public/local distinction UI.
 - Full victory and every world-transition journey remain long-form gameplay paths outside the Phase 5 secondary-screen verifier.
+
+## Phase 6 Motion And UI Audio QA Addendum
+
+Date: 2026-06-29
+Phase: 6 motion and UI audio only
+
+Automated checks:
+
+| Check | Result | Notes |
+| --- | --- | --- |
+| Direct JS syntax checks | Pass | `kaflul-systems.js`, `game.js`, `mobile-enhancements.js`, `poster-loader.js`, `ui/assets/asset-manifest.js`, `ui/character-animation-adapter.js`, `ui/motion/motion-system.js`, `ui/sounds/ui-sound-controller.js`, and Phase 1-6 verifier scripts pass `node --check`. |
+| Node systems tests | Pass | 11/11 in `tests/kaflul-systems.test.js`. |
+| Phase 6 motion/audio verification | Pass | Required screenshots, console/runtime checks, RTL checks, overflow checks, mute/autoplay checks, reduced-motion checks, hidden-animation checks, particle cap checks, and motion profiling passed. |
+| Diff whitespace check | Pass | `git diff --check` returned clean. |
+| Package-manager scripts | Blocked | `npm` is not available in this shell. `pnpm run build` and `pnpm run test:node` attempted to install missing Playwright packages and were stopped under restricted network. Partial install artifacts were removed. Equivalent checks were run directly with the bundled Node executable. |
+
+Required Phase 6 screenshots:
+
+| Viewport | Screenshot | Motion profile FPS | Long frames over 50ms |
+| --- | --- | ---: | ---: |
+| 390x844 portrait | `docs/phase6-screenshots/phase6-motion-audio-390x844-portrait.png` | 117.8 | 0 |
+| 430x932 portrait | `docs/phase6-screenshots/phase6-motion-audio-430x932-portrait.png` | 117.8 | 0 |
+| 844x390 landscape | `docs/phase6-screenshots/phase6-motion-audio-844x390-landscape.png` | 35.4 | 6 |
+| 1280x720 desktop | `docs/phase6-screenshots/phase6-motion-audio-1280x720-desktop.png` | 78.0 | 0 |
+| 1440x900 desktop | `docs/phase6-screenshots/phase6-motion-audio-1440x900-desktop.png` | 80.4 | 0 |
+
+Report files:
+
+- `docs/phase6-screenshots/phase6-motion-audio-report.json`
+- `docs/phase6-screenshots/phase6-contact-sheet.jpg`
+
+Phase 6 acceptance checks passed:
+
+- `window.KaflulMotionSystem` and `window.KaflulUiSound` loaded in every required viewport.
+- Pre-gesture UI audio was blocked with `not-unlocked`.
+- Muted UI audio returned `muted` and produced no audible event.
+- Reduced-motion emulation set the runtime reduced-motion state and blocked DOM particle emission.
+- DOM particle creation was capped to 10 per reward profiling event.
+- Hidden screen animations detected: 0.
+- Console errors: 0.
+- Runtime errors: 0.
+- Document overflow: none at all required viewports.
+- Document language/direction remained `he`/`rtl`.
+
+Manual screenshot inspection notes:
+
+- 390x844 and 430x932 portrait pre-game sheets are readable and stay within the viewport.
+- 844x390 landscape is dense but usable, with the primary start action visible and no clipped Hebrew text.
+- 1280x720 and 1440x900 desktop keep the modal centered and visually secondary to the blurred home hub.
+- The final performance fix skips gameplay-canvas rendering while the menu fully covers the canvas and disables decorative menu particles on coarse-pointer profiles.
+
+Commands run for Phase 6 QA included:
+
+- Direct `node --check` for production and verification scripts.
+- `node --test tests/kaflul-systems.test.js`.
+- `node tools/phase6_motion_audio_verification.mjs --ci`.
+- `git diff --check`.
+- Attempted `npm run build`, blocked because `npm` is not installed in this shell.
+- Attempted `pnpm run build` and `pnpm run test:node`, blocked by restricted network while trying to install missing Playwright packages; partial artifacts were removed.
+
+Remaining QA gaps:
+
+- Full package-manager and Playwright suite remain unavailable until dependencies are installed without restricted-network failure.
+- UI sounds are generated WebAudio tones, not final branded audio files.
+- Character tap/select feedback remains UI-level motion until real character animation states are supplied.

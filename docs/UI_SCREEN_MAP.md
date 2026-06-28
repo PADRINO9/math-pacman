@@ -444,3 +444,37 @@ Phase 5 verification coverage:
 - Nickname, character, mode, difficulty, and sound persistence were preserved.
 - Pause and results screenshots were reached from an actual gameplay flow.
 - RTL, document overflow, checked text overflow, console errors, and runtime errors passed in `tools/phase5_secondary_verification.mjs`.
+
+## Phase 6 Motion And UI Audio Map
+
+Phase 6 adds cross-screen feedback systems only. It does not introduce a new screen and does not change gameplay rules.
+
+New shared owners:
+
+| Concern | Production owner | Verification owner |
+| --- | --- | --- |
+| Motion tokens and keyframes | `ui/motion/motion.css` | `tools/phase6_motion_audio_verification.mjs` |
+| Motion orchestration | `ui/motion/motion-system.js` | `tools/phase6_motion_audio_verification.mjs` |
+| UI audio events | `ui/sounds/ui-sound-controller.js` | `tools/phase6_motion_audio_verification.mjs` |
+| Motion/audio manifest metadata | `ui/assets/asset-manifest.js` | Build syntax check and Phase 6 verifier |
+| Motion and audio documentation | `docs/UI_MOTION_SPEC.md`, `docs/UI_SOUND_SPEC.md` | Manual review |
+
+Screen integration:
+
+| Screen or region | Phase 6 feedback |
+| --- | --- |
+| Home hub | Button press/release, tab changes, pre-game sheet open/close, sound notification, leaderboard modal open/close. |
+| Hero gallery | Screen enter/exit, character tap, character select, navigation tab changes, static fallback through adapter. |
+| Mode selection | Sheet open/close, option tab change, `modeSelected` UI sound. |
+| Difficulty selection | Sheet open/close, option tab change, `difficultySelected` UI sound, locked feedback for unavailable Legendary. |
+| Settings | Sheet open/close, nickname save notification, mute-aware UI sound sync. |
+| Gameplay HUD | Score count-up, combo milestone, mission progress/complete, life lost, level/world transition feedback. |
+| Pause screen | Modal open/close and mute-aware panel sounds. |
+| Results | Screen enter, reward/new-record feedback, capped particles. |
+| Leaderboard | Modal open/close, refresh notification, filter tab-change feedback. |
+
+State preservation:
+
+- Character, mode, difficulty, nickname, sound, save data, leaderboard entries, scoring, lives, combo, missions, question timing, enemy behavior, movement, and win/loss conditions remain owned by existing state paths.
+- The UI sound controller reads the existing sound-enabled state and does not create a new persistence key.
+- Motion does not change hidden/visible ownership; it only wraps existing show/hide transitions.

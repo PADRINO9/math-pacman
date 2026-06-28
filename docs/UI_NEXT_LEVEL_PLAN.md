@@ -140,6 +140,16 @@ Acceptance criteria:
 - Answer feedback timing remains clear.
 - Performance remains acceptable on mobile.
 
+Phase 6 implementation note, 2026-06-29:
+
+- Added the shared motion spec in `docs/UI_MOTION_SPEC.md`.
+- Added the shared UI sound spec in `docs/UI_SOUND_SPEC.md`.
+- Added `ui/motion/motion.css` and `ui/motion/motion-system.js` for layout-neutral transform/opacity feedback, capped particles, reduced-motion behavior, and open/close helpers.
+- Added `ui/sounds/ui-sound-controller.js` for named UI sound events on top of generated WebAudio tones.
+- Updated the asset manifest with motion and UI-audio metadata.
+- Wired existing home, hero gallery, secondary screens, HUD feedback, results, and leaderboard interactions to the shared systems without changing gameplay rules or save schema.
+- Added `tools/phase6_motion_audio_verification.mjs` and `npm run test:motion` for required viewport screenshots, audio mute/autoplay checks, reduced-motion checks, console/runtime checks, RTL checks, overflow checks, hidden-animation checks, and motion performance profiling.
+
 ### Phase 7 - QA, Performance, And Polish
 
 Goal: release-ready confidence.

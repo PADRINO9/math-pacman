@@ -369,3 +369,34 @@ Missing or incomplete for later phases:
 - Progression/reward art only if real supported progression data is added in a later approved phase.
 
 Phase 5 keeps unsupported progression visuals out of production. Progress UI may be expanded only when the save/data model truthfully supports the new information.
+
+## Phase 6 Motion And UI Audio Asset Status
+
+Phase 6 did not add placeholder art, delete existing assets, replace existing assets, or require paid tooling.
+
+Motion assets:
+
+| Asset type | Current status |
+| --- | --- |
+| UI motion tokens | Implemented in `ui/motion/motion.css`. |
+| UI motion controller | Implemented in `ui/motion/motion-system.js`. |
+| DOM particles | Generated in code and capped to 10 per event. |
+| Character reactions | Routed through the Phase 3 adapter where possible; unsupported states use static fallback. |
+| Rive/Spine assets | Not bundled and not required. |
+
+UI audio assets:
+
+| Asset type | Current status |
+| --- | --- |
+| UI sound events | Implemented in `ui/sounds/ui-sound-controller.js`. |
+| External audio files | None. No approved licensed audio pack exists yet. |
+| Current UI sound source | Generated WebAudio tones. |
+| Mute/autoplay behavior | Implemented and verified through the Phase 6 browser verifier. |
+
+Missing or incomplete for later phases:
+
+- Approved branded UI sound files for button press, panel open/close, tab change, character selected, mode selected, difficulty selected, locked action, notification, reward, and new record.
+- Approved gameplay sound files for correct answer, wrong answer, combo milestone, mission complete, life lost, and world transition if the project later replaces generated tones.
+- Production animation states for Bifly and Nabatick beyond the currently approved `idle` and `eat` states.
+- Character-specific `blink`, `tap`, `selected`, `excited`, `worried`, `victory`, `defeat`, and `hit` assets.
+- Optional sprite sheet, layered PNG rig, Rive, or Spine files if the project chooses a richer character-animation pipeline later.

@@ -815,3 +815,30 @@ Current Phase 5 risks:
 - Legacy mobile hotfix styles still exist and can influence form density; they should not be deleted without a dedicated cleanup phase.
 - Public leaderboard UI states are present, but remote public leaderboard behavior is not implemented.
 - Full progression/reward systems remain unsupported and must not be represented until real stored data exists.
+
+## Phase 6 Motion And UI Audio Addendum
+
+Date: 2026-06-29
+
+Phase 6 added shared feedback systems while preserving gameplay and persistence behavior.
+
+Verified preserved behavior target:
+
+- Existing UI state paths still own character, mode, difficulty, nickname, sound, sheets, leaderboard, pause, results, and game start.
+- Gameplay rules for scoring, lives, combo, missions, question timing, enemy behavior, movement, and win/loss conditions were not changed.
+- Save schema and leaderboard data shape were not changed.
+
+New architecture:
+
+- `ui/motion/motion.css` defines shared transform/opacity animations, durations, easing, scale limits, particle styling, and reduced-motion overrides.
+- `ui/motion/motion-system.js` exposes `window.KaflulMotionSystem` with `play`, `show`, `hideAfter`, `emitParticles`, `isReducedMotion`, and diagnostics.
+- `ui/sounds/ui-sound-controller.js` exposes `window.KaflulUiSound` with mute-aware, autoplay-safe named UI sound events.
+- `ui/assets/asset-manifest.js` now documents Phase 6 motion and UI-audio metadata.
+- `tools/phase6_motion_audio_verification.mjs` covers required viewports, screenshots, console/runtime checks, RTL, audio mute/autoplay, reduced-motion behavior, hidden-animation checks, particle caps, and animation performance sampling.
+
+Current Phase 6 risks:
+
+- UI audio still uses generated WebAudio tones because no approved branded audio files exist.
+- Character tap/select responses are UI-level motion feedback, not final character animation states.
+- Only approved character states remain `idle` and `eat`; all richer states still require real assets.
+- Full Playwright package coverage remains dependent on local dependency availability; the Phase 6 verifier provides the phase-specific browser coverage.

@@ -351,6 +351,7 @@
     bestScore: document.getElementById("best-score"),
     selectedModeLabel: document.getElementById("selected-mode-label"),
     selectedDifficultyLabel: document.getElementById("selected-difficulty-label"),
+    selectedCharacterLabel: document.getElementById("selected-character-label"),
     menuSelectionSummary: document.getElementById("menu-selection-summary"),
     menuRankValue: document.getElementById("menu-rank-value"),
     menuPersonalBest: document.getElementById("menu-personal-best"),
@@ -358,9 +359,16 @@
     playerGreeting: document.getElementById("player-greeting"),
     modeControlButton: document.getElementById("mode-control-button"),
     difficultyControlButton: document.getElementById("difficulty-control-button"),
+    characterControlButton: document.getElementById("character-control-button"),
     profileControlButton: document.getElementById("profile-control-button"),
     menuSettingsButton: document.getElementById("menu-settings-button"),
     menuLeaderboardLink: document.getElementById("menu-leaderboard-link"),
+    homeProgressCard: document.querySelector(".home-progress-card"),
+    homeNavButtons: Array.from(document.querySelectorAll(".home-nav-button")),
+    homeNavGame: document.getElementById("home-nav-game"),
+    homeNavCharacters: document.getElementById("home-nav-characters"),
+    homeNavProgress: document.getElementById("home-nav-progress"),
+    homeNavChampions: document.getElementById("home-nav-champions"),
     modePanel: document.getElementById("mode-panel"),
     difficultyPanel: document.getElementById("difficulty-panel"),
     settingsPanel: document.getElementById("settings-panel"),
@@ -1302,6 +1310,9 @@
     if (els.selectedDifficultyLabel) {
       els.selectedDifficultyLabel.textContent = difficulty.label;
     }
+    if (els.selectedCharacterLabel) {
+      els.selectedCharacterLabel.textContent = characterLabel();
+    }
     if (els.menuSelectionSummary) {
       els.menuSelectionSummary.textContent = `${characterLabel()} · ${difficulty.label} ${scoreMultiplierLabel(difficulty)} · ${mode.shortLabel}`;
     }
@@ -1381,6 +1392,47 @@
       input.closest("label")?.setAttribute("title", isLocked ? SYSTEMS.LEGENDARY_UNLOCK_RULE.label : "");
       input.checked = input.value === state.difficulty;
     }
+  }
+
+  function setHomeNavActive(activeButton) {
+    for (const button of els.homeNavButtons) {
+      if (button === activeButton) {
+        button.setAttribute("aria-current", "page");
+      } else {
+        button.removeAttribute("aria-current");
+      }
+    }
+  }
+
+  function pulseHomeElement(element) {
+    if (!element) {
+      return;
+    }
+    element.classList.remove("home-focus-pulse");
+    // Reflow intentionally restarts the short focus pulse for repeated taps.
+    void element.offsetWidth;
+    element.classList.add("home-focus-pulse");
+    window.setTimeout(() => element.classList.remove("home-focus-pulse"), 520);
+  }
+
+  function focusSelectedCharacter() {
+    const selectedInput = els.characterInputs.find((input) => input.checked) || els.characterInputs[0];
+    const selectedLabel = selectedInput?.closest(".menu-character");
+    selectedInput?.focus({ preventScroll: true });
+    pulseHomeElement(selectedLabel);
+    setHomeNavActive(els.homeNavCharacters);
+  }
+
+  function focusHomeProgress() {
+    els.homeProgressCard?.focus({ preventScroll: true });
+    pulseHomeElement(els.homeProgressCard);
+    setHomeNavActive(els.homeNavProgress);
+  }
+
+  function focusHomeGameAction() {
+    els.startButton?.focus({ preventScroll: true });
+    pulseHomeElement(els.startButton);
+    setHomeNavActive(els.homeNavGame);
   }
 
   function setTimeLimitEnabled(enabled, persist = true) {
@@ -4016,10 +4068,18 @@
     });
   });
   els.timeLimitToggle?.addEventListener("click", toggleTimeLimit);
+  els.characterControlButton?.addEventListener("click", focusSelectedCharacter);
   els.modeControlButton?.addEventListener("click", () => openMenuSheet(els.modePanel, els.modeControlButton));
   els.difficultyControlButton?.addEventListener("click", () => openMenuSheet(els.difficultyPanel, els.difficultyControlButton));
   els.profileControlButton?.addEventListener("click", () => openMenuSheet(els.settingsPanel, els.profileControlButton));
   els.menuSettingsButton?.addEventListener("click", () => openMenuSheet(els.settingsPanel, els.menuSettingsButton));
+  els.homeNavGame?.addEventListener("click", focusHomeGameAction);
+  els.homeNavCharacters?.addEventListener("click", focusSelectedCharacter);
+  els.homeNavProgress?.addEventListener("click", focusHomeProgress);
+  els.homeNavChampions?.addEventListener("click", () => {
+    setHomeNavActive(els.homeNavChampions);
+    openLeaderboard();
+  });
   els.settingsSaveButton?.addEventListener("click", saveNicknameFromSettings);
   els.panelCloseButtons.forEach((button) => {
     button.addEventListener("click", () => closeMenuSheets());

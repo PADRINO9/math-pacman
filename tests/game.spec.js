@@ -90,6 +90,38 @@ test("the game does not replace native Map methods", async ({ page }) => {
   expect(source).toContain("[native code]");
 });
 
+test("phase 2 home summary and bottom navigation stay interactive", async ({ page }) => {
+  const errors = collectRuntimeErrors(page);
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#start-screen")).toBeVisible();
+
+  await page.locator("#character-control-button").click();
+  expect(await page.evaluate(() => document.activeElement?.matches("input[name='character']"))).toBe(true);
+
+  await page.locator("#mode-control-button").click();
+  await expect(page.locator("#mode-panel")).toBeVisible();
+  await page.locator("#mode-panel [data-close-panel]").click();
+  await expect(page.locator("#mode-panel")).toBeHidden();
+
+  await page.locator("#difficulty-control-button").click();
+  await expect(page.locator("#difficulty-panel")).toBeVisible();
+  await page.locator("#difficulty-panel [data-close-panel]").click();
+  await expect(page.locator("#difficulty-panel")).toBeHidden();
+
+  await page.locator("#home-nav-progress").click();
+  expect(await page.evaluate(() => document.activeElement?.classList.contains("home-progress-card"))).toBe(true);
+
+  await page.locator("#home-nav-game").click();
+  expect(await page.evaluate(() => document.activeElement?.id)).toBe("start-button");
+
+  await page.locator("#home-nav-champions").click();
+  await expect(page.locator("#leaderboard-dialog")).toBeVisible();
+  await page.locator("#leaderboard-close").click();
+  await expect(page.locator("#leaderboard-dialog")).toBeHidden();
+
+  expect(errors).toEqual([]);
+});
+
 test("menu selections, nickname and sound state persist across reloads", async ({ page }) => {
   const errors = collectRuntimeErrors(page);
   await page.goto("/", { waitUntil: "domcontentloaded" });

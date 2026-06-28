@@ -34,7 +34,7 @@
   <link rel="stylesheet" href="ui/mobile-overrides.css?v=20260628-1">
   <link rel="stylesheet" href="leaderboard.css?v=20260622-1">
   <link rel="stylesheet" href="arcade-foundation.css?v=20260627-1">
-  <link rel="stylesheet" href="main-menu.css?v=20260628-3">
+  <link rel="stylesheet" href="main-menu.css?v=20260628-4">
 </head>
 <body>
   <main class="game-shell" aria-label="כפלול, משחק לוח הכפל">
@@ -117,6 +117,7 @@
           <div class="menu-world" aria-hidden="true">
             <div class="maze-depth maze-depth-back"></div>
             <div class="maze-depth maze-depth-mid"></div>
+            <div class="maze-depth maze-depth-front"></div>
             <img class="menu-enemy enemy-a" src="assets/dark-enemy.png" alt="">
             <img class="menu-enemy enemy-b" src="assets/dark-enemy-angry.png" alt="">
             <img class="menu-enemy enemy-c" src="assets/dark-enemy.png" alt="">
@@ -126,7 +127,12 @@
             <span class="menu-particle particle-c"></span>
           </div>
 
-          <header class="menu-topbar" aria-label="סרגל ראשי">
+          <header class="menu-topbar home-player-bar" aria-label="סרגל שחקן">
+            <section class="home-player-card" aria-label="שחקן נוכחי">
+              <span class="home-mini-label">שחקן</span>
+              <strong id="player-greeting">אלוף כפלול</strong>
+            </section>
+
             <section class="menu-best-card" aria-label="שיא אישי">
               <span class="menu-best-icon ui-icon-wrap" aria-hidden="true">
                 <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#score"></use></svg>
@@ -137,20 +143,12 @@
               </span>
             </section>
 
-            <div class="menu-logo" aria-label="כפלול, מבוך הכפל">
-              <h1 class="menu-logo-title">
-                <img class="menu-logo-image" src="assets/kaflul-logo-official.png" alt="כפלול">
-              </h1>
-              <p>מבוך הכפל · משחק מחשבה · ניצחון</p>
-            </div>
+            <button id="leaderboard-open" class="home-rank-button leaderboard-open-button" type="button" aria-label="פתח היכל אלופי כפלול">
+              <span class="home-mini-label">מקום</span>
+              <strong id="menu-rank-value">-</strong>
+            </button>
 
             <div class="menu-actions" aria-label="פעולות">
-              <button id="leaderboard-open" class="menu-icon-button leaderboard-open-button" type="button" aria-label="פתח היכל אלופי כפלול" title="היכל אלופי כפלול">
-                <span class="ui-icon-wrap" aria-hidden="true">
-                  <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#leaderboard"></use></svg>
-                </span>
-                <small>אלופים</small>
-              </button>
               <button id="menu-sound-button" class="menu-icon-button" type="button" aria-label="צלילים פועלים" title="צלילים" data-icon="sound-on">
                 <span class="ui-icon-wrap" aria-hidden="true">
                   <svg class="ui-icon" focusable="false" data-icon-slot><use href="ui/icons.svg#sound-on"></use></svg>
@@ -164,15 +162,35 @@
             </div>
           </header>
 
-          <section class="menu-hero" aria-label="בחירת גיבור">
+          <div class="menu-logo" aria-label="כפלול, מבוך הכפל">
+            <h1 class="menu-logo-title">
+              <img class="menu-logo-image" src="assets/kaflul-logo-official.png" alt="כפלול">
+            </h1>
+            <p>מבוך הכפל · מרדף ארקייד · אימון חכם</p>
+          </div>
+
+          <section class="menu-hero home-hero-scene" aria-label="בחירת גיבור וסביבת מבוך">
+            <div class="hero-maze-frame" aria-hidden="true">
+              <span class="hero-maze-node node-a"></span>
+              <span class="hero-maze-node node-b"></span>
+              <span class="hero-maze-node node-c"></span>
+              <span class="hero-maze-node node-d"></span>
+              <span class="hero-route route-a"></span>
+              <span class="hero-route route-b"></span>
+              <img class="hero-enemy hero-enemy-a" src="assets/dark-enemy.png" alt="">
+              <img class="hero-enemy hero-enemy-b" src="assets/dark-enemy-angry.png" alt="">
+              <img class="hero-enemy hero-enemy-c" src="assets/dark-enemy-surprised.png" alt="">
+            </div>
+
             <div class="character-options menu-character-options" role="radiogroup" aria-label="בחירת דמות">
               <label class="character-option menu-character menu-character-bifly">
                 <input type="radio" name="character" value="bifly" checked>
-                <span class="character-card">
+                <span class="character-card" data-animation-state="idle">
                   <span class="character-glow" aria-hidden="true"></span>
-                  <img src="assets/bifly-menu.png" alt="" aria-hidden="true">
+                  <img src="assets/bifly-menu.png" alt="" aria-hidden="true" data-character-state="idle">
                   <span class="character-copy">
                     <strong>ביפלי</strong>
+                    <small>זריז במבוך</small>
                   </span>
                   <span class="character-check ui-icon-wrap" aria-hidden="true">
                     <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#check"></use></svg>
@@ -181,11 +199,12 @@
               </label>
               <label class="character-option menu-character menu-character-nabatick">
                 <input type="radio" name="character" value="nabatick">
-                <span class="character-card">
+                <span class="character-card" data-animation-state="idle">
                   <span class="character-glow" aria-hidden="true"></span>
-                  <img src="assets/nabatick-idle-reference.png" alt="" aria-hidden="true">
+                  <img src="assets/nabatick-idle-reference.png" alt="" aria-hidden="true" data-character-state="idle">
                   <span class="character-copy">
                     <strong>נבטיק</strong>
+                    <small>חד מול יריבים</small>
                   </span>
                   <span class="character-check ui-icon-wrap" aria-hidden="true">
                     <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#check"></use></svg>
@@ -193,44 +212,78 @@
                 </span>
               </label>
             </div>
+
+            <div class="world-ribbon" aria-label="עולמות קיימים">
+              <span>קרח</span>
+              <span>לבה</span>
+              <span>עתיקות</span>
+              <span>יהלומים</span>
+            </div>
           </section>
 
-          <aside class="menu-leaderboard-card" aria-label="מצב בטבלת השיאים">
-            <span class="menu-panel-title">המקום שלך</span>
-            <strong id="menu-rank-value">-</strong>
-            <span class="menu-panel-divider"></span>
-            <span>שיא: <strong id="menu-personal-best">0</strong></span>
+          <aside class="menu-leaderboard-card home-progress-card" aria-label="התקדמות זמינה" tabindex="-1">
+            <span class="menu-panel-title">התקדמות</span>
+            <span>שיא בקטגוריה: <strong id="menu-personal-best">0</strong></span>
             <p id="menu-next-rank">עוד אין דירוג בקטגוריה הזאת.</p>
             <button id="menu-leaderboard-link" class="menu-text-button" type="button">היכל אלופי כפלול</button>
           </aside>
 
           <section class="menu-cta" aria-label="התחלת משחק">
-            <button id="start-button" class="arcade-play-button" type="submit">שחק עכשיו</button>
+            <button id="start-button" class="arcade-play-button" type="submit" data-ui-sound="primary-play">
+              <span class="arcade-play-label">שחק עכשיו</span>
+            </button>
             <p id="menu-selection-summary">ביפלי · רגיל ×1.5 · ארקייד</p>
             <p id="name-error" class="form-note" aria-live="assertive"></p>
           </section>
 
-          <nav class="menu-control-strip" aria-label="בחירות משחק">
+          <section class="menu-control-strip home-pregame-summary" aria-label="סיכום לפני משחק">
+            <button id="character-control-button" class="menu-control-button" type="button" aria-label="בחירת דמות">
+              <span class="ui-icon-wrap" aria-hidden="true">
+                <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#character"></use></svg>
+              </span>
+              <small>דמות</small>
+              <strong id="selected-character-label">ביפלי</strong>
+            </button>
             <button id="mode-control-button" class="menu-control-button" type="button" aria-expanded="false" aria-controls="mode-panel">
               <span class="ui-icon-wrap" aria-hidden="true">
                 <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#mode"></use></svg>
               </span>
-              <small>מצב משחק</small>
+              <small>מצב</small>
               <strong id="selected-mode-label">ארקייד</strong>
             </button>
             <button id="difficulty-control-button" class="menu-control-button" type="button" aria-expanded="false" aria-controls="difficulty-panel">
               <span class="ui-icon-wrap" aria-hidden="true">
                 <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#difficulty"></use></svg>
               </span>
-              <small>רמת קושי</small>
+              <small>קושי</small>
               <strong id="selected-difficulty-label">רגיל</strong>
             </button>
-            <button id="profile-control-button" class="menu-control-button profile-control" type="button" aria-expanded="false" aria-controls="settings-panel">
+          </section>
+
+          <nav class="home-bottom-nav" aria-label="ניווט ראשי">
+            <button id="home-nav-game" class="home-nav-button" type="button" aria-current="page">
               <span class="ui-icon-wrap" aria-hidden="true">
-                <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#profile"></use></svg>
+                <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#play"></use></svg>
               </span>
-              <small>שחקן</small>
-              <strong id="player-greeting">אלוף כפלול</strong>
+              <strong>משחק</strong>
+            </button>
+            <button id="home-nav-characters" class="home-nav-button" type="button">
+              <span class="ui-icon-wrap" aria-hidden="true">
+                <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#character"></use></svg>
+              </span>
+              <strong>דמויות</strong>
+            </button>
+            <button id="home-nav-progress" class="home-nav-button" type="button">
+              <span class="ui-icon-wrap" aria-hidden="true">
+                <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#progress"></use></svg>
+              </span>
+              <strong>התקדמות</strong>
+            </button>
+            <button id="home-nav-champions" class="home-nav-button" type="button">
+              <span class="ui-icon-wrap" aria-hidden="true">
+                <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#leaderboard"></use></svg>
+              </span>
+              <strong>אלופים</strong>
             </button>
           </nav>
 
@@ -423,6 +476,6 @@
   <script src="mobile-native-answer.js?v=20260621-6"></script>
   <script src="nabatick-directional.js?v=20260628-1"></script>
   <script src="maze-enhancements.js?v=20260622-1"></script>
-  <script src="game.js?v=20260628-2"></script>
+  <script src="game.js?v=20260628-3"></script>
 </body>
 </html>

@@ -256,3 +256,29 @@ Deferred to later phases:
 - Removing all remaining Unicode fallback glyphs from dynamic gameplay text.
 
 Phase 2 may start only after Phase 1 is reviewed and accepted.
+
+## Phase 2 Completion Notes
+
+Phase 2 redesigned only the home screen as a premium, mobile-first Kaflul game hub. It did not redesign the dedicated character screen, gameplay HUD, question dialog, pause screen, results screen, leaderboard, or later-phase motion/audio systems.
+
+Completed:
+
+- Rebuilt the home screen hierarchy around a compact top player bar, central living hero scene, primary `שחק עכשיו` action, pre-game summary controls, and bottom navigation.
+- Integrated the official Kaflul logo, Bifly, Nabatick, black enemies, maze routes, ambient particles, and four-world hints into the home scene.
+- Preserved existing IDs and state paths for character, mode, difficulty, nickname, sound, leaderboard, and start-game behavior.
+- Added static future-facing character animation hooks with `data-character-state` and `data-animation-state`.
+- Added focused home navigation behavior for `משחק`, `דמויות`, `התקדמות`, and `אלופים`.
+- Added `tools/phase2_home_verification.mjs` for required viewport screenshots, console/runtime checks, RTL checks, touch/keyboard checks, persistence checks, and start/return smoke coverage.
+- Added Phase 2 screenshot artifacts under `docs/phase2-screenshots/`.
+- Fixed the home rank button conflict with `leaderboard.css` by scoping the home rank button back into the top player bar.
+
+Deferred to later phases:
+
+- Full character animation state system.
+- Dedicated character-management screen redesign.
+- Gameplay HUD redesign.
+- Full audio feedback system.
+- World-specific animated background art.
+- Replacing low-resolution or reference-only character art with production-ready sprite sheets.
+
+Phase 3 must not assume unsupported progression data. Progress surfaces should continue to show only verified save/leaderboard information.

@@ -287,3 +287,31 @@ Updated UI ownership:
 | Visual regression and smoke acceptance | `tools/phase1_visual_regression.mjs` |
 
 The visible screen hierarchy remains intentionally close to the Phase 0 baseline. Phase 2 is still responsible for home hub redesign.
+
+## Phase 2 Home Hub Map
+
+Phase 2 changes the main menu/home hierarchy only.
+
+Current home regions:
+
+| Region | Production selectors | Purpose |
+| --- | --- | --- |
+| Top player bar | `.home-player-bar`, `.home-player-card`, `.menu-best-card`, `.home-rank-button`, `.menu-actions` | Nickname, personal best, current rank when available, sound, settings. |
+| Logo | `.menu-logo`, `.menu-logo-title`, `.menu-logo-image` | Official Kaflul identity and short product tagline. |
+| Living hero scene | `.home-hero-scene`, `.hero-maze-frame`, `.menu-character-options` | Selected character focus, maze depth, black enemies, ambient particles, four-world hints. |
+| Progress summary | `.home-progress-card` | Verified current-category best and leaderboard entry point. |
+| Primary action | `#start-button.arcade-play-button` | Starts the existing game flow. |
+| Pre-game summary | `.home-pregame-summary`, `#character-control-button`, `#mode-control-button`, `#difficulty-control-button` | Opens/focuses the relevant pre-game controls. |
+| Bottom navigation | `.home-bottom-nav`, `#home-nav-game`, `#home-nav-characters`, `#home-nav-progress`, `#home-nav-champions` | Fast access to play, characters, progress, and leaderboard. |
+| Existing sheets | `#mode-panel`, `#difficulty-panel`, `#settings-panel` | Preserved Phase 1 sheet behavior. |
+
+State preservation:
+
+- Character state remains owned by the existing radio inputs and `setCharacter`.
+- Mode state remains owned by existing mode radio inputs and `setMode`.
+- Difficulty state remains owned by existing difficulty radio inputs and `setDifficulty`.
+- Nickname state remains owned by settings input validation and existing storage keys.
+- Sound state remains owned by `toggleSound` and existing sound storage.
+- Leaderboard open/close remains owned by existing leaderboard helpers.
+
+Phase 2 verified that the home rank button must override the global `.leaderboard-open-button` fixed positioning from `leaderboard.css`; otherwise it can cover the settings button on mobile.

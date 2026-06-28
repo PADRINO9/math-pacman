@@ -252,3 +252,28 @@ Priority 3:
 
 - World-specific backgrounds and progression assets.
 - Branded sound feedback tokens/assets.
+
+## Phase 2 Home Hub Asset Status
+
+Assets used in Phase 2:
+
+| Asset | Current file | Status |
+| --- | --- | --- |
+| Official Kaflul logo | `assets/kaflul-logo-official.png` | Used as the home identity anchor. |
+| Bifly home character | `assets/bifly-menu.png` | Used as selectable character focus. |
+| Nabatick home character | `assets/nabatick-idle-reference.png` | Used as a static fallback/reference-safe menu render. |
+| Black enemies | `assets/dark-enemy.png`, `assets/dark-enemy-angry.png`, `assets/dark-enemy-surprised.png` | Integrated into the home scene. |
+| Poster/background | `assets/math-maze-poster.png` | Used as atmospheric background only. |
+| SVG icons | `ui/icons.svg` | Used for settings, sound, score, rank, mode, difficulty, progress, play, close, and check states. |
+
+Missing or incomplete for later phases:
+
+- Production-ready Nabatick sprite sheet with idle, selected, happy, hit, eating, losing, and directional states.
+- Production-ready Bifly sprite sheet with the same animation-state coverage.
+- Separate selected/unselected character lighting or shadow assets for both characters.
+- World-specific home environment layers for ice, lava, ancient, and diamond worlds.
+- Optimized WebP/AVIF variants for large menu art.
+- Branded UI sound tokens/files for button press, selection, sheet open/close, and start-game confirmation.
+- Enemy animation states beyond the current static PNGs.
+
+Phase 2 deliberately did not add placeholder art. Static fallbacks remain in place until production assets exist.

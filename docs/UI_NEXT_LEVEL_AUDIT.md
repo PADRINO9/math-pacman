@@ -690,3 +690,29 @@ Remaining risks after Phase 1:
 - `game.js` still owns gameplay and UI state together.
 - Mobile hotfix source files still overlap, though they now have one top-level cascade boundary.
 - Playwright package/browser installation remains unavailable in this local environment without network access.
+
+## Phase 2 Home Hub Addendum
+
+Date: 2026-06-28
+
+Phase 2 touched only the home/menu hub. Gameplay rules, save schema, leaderboard data format, and secondary screens were preserved.
+
+Verified bug fixed during Phase 2:
+
+- `.leaderboard-open-button` from `leaderboard.css` applies `position: fixed` globally. Reusing that class for the home rank button caused the rank control to sit outside the top player bar and cover the settings hit target on mobile. The home rank button now scopes itself back to `position: static` through `main-menu.css`.
+
+Current home-specific risks after Phase 2:
+
+- The home scene still relies on static character PNGs instead of production animation sheets.
+- Nabatick uses a reference-safe idle image and still needs final state assets.
+- The living maze scene is CSS-rendered; future art layers need explicit dimensions to avoid layout shift.
+- The Playwright package is not installed locally in the current workspace, so Phase 2 browser coverage is provided by the CDP verifier rather than the package Playwright suite.
+
+Observed as preserved in Phase 2 verification:
+
+- Character, mode, difficulty, nickname, and sound persistence.
+- Leaderboard open/close.
+- Settings open/close.
+- Game start and return to menu.
+- RTL document direction.
+- No document overflow or checked text overflow across required Phase 2 viewports.

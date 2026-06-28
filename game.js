@@ -1337,8 +1337,10 @@
   }
 
   function setCharacter(value, persist = true) {
-    state.characterId = normalizeCharacterId(value);
-    if (persist) {
+    const nextCharacterId = normalizeCharacterId(value);
+    const changed = state.characterId !== nextCharacterId;
+    state.characterId = nextCharacterId;
+    if (persist && changed) {
       storage.set(CONFIG.storageKeys.character, state.characterId);
       persistSave();
     }
@@ -3978,7 +3980,11 @@
     }
   });
   els.characterInputs.forEach((input) => {
-    input.addEventListener("change", () => setCharacter(input.value));
+    input.addEventListener("change", () => {
+      if (input.checked) {
+        setCharacter(input.value);
+      }
+    });
   });
   els.modeInputs.forEach((input) => {
     input.addEventListener("change", () => {

@@ -333,6 +333,74 @@ test("leaderboard remains local-only when public backend is unavailable", async 
   expect(errors).toEqual([]);
 });
 
+test("leaderboard capability check models local-only without browser errors", async ({ page }) => {
+  const errors = collectRuntimeErrors(page);
+  let capabilityCount = 0;
+  let postCount = 0;
+
+  await page.route("**/api/champions**", async (route) => {
+    const request = route.request();
+    if (request.method() === "POST") {
+      postCount += 1;
+    }
+
+    const requestUrl = new URL(request.url());
+    if (request.method() === "GET" && requestUrl.searchParams.get("capability") === "1") {
+      capabilityCount += 1;
+      await route.fulfill({
+        status: 200,
+        contentType: "application/json",
+        body: JSON.stringify({
+          publicAvailable: false,
+          code: "leaderboard_not_configured",
+          message: "טבלת השיאים עדיין לא הוגדרה."
+        })
+      });
+      return;
+    }
+
+    await route.fulfill({
+      status: 503,
+      contentType: "application/json",
+      body: JSON.stringify({
+        code: "leaderboard_not_configured",
+        message: "טבלת השיאים עדיין לא הוגדרה."
+      })
+    });
+  });
+
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  const capability = await page.evaluate(async () => {
+    const response = await fetch("/api/champions?capability=1", {
+      headers: { Accept: "application/json" }
+    });
+    return {
+      ok: response.ok,
+      status: response.status,
+      payload: await response.json()
+    };
+  });
+  const localOnlyUi = await page.evaluate(() =>
+    window.KaflulSystems.getPublicLeaderboardUiState("localOnly", true)
+  );
+
+  expect(capability).toEqual({
+    ok: true,
+    status: 200,
+    payload: {
+      publicAvailable: false,
+      code: "leaderboard_not_configured",
+      message: "טבלת השיאים עדיין לא הוגדרה."
+    }
+  });
+  expect(localOnlyUi.publicAvailable).toBe(false);
+  expect(localOnlyUi.buttonDisabled).toBe(true);
+  expect(localOnlyUi.copy).toContain("השיא נשמר במכשיר הזה");
+  expect(capabilityCount).toBe(1);
+  expect(postCount).toBe(0);
+  expect(errors).toEqual([]);
+});
+
 test("phase 3 hero gallery selects characters and returns to the home hub", async ({ page }) => {
   const errors = collectRuntimeErrors(page);
   await page.goto("/", { waitUntil: "domcontentloaded" });

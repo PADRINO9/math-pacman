@@ -35,6 +35,17 @@ const preloadAssets = [
   "assets/math-maze-poster.png"
 ];
 
+const localOnlyCapabilityPayload = {
+  publicAvailable: false,
+  code: "leaderboard_not_configured",
+  message: "טבלת השיאים עדיין לא הוגדרה."
+};
+
+const localOnlyUnavailablePayload = {
+  code: "leaderboard_not_configured",
+  message: "טבלת השיאים עדיין לא הוגדרה."
+};
+
 function findChrome() {
   const candidates = [
     process.env.CHROME_PATH,
@@ -67,15 +78,38 @@ function shouldFailAsset(request) {
     || url.pathname.endsWith("/assets/bifly-menu.png");
 }
 
+function sendJson(response, status, payload) {
+  response.writeHead(status, {
+    "content-type": "application/json; charset=utf-8",
+    "cache-control": "no-store",
+    "x-content-type-options": "nosniff"
+  });
+  response.end(JSON.stringify(payload));
+}
+
 function startServer() {
+  const leaderboardRequests = [];
   const server = createServer(async (request, response) => {
     try {
+      const url = new URL(request.url || "/", "http://127.0.0.1");
+      if (url.pathname === "/api/champions") {
+        leaderboardRequests.push({
+          method: request.method || "GET",
+          capability: url.searchParams.get("capability") === "1"
+        });
+        if (request.method === "GET" && url.searchParams.get("capability") === "1") {
+          sendJson(response, 200, localOnlyCapabilityPayload);
+          return;
+        }
+        sendJson(response, 503, localOnlyUnavailablePayload);
+        return;
+      }
+
       if (shouldFailAsset(request)) {
         response.writeHead(404, { "cache-control": "no-store" });
         response.end("Phase 7 asset fallback probe");
         return;
       }
-      const url = new URL(request.url || "/", "http://127.0.0.1");
       const decoded = decodeURIComponent(url.pathname === "/" ? "/index.html" : url.pathname);
       const resolved = path.resolve(root, decoded.slice(1));
       if (!resolved.startsWith(root)) {
@@ -92,6 +126,8 @@ function startServer() {
     }
   });
 
+  server.leaderboardRequests = leaderboardRequests;
+
   return new Promise((resolve, reject) => {
     server.on("error", reject);
     server.listen(0, "127.0.0.1", () => resolve(server));
@@ -106,6 +142,78 @@ function fetchJson(target) {
 }
 
 const wait = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+function returningPlayerSeedScript() {
+  const playerId = "11111111-1111-4111-8111-111111111111";
+  const save = {
+    schemaVersion: 2,
+    gameVersion: "phase7-final-qa",
+    player: {
+      nickname: "בודק שלב 7"
+    },
+    settings: {
+      selectedCharacter: "nabatick",
+      selectedDifficulty: "advanced",
+      selectedMode: "adventure",
+      soundEnabled: false,
+      musicEnabled: true,
+      timeLimitEnabled: true,
+      accessibility: {
+        reducedMotion: false
+      }
+    },
+    unlockedDifficulties: ["beginner", "normal", "advanced", "expert"],
+    personalBests: {
+      "adventure:advanced": {
+        score: 56200,
+        mode: "adventure",
+        difficulty: "advanced",
+        reachedStage: 8,
+        maxCombo: 17,
+        accuracy: 88,
+        date: "2026-06-29T00:00:00.000Z",
+        gameVersion: "phase7-final-qa"
+      }
+    },
+    leaderboardEntries: [
+      {
+        id: "phase7-current",
+        playerId,
+        nickname: "בודק שלב 7",
+        score: 56200,
+        mode: "adventure",
+        difficulty: "advanced",
+        reachedStage: 8,
+        selectedCharacter: "nabatick",
+        maxCombo: 17,
+        accuracy: 88,
+        date: "2026-06-29T00:00:00.000Z",
+        gameVersion: "phase7-final-qa"
+      }
+    ],
+    completedLevels: {},
+    achievementProgress: {},
+    recovery: null,
+    updatedAt: "2026-06-29T00:00:00.000Z"
+  };
+
+  return `
+    (() => {
+      try {
+        localStorage.clear();
+        localStorage.setItem("kaflulArcadeSave", ${JSON.stringify(JSON.stringify(save))});
+        localStorage.setItem("mathMazeNickname", "בודק שלב 7");
+        localStorage.setItem("mathMazeCharacter", "nabatick");
+        localStorage.setItem("mathMazeMode", "adventure");
+        localStorage.setItem("mathMazeDifficulty", "advanced");
+        localStorage.setItem("mathMazeSound", "off");
+        localStorage.setItem("mathMazePlayerId", ${JSON.stringify(playerId)});
+      } catch {
+        window.__phase7SeedFailed = true;
+      }
+    })();
+  `;
+}
 
 class CDP {
   constructor(wsUrl) {
@@ -264,48 +372,10 @@ async function navigateClean(cdp, sessionId, appPort, search = "phase7=clean") {
 }
 
 async function seedReturningPlayer(cdp, sessionId, appPort, search = "phase7=returning") {
+  await cdp.send("Page.addScriptToEvaluateOnNewDocument", {
+    source: returningPlayerSeedScript()
+  }, sessionId);
   await cdp.send("Page.navigate", { url: `http://127.0.0.1:${appPort}/?${search}` }, sessionId);
-  await wait(850);
-  await evaluate(cdp, sessionId, "localStorage.clear(); true;");
-  await evaluate(cdp, sessionId, `(() => {
-    const systems = window.KaflulSystems;
-    const save = systems.createDefaultSave();
-    const playerId = "phase7-player";
-    save.player.nickname = "בודק שלב 7";
-    save.settings.selectedCharacter = "nabatick";
-    save.settings.selectedMode = "adventure";
-    save.settings.selectedDifficulty = "advanced";
-    save.unlockedDifficulties = ["beginner", "normal", "advanced", "expert"];
-    systems.addLocalLeaderboardEntry(save, systems.createLeaderboardEntry({
-      id: "phase7-current",
-      playerId,
-      nickname: save.player.nickname,
-      score: 56200,
-      mode: "adventure",
-      difficulty: "advanced",
-      reachedStage: 8,
-      maxCombo: 17,
-      accuracy: 88,
-      selectedCharacter: "nabatick"
-    }));
-    systems.recordPersonalBest(save, {
-      mode: "adventure",
-      difficulty: "advanced",
-      score: 56200,
-      reachedStage: 8,
-      maxCombo: 17,
-      accuracy: 88
-    });
-    systems.persistSave(localStorage, save);
-    localStorage.setItem("mathMazeNickname", save.player.nickname);
-    localStorage.setItem("mathMazeCharacter", "nabatick");
-    localStorage.setItem("mathMazeMode", "adventure");
-    localStorage.setItem("mathMazeDifficulty", "advanced");
-    localStorage.setItem("mathMazeSound", "off");
-    localStorage.setItem("mathMazePlayerId", playerId);
-    return true;
-  })()`);
-  await cdp.send("Page.reload", { ignoreCache: true }, sessionId);
   await wait(950);
 }
 
@@ -1077,6 +1147,14 @@ async function main() {
       if (result.firstPerf.duplicateResources.length) warnings.push(`${result.name}: duplicate resource entries observed`);
     }
 
+    const leaderboardApiRequests = server.leaderboardRequests || [];
+    if (leaderboardApiRequests.some((request) => request.method === "POST")) {
+      failures.push("leaderboard: public POST occurred while local-only capability was unavailable");
+    }
+    if (!leaderboardApiRequests.some((request) => request.method === "GET" && request.capability)) {
+      warnings.push("leaderboard: final QA did not exercise the public capability check");
+    }
+
     const report = {
       phase: 7,
       capturedAt: new Date().toISOString(),
@@ -1091,7 +1169,8 @@ async function main() {
       victory,
       reducedMotion,
       assetFallback,
-      memory
+      memory,
+      leaderboardApiRequests
     };
     const reportFile = path.join(outputDir, "phase7-final-qa-report.json");
     await writeFile(reportFile, JSON.stringify(report, null, 2));
@@ -1117,6 +1196,7 @@ async function main() {
         home: Number(result.homeFps.avgFps.toFixed(1))
       })).concat([{ viewport: "gameplay", home: Number(functional.gameplayFps.avgFps.toFixed(1)) }]),
       assetBytes: assets.totalBytes,
+      leaderboardApiRequests,
       report: path.relative(root, reportFile)
     };
 

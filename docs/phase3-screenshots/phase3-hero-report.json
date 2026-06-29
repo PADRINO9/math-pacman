@@ -1,6 +1,6 @@
 {
   "phase": 3,
-  "capturedAt": "2026-06-28T19:29:48.378Z",
+  "capturedAt": "2026-06-29T17:56:45.341Z",
   "chrome": "Chrome/149.0.7827.197",
   "ok": true,
   "results": [
@@ -515,7 +515,7 @@
           "naturalHeight": 512,
           "renderedWidth": 441,
           "renderedHeight": 441,
-          "ratioDelta": 6.927237472531544e-8,
+          "ratioDelta": 6.925822160219752e-8,
           "imageInMount": true
         }
       }

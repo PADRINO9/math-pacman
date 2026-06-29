@@ -73,6 +73,99 @@ async function seedLocalLeaderboard(page) {
   });
 }
 
+async function seedHeroGalleryProgress(page) {
+  await page.addInitScript(() => {
+    localStorage.setItem("kaflulArcadeSave", JSON.stringify({
+      schemaVersion: 2,
+      gameVersion: "test",
+      player: {
+        nickname: "בודק גלריה"
+      },
+      settings: {
+        selectedCharacter: "bifly",
+        selectedDifficulty: "normal",
+        selectedMode: "arcade",
+        soundEnabled: true,
+        musicEnabled: true,
+        timeLimitEnabled: false,
+        accessibility: {
+          reducedMotion: false
+        }
+      },
+      unlockedDifficulties: ["beginner", "normal", "advanced"],
+      personalBests: {
+        "arcade:normal": {
+          score: 2100,
+          mode: "arcade",
+          difficulty: "normal",
+          reachedStage: 3,
+          maxCombo: 8,
+          accuracy: 91,
+          date: "2026-06-29T00:00:00.000Z",
+          gameVersion: "test"
+        },
+        "adventure:advanced": {
+          score: 3400,
+          mode: "adventure",
+          difficulty: "advanced",
+          reachedStage: 4,
+          maxCombo: 11,
+          accuracy: 86,
+          date: "2026-06-29T00:00:00.000Z",
+          gameVersion: "test"
+        }
+      },
+      leaderboardEntries: [
+        {
+          id: "bifly-best",
+          nickname: "בודק גלריה",
+          score: 2100,
+          mode: "arcade",
+          difficulty: "normal",
+          reachedStage: 3,
+          selectedCharacter: "bifly",
+          maxCombo: 8,
+          accuracy: 91,
+          date: "2026-06-29T00:00:00.000Z",
+          gameVersion: "test"
+        },
+        {
+          id: "nabatick-best",
+          nickname: "בודק גלריה",
+          score: 3400,
+          mode: "adventure",
+          difficulty: "advanced",
+          reachedStage: 4,
+          selectedCharacter: "nabatick",
+          maxCombo: 11,
+          accuracy: 86,
+          date: "2026-06-29T00:00:00.000Z",
+          gameVersion: "test"
+        }
+      ],
+      completedLevels: {},
+      achievementProgress: {},
+      recovery: null,
+      updatedAt: "2026-06-29T00:00:00.000Z"
+    }));
+  });
+}
+
+async function swipeHeroGallery(page, direction = "next") {
+  const stage = page.locator("#hero-gallery-stage");
+  const box = await stage.boundingBox();
+  expect(box).not.toBeNull();
+
+  const y = box.y + box.height / 2;
+  const startX = direction === "next" ? box.x + box.width * 0.75 : box.x + box.width * 0.25;
+  const endX = direction === "next" ? box.x + box.width * 0.25 : box.x + box.width * 0.75;
+
+  await page.mouse.move(startX, y);
+  await page.mouse.down();
+  await page.mouse.move(endX, y, { steps: 8 });
+  await page.mouse.up();
+}
+
 test("empty player name in settings stays on the start screen", async ({ page }) => {
   const errors = collectRuntimeErrors(page);
   await page.goto("/", { waitUntil: "domcontentloaded" });
@@ -263,6 +356,74 @@ test("phase 3 hero gallery selects characters and returns to the home hub", asyn
   await page.locator("#hero-gallery-home").click();
   await expect(page.locator("#hero-gallery")).toBeHidden();
   await expect(page.locator("#start-button")).toBeVisible();
+
+  await page.locator("#home-nav-characters").click();
+  await page.locator("#hero-gallery-next").click();
+  await page.locator("#hero-gallery-select").click();
+  await page.reload({ waitUntil: "domcontentloaded" });
+  await expect(page.locator("input[name='character'][value='nabatick']")).toBeChecked();
+  await expect(page.locator("#selected-character-label")).toContainText("נבטיק");
+
+  expect(errors).toEqual([]);
+});
+
+test("phase 8.8 hero gallery, home navigation and real progress data are complete", async ({ page }) => {
+  const errors = collectRuntimeErrors(page);
+  await seedHeroGalleryProgress(page);
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#start-screen")).toBeVisible();
+
+  await expect(page.locator(".home-bottom-nav .home-nav-button strong")).toHaveText([
+    "משחק",
+    "דמויות",
+    "התקדמות",
+    "אלופים"
+  ]);
+
+  await page.locator("#home-nav-characters").click();
+  await expect(page.locator("#hero-gallery")).toBeVisible();
+  await expect(page.locator("#hero-gallery-name")).toHaveText("ביפלי");
+  await expect(page.locator("#hero-gallery-description")).toContainText("מבוך");
+  await expect(page.locator("#hero-gallery-best")).toContainText("2,100");
+  await expect(page.locator("#hero-animation-mount")).toHaveAttribute("data-adapter-kind", "static-png");
+  await expect(page.locator("#hero-animation-mount")).toHaveAttribute("data-supported-states", /idle/);
+
+  await swipeHeroGallery(page, "next");
+  await expect(page.locator("#hero-gallery-name")).toHaveText("נבטיק");
+  await expect(page.locator("#hero-gallery-description")).toContainText("יריבים");
+  await expect(page.locator("#hero-gallery-best")).toContainText("3,400");
+  await expect(page.locator("#hero-gallery-asset-note")).toContainText("חסרים");
+  await page.locator("#hero-gallery-select").click();
+  await expect(page.locator("input[name='character'][value='nabatick']")).toBeChecked();
+  await expect(page.locator("#selected-character-label")).toContainText("נבטיק");
+
+  await page.keyboard.press("ArrowRight");
+  await expect(page.locator("#hero-gallery-name")).toHaveText("ביפלי");
+  await page.keyboard.press("Enter");
+  await expect(page.locator("input[name='character'][value='bifly']")).toBeChecked();
+
+  await page.locator("#hero-gallery-home").click();
+  await expect(page.locator("#hero-gallery")).toBeHidden();
+  await expect(page.locator("#start-button")).toBeVisible();
+
+  await page.locator("#home-nav-progress").click();
+  await expect(page.locator("#progress-panel")).toBeVisible();
+  await expect(page.locator("#progress-panel-copy")).toContainText("שמירה המקומית");
+  await expect(page.locator("#progress-best-list")).toContainText("3,400");
+  const progressText = await page.locator("#progress-panel").innerText();
+  expect(progressText).not.toMatch(/מטבע|פרס|תגמול|הישג/);
+  await page.locator("#progress-panel [data-close-panel]").click();
+  await expect(page.locator("#progress-panel")).toBeHidden();
+
+  await page.locator("#home-nav-champions").click();
+  await expect(page.locator("#leaderboard-dialog")).toBeVisible();
+  await page.locator("#leaderboard-close").click();
+  await expect(page.locator("#leaderboard-dialog")).toBeHidden();
+
+  await page.locator("#home-nav-game").click();
+  await expect(page.locator("#pregame-panel")).toBeVisible();
+  await page.locator("#pregame-panel [data-close-panel]").click();
+  await expect(page.locator("#pregame-panel")).toBeHidden();
 
   await page.locator("#home-nav-characters").click();
   await page.locator("#hero-gallery-next").click();

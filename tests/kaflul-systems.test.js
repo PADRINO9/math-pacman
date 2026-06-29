@@ -1,8 +1,12 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const systems = require("../kaflul-systems");
 const championsHandler = require("../api/champions");
+
+const REPO_ROOT = path.resolve(__dirname, "..");
 
 function memoryStorage(initial = {}) {
   const store = new Map(Object.entries(initial));
@@ -59,6 +63,10 @@ function withLeaderboardEnv(env, callback) {
         }
       });
     });
+}
+
+function readRepoFile(file) {
+  return fs.readFileSync(path.join(REPO_ROOT, file), "utf8");
 }
 
 test("difficulty configuration exposes five stable Hebrew difficulties", () => {
@@ -238,6 +246,103 @@ test("champions API capability check stays HTTP 200 when backend is unconfigured
       message: "טבלת השיאים עדיין לא הוגדרה."
     });
   });
+});
+
+test("production UI uses the Kaflul SVG icon system instead of Unicode icon text", () => {
+  const requiredSymbols = [
+    "play",
+    "pause",
+    "sound-on",
+    "sound-off",
+    "settings",
+    "leaderboard",
+    "profile",
+    "mode",
+    "difficulty",
+    "close",
+    "refresh",
+    "check",
+    "lock",
+    "lives",
+    "score",
+    "combo",
+    "mission",
+    "trophy",
+    "crown",
+    "rank",
+    "back",
+    "progress"
+  ];
+  const icons = readRepoFile("ui/icons.svg");
+  for (const symbolId of requiredSymbols) {
+    assert.match(icons, new RegExp(`<symbol\\s+id="${symbolId}"(?:\\s|>)`), `missing ui/icons.svg#${symbolId}`);
+  }
+
+  const productionFiles = [
+    "index.html",
+    "styles.css",
+    "leaderboard.css",
+    "arcade-foundation.css",
+    "main-menu.css",
+    "mobile-phone-refinement.css",
+    "mobile-enhancements.css",
+    "mobile-start-hotfix.css",
+    "mobile-resolution-hotfix.css",
+    "mobile-final-layout.css",
+    "mobile-native-answer.css",
+    "kaflul-systems.js",
+    "ui/foundation.css",
+    "ui/mobile-overrides.css",
+    "ui/secondary-screens.css",
+    "ui/motion/motion.css",
+    "ui/character-animation-adapter.js",
+    "ui/assets/asset-manifest.js",
+    "ui/sounds/ui-sound-controller.js",
+    "ui/motion/motion-system.js",
+    "poster-loader.js",
+    "mobile-enhancements.js",
+    "mobile-question-state.js",
+    "nabatick-directional.js",
+    "mobile-native-answer.js",
+    "mobile-screen-state.js",
+    "game.js",
+    "maze-enhancements.js"
+  ];
+  const forbiddenIconChars = [
+    0x2713,
+    0x2605,
+    0x2665,
+    0x2655,
+    0x265b,
+    0x266a,
+    0x2699,
+    0x25a3,
+    0x25a5,
+    0x25cf,
+    0x21bb,
+    0x2161,
+    0x25b6,
+    0x1f3c6
+  ].map((codePoint) => String.fromCodePoint(codePoint));
+  const forbiddenEntityPattern = /&(?:#x?2713|#10003|#x?2605|#9733|#x?2665|#9829|#x?2655|#9813|#x?265b|#9819|#x?266a|#9834|#x?2699|#9881|#x?25a3|#9635|#x?25a5|#9637|#x?25cf|#9679|#x?21bb|#8635|#x?2161|#8545|#x?25b6|#9654|#x?1f3c6|#127942);/i;
+  const violations = [];
+
+  for (const file of productionFiles) {
+    const text = readRepoFile(file);
+    text.split(/\n/).forEach((line, index) => {
+      for (const character of forbiddenIconChars) {
+        if (line.includes(character)) {
+          violations.push(`${file}:${index + 1}: forbidden icon character U+${character.codePointAt(0).toString(16).toUpperCase()}`);
+        }
+      }
+      if (forbiddenEntityPattern.test(line)) {
+        violations.push(`${file}:${index + 1}: forbidden icon HTML entity`);
+      }
+    });
+  }
+
+  assert.deepEqual(violations, []);
+  assert.equal(readRepoFile("game.js").includes("×"), true, "math multiplication sign should remain available");
 });
 
 test("nickname validation rejects empty and dangerous input", () => {

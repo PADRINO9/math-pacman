@@ -349,6 +349,12 @@
   direction: rtl;
 }
 
+.home-rank-icon {
+  color: var(--menu-gold);
+  font-size: 16px;
+  filter: drop-shadow(0 0 10px rgba(255, 216, 74, 0.36));
+}
+
 .home-rank-button strong {
   color: var(--menu-cyan);
   font-family: var(--display-font);
@@ -1887,6 +1893,10 @@ html[data-character="nabatick"] #start-screen .menu-character-bifly {
     flex: 0 0 44px;
     min-width: 44px;
     padding: 4px 5px;
+  }
+
+  .home-rank-icon {
+    display: none;
   }
 
   .home-rank-button strong {

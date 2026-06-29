@@ -391,3 +391,110 @@ Remaining QA gaps:
 - Full package-manager and Playwright suite remain unavailable until dependencies are installed without restricted-network failure.
 - UI sounds are generated WebAudio tones, not final branded audio files.
 - Character tap/select feedback remains UI-level motion until real character animation states are supplied.
+
+## Phase 7 Final QA Addendum
+
+Date: 2026-06-29
+Phase: 7 final QA, performance, accessibility and visual polish
+
+Automated checks:
+
+| Check | Result | Notes |
+| --- | --- | --- |
+| Direct production-build syntax checks | Pass | The files named by the build script, including the new Phase 7 verifier, pass `node --check` with the bundled Node runtime. |
+| Node systems tests | Pass | 11/11 in `tests/kaflul-systems.test.js`. |
+| Phase 7 final QA verification | Pass | Functional flow, persistence, responsive screenshots, console/runtime checks, RTL checks, reduced-motion checks, asset fallback, memory probe, local static preview and FPS sampling passed. |
+| Diff whitespace check | Pass | `git diff --check` returned clean. |
+| `pnpm run build` | Blocked | `pnpm` attempted to install missing Playwright packages from npm and failed under restricted network. Partial install artifacts were removed. |
+| Full `pnpm test` | Blocked | Offline mode failed because `@playwright/test` is not present in the local pnpm store. Direct Node tests and the Phase 7 CDP browser verifier were run instead. |
+
+Phase 7 report file:
+
+- `docs/phase7-screenshots/phase7-final-qa-report.json`
+
+Required Phase 7 screenshots:
+
+| Viewport | Before/home | After/pre-game |
+| --- | --- | --- |
+| 390x844 portrait | `docs/phase7-screenshots/phase7-before-home-390x844-portrait.png` | `docs/phase7-screenshots/phase7-after-pregame-390x844-portrait.png` |
+| 430x932 portrait | `docs/phase7-screenshots/phase7-before-home-430x932-portrait.png` | `docs/phase7-screenshots/phase7-after-pregame-430x932-portrait.png` |
+| 844x390 landscape | `docs/phase7-screenshots/phase7-before-home-844x390-landscape.png` | `docs/phase7-screenshots/phase7-after-pregame-844x390-landscape.png` |
+| 1280x720 desktop | `docs/phase7-screenshots/phase7-before-home-1280x720-desktop.png` | `docs/phase7-screenshots/phase7-after-pregame-1280x720-desktop.png` |
+| 1440x900 desktop | `docs/phase7-screenshots/phase7-before-home-1440x900-desktop.png` | `docs/phase7-screenshots/phase7-after-pregame-1440x900-desktop.png` |
+
+Additional Phase 7 screenshots:
+
+- `docs/phase7-screenshots/phase7-gameplay-430x932-portrait.png`
+- `docs/phase7-screenshots/phase7-question-430x932-portrait.png`
+- `docs/phase7-screenshots/phase7-gameover-430x932-portrait.png`
+- `docs/phase7-screenshots/phase7-victory-430x932-portrait.png`
+- `docs/phase7-screenshots/phase7-asset-fallback-390x844-portrait.png`
+
+Functional checks passed:
+
+- First-load and returning-player load.
+- Nickname, character, mode, difficulty and sound persistence.
+- Locked Legendary difficulty state.
+- Start game.
+- Pause and resume.
+- Question dialog.
+- Correct answer.
+- Wrong answer.
+- Timeout.
+- Game over.
+- Accelerated Adventure victory probe using a test-only runtime monkeypatch.
+- Retry.
+- Return to menu.
+- Leaderboard open.
+- Mobile orientation changes.
+- Asset-failure fallback for missing character art.
+
+Accessibility and visual checks passed:
+
+- Document language/direction remained `he`/`rtl`.
+- No required viewport produced document overflow.
+- No checked Hebrew text overflow remained.
+- No visible icon alignment failures remained.
+- No missing accessible names were reported.
+- Touch target checks passed on first-load screens.
+- Focus entered the pre-game sheet and Escape closed it.
+- Reduced motion suppressed nonessential particles and hidden animations.
+- Results-screen actions are visible on 430x932 mobile after the Phase 7 polish fix.
+
+Performance findings:
+
+| Area | Result |
+| --- | --- |
+| 390x844 home FPS | 120.0 |
+| 430x932 home FPS | 120.0 |
+| 844x390 home FPS | 120.0 |
+| 1280x720 home FPS | 75.9 |
+| 1440x900 home FPS | 75.3 |
+| Gameplay FPS sample | 81.7 |
+| Initial preloaded raster budget | 4,878,944 bytes |
+| Largest preloaded raster | `assets/math-maze-poster.png`, 1,849,524 bytes |
+| Memory navigation probe | DOM nodes 581 -> 585, active particles 0, hidden animations 0 |
+
+Remaining known issues:
+
+- Duplicate resource entries are still observed for a few preloaded images, primarily `assets/bifly-player.png`, `assets/nabatick-eat-prepare-reference.png`, and `assets/nabatick-eat-reference.png`.
+- Initial raster weight remains high because the poster and official logo are large PNG assets.
+- Full Playwright package tests remain unavailable until dependencies are installed in a network-enabled environment.
+- Final branded audio files and richer character animation assets are still missing.
+
+Deferred improvements:
+
+- Replace oversized PNG preloads with optimized formats and responsive loading strategy.
+- Remove duplicate image decode/load paths once asset ownership is settled.
+- Add real branded UI audio assets.
+- Add real character animation states beyond the currently supported static/eat fallbacks.
+
+Phase 7 changed-file summary:
+
+- `arcade-foundation.css`: widened mobile HUD action hit targets from 38px to 40px.
+- `main-menu.css`: improved mobile top-bar/touch sizing, expanded landscape handling to 960px, and made the selected-character check icon scale relative to its badge.
+- `ui/secondary-screens.css`: compacted mobile results layout and moved result actions before the secondary score breakdown.
+- `package.json`: added Phase 7 verifier to `build` and added `test:final`.
+- `tools/phase7_final_qa_verification.mjs`: added final CDP QA, visual, persistence, reduced-motion, asset fallback, performance and local-preview verification.
+- `docs/phase7-screenshots/*`: captured final Phase 7 screenshots and JSON report.
+- `docs/UI_QA_REPORT.md`: added this Phase 7 report.

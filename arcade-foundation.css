@@ -916,12 +916,12 @@ html[data-game-state="leaderboard"] .hud {
   }
 
   .hud-actions {
-    grid-template-columns: repeat(2, minmax(38px, auto));
+    grid-template-columns: repeat(2, minmax(40px, auto));
     gap: 4px;
   }
 
   .hud-actions .icon-button {
-    min-width: 38px;
+    min-width: 40px;
     height: 34px;
     padding: 0 5px;
   }

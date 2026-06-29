@@ -539,6 +539,56 @@
   .pause-mission-card > span {
     padding: 10px;
   }
+
+  .results-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .results-panel #end-title {
+    font-size: clamp(30px, 8vw, 40px);
+  }
+
+  .results-panel #end-copy {
+    font-size: 13px;
+    line-height: 1.25;
+  }
+
+  .results-panel .screen-stats {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    margin: 6px 0;
+  }
+
+  .results-panel .screen-stats span,
+  .results-panel .results-grid span {
+    padding: 7px 8px;
+    font-size: 12px;
+  }
+
+  .results-panel .results-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    margin: 0;
+  }
+
+  .results-panel .results-grid strong {
+    margin-top: 1px;
+    font-size: 15px;
+  }
+
+  .results-panel .result-actions {
+    order: 10;
+    grid-template-columns: 1fr;
+    gap: 8px;
+    margin: 2px 0 0;
+  }
+
+  .results-panel .score-breakdown {
+    order: 20;
+    padding: 8px;
+  }
 }
 
 @media (orientation: landscape) and (max-height: 520px) {

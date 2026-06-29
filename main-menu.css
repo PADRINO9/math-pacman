@@ -767,6 +767,12 @@ html[data-character="nabatick"] #start-screen .menu-character-bifly {
   transition: opacity 150ms ease, transform 150ms ease;
 }
 
+#start-screen .menu-character .character-check .ui-icon {
+  width: 62%;
+  height: 62%;
+  stroke-width: 3;
+}
+
 #start-screen .menu-character input:checked + .character-card .character-check {
   opacity: 1;
   transform: scale(1) rotate(-8deg);
@@ -839,7 +845,7 @@ html[data-character="nabatick"] #start-screen .menu-character-bifly {
 }
 
 .menu-text-button {
-  min-height: 38px;
+  min-height: 42px;
   padding: 0 14px;
   border: 1px solid rgba(255, 216, 74, 0.46);
   border-radius: 13px;
@@ -1832,7 +1838,7 @@ html[data-character="nabatick"] #start-screen .menu-character-bifly {
   }
 
   .home-player-bar {
-    gap: 5px;
+    gap: 4px;
   }
 
   .home-player-card,
@@ -1843,9 +1849,9 @@ html[data-character="nabatick"] #start-screen .menu-character-bifly {
   }
 
   .home-player-card {
-    flex: 1 1 122px;
-    max-width: 155px;
-    padding: 5px 8px;
+    flex: 1 1 118px;
+    max-width: 148px;
+    padding: 5px 7px;
   }
 
   .home-player-card strong {
@@ -1861,25 +1867,25 @@ html[data-character="nabatick"] #start-screen .menu-character-bifly {
 
   .menu-best-card {
     flex: 0 0 96px;
-    grid-template-columns: 28px minmax(0, 1fr);
-    gap: 5px;
-    padding: 5px 7px;
+    grid-template-columns: 24px minmax(0, 1fr);
+    gap: 4px;
+    padding: 5px 6px;
   }
 
   .menu-best-icon {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     border-radius: 9px;
-    font-size: 17px;
+    font-size: 15px;
   }
 
   .menu-best-copy strong {
-    font-size: clamp(16px, 5vw, 22px);
+    font-size: clamp(15px, 4.45vw, 20px);
   }
 
   .home-rank-button {
-    flex: 0 0 43px;
-    min-width: 43px;
+    flex: 0 0 44px;
+    min-width: 44px;
     padding: 4px 5px;
   }
 
@@ -1888,13 +1894,13 @@ html[data-character="nabatick"] #start-screen .menu-character-bifly {
   }
 
   .menu-actions {
-    flex: 0 0 83px;
-    gap: 5px;
+    flex: 0 0 91px;
+    gap: 3px;
   }
 
   .menu-icon-button {
-    width: 39px;
-    height: 39px;
+    width: 44px;
+    height: 44px;
     border-radius: 12px;
   }
 
@@ -2012,7 +2018,7 @@ html[data-character="nabatick"] #start-screen .menu-character-bifly {
   }
 
   .menu-text-button {
-    min-height: 30px;
+    min-height: 42px;
     padding: 0 7px;
     font-size: 10px;
   }
@@ -2321,7 +2327,7 @@ html[data-character="nabatick"] #start-screen .menu-character-bifly {
   }
 }
 
-@media (max-width: 900px) and (orientation: landscape) {
+@media (max-width: 960px) and (orientation: landscape) {
   #start-screen {
     --menu-safe-top: max(7px, env(safe-area-inset-top));
     --menu-safe-right: max(8px, env(safe-area-inset-right));
@@ -2351,6 +2357,16 @@ html[data-character="nabatick"] #start-screen .menu-character-bifly {
 
   .menu-best-card {
     flex: 0 1 120px;
+    grid-template-columns: 28px minmax(0, 1fr);
+    gap: 5px;
+    padding: 5px 7px;
+  }
+
+  .menu-best-icon {
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+    font-size: 17px;
   }
 
   .home-rank-button {
@@ -2393,7 +2409,7 @@ html[data-character="nabatick"] #start-screen .menu-character-bifly {
   }
 
   .menu-text-button {
-    min-height: 30px;
+    min-height: 42px;
     padding-inline: 8px;
     font-size: 10px;
   }

@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "build": "node --check kaflul-systems.js && node --check game.js && node --check mobile-enhancements.js && node --check poster-loader.js && node --check ui/assets/asset-manifest.js && node --check ui/character-animation-adapter.js && node --check ui/motion/motion-system.js && node --check ui/sounds/ui-sound-controller.js && node --check tools/phase1_visual_regression.mjs && node --check tools/phase2_home_verification.mjs && node --check tools/phase3_hero_verification.mjs && node --check tools/phase4_hud_verification.mjs && node --check tools/phase5_secondary_verification.mjs && node --check tools/phase6_motion_audio_verification.mjs",
+    "build": "node --check kaflul-systems.js && node --check game.js && node --check mobile-enhancements.js && node --check poster-loader.js && node --check ui/assets/asset-manifest.js && node --check ui/character-animation-adapter.js && node --check ui/motion/motion-system.js && node --check ui/sounds/ui-sound-controller.js && node --check tools/phase1_visual_regression.mjs && node --check tools/phase2_home_verification.mjs && node --check tools/phase3_hero_verification.mjs && node --check tools/phase4_hud_verification.mjs && node --check tools/phase5_secondary_verification.mjs && node --check tools/phase6_motion_audio_verification.mjs && node --check tools/phase7_final_qa_verification.mjs",
     "test": "node --test tests/kaflul-systems.test.js && playwright test",
     "test:node": "node --test tests/kaflul-systems.test.js",
     "test:visual": "node tools/phase1_visual_regression.mjs --ci",
@@ -12,6 +12,7 @@
     "test:hud": "node tools/phase4_hud_verification.mjs --ci",
     "test:secondary": "node tools/phase5_secondary_verification.mjs --ci",
     "test:motion": "node tools/phase6_motion_audio_verification.mjs --ci",
+    "test:final": "node tools/phase7_final_qa_verification.mjs --ci",
     "test:smoke": "playwright test tests/game.spec.js"
   },
   "devDependencies": {

@@ -239,13 +239,6 @@ button {
     font-size: clamp(15px, 4.2vw, 18px);
   }
 
-  .metric-level,
-  .metric-world,
-  .metric-combo,
-  .metric-mission {
-    display: none !important;
-  }
-
   .metric-lives strong {
     font-size: 15px;
     letter-spacing: -1px;
@@ -468,11 +461,6 @@ button {
 
   .metric strong {
     font-size: 14px;
-  }
-
-  .metric-world,
-  .metric-mission {
-    display: none !important;
   }
 
   .progress-wrap {
@@ -742,13 +730,6 @@ button {
     color: var(--red);
     font-size: clamp(14px, 3.8vw, 17px);
     letter-spacing: -1.5px;
-  }
-
-  .metric-level,
-  .metric-world,
-  .metric-combo,
-  .metric-mission {
-    display: none !important;
   }
 
   .hud-actions {

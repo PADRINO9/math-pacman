@@ -371,6 +371,44 @@ test("mobile CSS override layer is self contained", () => {
   }
 });
 
+test("permanent gameplay HUD contains only approved metrics", () => {
+  const html = readRepoFile("index.html");
+  const hudMatch = html.match(/<div class="hud"[\s\S]*?<section class="stage"/);
+  assert.ok(hudMatch, "index.html should contain the gameplay HUD before the stage");
+  const hudMarkup = hudMatch[0];
+  const metrics = [...hudMarkup.matchAll(/data-hud-metric="([^"]+)"/g)].map((match) => match[1]);
+
+  assert.deepEqual(metrics, ["score", "combo", "lives", "progress", "mission"]);
+  assert.equal(hudMarkup.includes("data-hud-secondary"), false);
+  assert.equal(hudMarkup.includes('id="level-number"'), false);
+  assert.equal(hudMarkup.includes('id="world-name"'), false);
+  assert.equal(hudMarkup.includes('id="mode-label"'), false);
+  assert.equal(hudMarkup.includes('id="difficulty-label"'), false);
+  assert.match(hudMarkup, /ui\/icons\.svg#lives/);
+  assert.match(hudMarkup, /ui\/icons\.svg#score/);
+  assert.match(hudMarkup, /ui\/icons\.svg#combo/);
+  assert.match(hudMarkup, /ui\/icons\.svg#progress/);
+  assert.match(hudMarkup, /ui\/icons\.svg#mission/);
+});
+
+test("mobile HUD overrides do not hide approved permanent metrics", () => {
+  const mobileOverrides = readRepoFile("ui/mobile-overrides.css");
+  const hiddenApprovedMetricRules = [];
+
+  for (const block of mobileOverrides.matchAll(/([^{}]+)\{([^{}]+)\}/g)) {
+    const selector = block[1];
+    const declarations = block[2];
+    if (
+      /\.(?:metric-combo|metric-mission)\b/.test(selector)
+      && /display\s*:\s*none\b/.test(declarations)
+    ) {
+      hiddenApprovedMetricRules.push(selector.trim().replace(/\s+/g, " "));
+    }
+  }
+
+  assert.deepEqual(hiddenApprovedMetricRules, []);
+});
+
 test("nickname validation rejects empty and dangerous input", () => {
   assert.equal(systems.validateNickname("").ok, false);
   assert.equal(systems.validateNickname("<script>").ok, false);

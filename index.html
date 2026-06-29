@@ -42,7 +42,7 @@
   <main class="game-shell" aria-label="כפלול, משחק לוח הכפל">
     <div class="hud" aria-live="polite">
       <div class="hud-group hud-group-main">
-        <div class="metric metric-score" data-hud-metric="score">
+        <div class="metric metric-score" data-hud-metric="score" aria-label="ניקוד">
           <span class="metric-icon" aria-hidden="true">
             <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#score"></use></svg>
           </span>
@@ -51,7 +51,7 @@
             <strong id="score">0</strong>
           </span>
         </div>
-        <div class="metric metric-combo" data-hud-metric="combo">
+        <div class="metric metric-combo" data-hud-metric="combo" aria-label="רצף">
           <span class="metric-icon" aria-hidden="true">
             <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#combo"></use></svg>
           </span>
@@ -60,7 +60,7 @@
             <strong id="combo">0</strong>
           </span>
         </div>
-        <div class="metric metric-lives" data-hud-metric="lives">
+        <div class="metric metric-lives" data-hud-metric="lives" aria-label="חיים">
           <span class="metric-icon" aria-hidden="true">
             <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#lives"></use></svg>
           </span>
@@ -69,7 +69,7 @@
             <strong id="lives" class="hud-life-icons" aria-label="3 חיים"></strong>
           </span>
         </div>
-        <div class="metric metric-answers metric-progress" data-hud-metric="progress">
+        <div class="metric metric-answers metric-progress" data-hud-metric="progress" aria-label="התקדמות גל או שלב">
           <span class="metric-icon" aria-hidden="true">
             <svg class="ui-icon" focusable="false"><use href="ui/icons.svg#progress"></use></svg>
           </span>
@@ -87,22 +87,6 @@
             <strong id="mission-title">ענה נכון על 10 שאלות</strong>
             <span id="mission-progress" class="mission-progress">0/10</span>
           </span>
-        </div>
-        <div class="metric metric-level metric-secondary" data-hud-secondary="level">
-          <span class="metric-label">שלב</span>
-          <strong id="level-number">1</strong>
-        </div>
-        <div class="metric metric-world metric-secondary" data-hud-secondary="world">
-          <span class="metric-label">עולם</span>
-          <strong id="world-name">קרח</strong>
-        </div>
-        <div class="metric metric-mode metric-secondary" data-hud-secondary="mode">
-          <span class="metric-label">מצב</span>
-          <strong id="mode-label">ארקייד</strong>
-        </div>
-        <div class="metric metric-difficulty metric-secondary" data-hud-secondary="difficulty">
-          <span class="metric-label">קושי</span>
-          <strong id="difficulty-label">רגיל</strong>
         </div>
       </div>
 

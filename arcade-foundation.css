@@ -49,21 +49,21 @@ textarea {
     auto
     max(8px, env(safe-area-inset-left));
   z-index: 9;
-  width: min(860px, calc(100vw - max(16px, env(safe-area-inset-left)) - max(16px, env(safe-area-inset-right))));
+  width: min(920px, calc(100vw - max(16px, env(safe-area-inset-left)) - max(16px, env(safe-area-inset-right))));
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   grid-template-areas:
     "stats actions"
     "progress actions";
   align-items: start;
-  gap: 6px 8px;
+  gap: 5px 7px;
   pointer-events: none;
 }
 
 .hud-group-main {
   grid-area: stats;
   display: grid;
-  grid-template-columns: repeat(4, minmax(72px, max-content)) minmax(180px, 1fr);
+  grid-template-columns: repeat(4, minmax(64px, max-content)) minmax(220px, 1fr);
   align-items: stretch;
   gap: 6px;
   min-width: 0;
@@ -72,14 +72,14 @@ textarea {
 .metric {
   position: relative;
   min-width: 0;
-  min-height: 44px;
+  min-height: 40px;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr);
   align-items: center;
-  gap: 7px;
-  padding: 6px 9px;
+  gap: 6px;
+  padding: 5px 8px;
   border: 1px solid rgba(104, 231, 255, 0.22);
-  border-radius: 14px 10px 14px 10px;
+  border-radius: 12px 9px 12px 9px;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.075), rgba(255, 255, 255, 0.025)),
     rgba(2, 6, 18, 0.74);
@@ -89,13 +89,9 @@ textarea {
   overflow: hidden;
 }
 
-.metric-secondary {
-  display: none;
-}
-
 .metric-icon {
-  width: 25px;
-  height: 25px;
+  width: 22px;
+  height: 22px;
   display: grid;
   place-items: center;
   border-radius: 9px;
@@ -116,8 +112,8 @@ textarea {
 }
 
 .metric-label {
+  display: none;
   min-width: 0;
-  overflow: hidden;
   color: #b8c9df;
   font-size: 10px;
   font-weight: 900;
@@ -126,11 +122,22 @@ textarea {
   white-space: nowrap;
 }
 
+.metric-progress .metric-label {
+  display: block;
+  position: static;
+  width: auto;
+  height: auto;
+  margin: 0;
+  padding: 0;
+  clip: auto;
+  clip-path: none;
+}
+
 .metric strong {
   min-width: 0;
   overflow: hidden;
   color: #f7fbff;
-  font-size: clamp(14px, 1.7vw, 19px);
+  font-size: clamp(14px, 1.5vw, 18px);
   font-weight: 900;
   line-height: 1.08;
   text-overflow: ellipsis;
@@ -164,7 +171,7 @@ textarea {
   flex: initial;
   grid-template-columns: auto minmax(0, 1fr);
   min-width: 0;
-  padding: 6px 9px;
+  padding: 5px 8px;
   margin: 0;
   overflow: hidden;
   clip: auto;
@@ -178,7 +185,13 @@ textarea {
 }
 
 .metric-mission strong {
-  font-size: clamp(12px, 1.35vw, 15px);
+  font-size: clamp(12px, 1.2vw, 14px);
+}
+
+.metric-mission .metric-copy {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  column-gap: 7px;
 }
 
 .mission-progress {
@@ -186,6 +199,7 @@ textarea {
   color: #ffd84a;
   font-size: 11px;
   font-weight: 900;
+  white-space: nowrap;
 }
 
 .hud-life-icons {
@@ -195,8 +209,8 @@ textarea {
 }
 
 .hud-life-icon {
-  width: 17px;
-  height: 17px;
+  width: 16px;
+  height: 16px;
   display: grid;
   place-items: center;
   color: #ff5f9f;
@@ -643,12 +657,6 @@ html[data-game-state="leaderboard"] .hud {
     padding: 5px 6px;
   }
 
-  .metric-mode,
-  .metric-world,
-  .metric-difficulty {
-    display: none;
-  }
-
   .metric strong {
     font-size: 13px;
   }
@@ -768,12 +776,12 @@ html[data-game-state="leaderboard"] .hud {
       max(5px, env(safe-area-inset-left));
     width: calc(100vw - max(10px, env(safe-area-inset-left)) - max(10px, env(safe-area-inset-right)));
     height: auto;
-    min-height: 76px;
+    min-height: 68px;
     grid-template-columns: minmax(0, 1fr) auto;
     grid-template-areas:
       "stats actions"
       "progress actions";
-    gap: 4px 5px;
+    gap: 3px 5px;
   }
 
   html:not(.start-screen-open) .metric-combo,
@@ -787,15 +795,15 @@ html[data-game-state="leaderboard"] .hud {
   }
 
   html:not(.start-screen-open) .metric {
-    min-height: 34px;
-    gap: 4px;
-    padding: 4px 5px;
+    min-height: 32px;
+    gap: 3px;
+    padding: 3px 4px;
     border-radius: 10px;
   }
 
   html:not(.start-screen-open) .metric-icon {
-    width: 18px;
-    height: 18px;
+    width: 16px;
+    height: 16px;
     border-radius: 7px;
   }
 
@@ -804,7 +812,11 @@ html[data-game-state="leaderboard"] .hud {
   }
 
   html:not(.start-screen-open) .metric strong {
-    font-size: 12px;
+    font-size: clamp(10px, 2.7vw, 11px);
+  }
+
+  html:not(.start-screen-open) .metric-combo strong {
+    font-size: 10px;
   }
 
   html:not(.start-screen-open) .metric-muted,
@@ -814,7 +826,7 @@ html[data-game-state="leaderboard"] .hud {
 
   html:not(.start-screen-open) .metric-mission {
     grid-column: 1 / -1;
-    min-height: 26px;
+    min-height: 24px;
   }
 
   html:not(.start-screen-open) .metric-mission .metric-label {
@@ -822,7 +834,7 @@ html[data-game-state="leaderboard"] .hud {
   }
 
   html:not(.start-screen-open) .metric-mission strong {
-    font-size: 10px;
+    font-size: 11px;
   }
 
   html:not(.start-screen-open) .hud-life-icons {
@@ -860,7 +872,7 @@ html[data-game-state="leaderboard"] .hud {
 
   html:not(.start-screen-open) .progress-wrap {
     grid-area: progress;
-    height: 5px;
+    height: 4px;
   }
 
   html:not(.start-screen-open) .metric[data-hud-feedback]::after {

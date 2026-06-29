@@ -339,11 +339,7 @@
     correct: document.getElementById("correct-answers"),
     targetCorrect: document.getElementById("target-correct"),
     hudStageLabel: document.getElementById("hud-progress-stage"),
-    levelNumber: document.getElementById("level-number"),
-    worldName: document.getElementById("world-name"),
     score: document.getElementById("score"),
-    modeLabel: document.getElementById("mode-label"),
-    difficultyLabel: document.getElementById("difficulty-label"),
     combo: document.getElementById("combo"),
     lives: document.getElementById("lives"),
     progress: document.getElementById("progress-fill"),
@@ -2850,9 +2846,6 @@
   }
 
   function updateHud() {
-    const level = getCurrentLevel();
-    const mode = getModeSettings();
-    const difficulty = getDifficultySettings();
     const arcadeWave = getArcadeWave();
     const progressTarget = state.mode === "arcade" ? CONFIG.answersPerLevel : CONFIG.targetCorrect;
     const progressStageLabel = state.mode === "arcade" ? `גל ${arcadeWave}` : `שלב ${state.levelIndex + 1}`;
@@ -2866,19 +2859,6 @@
     els.targetCorrect.textContent = `/${progressTarget}`;
     if (els.hudStageLabel) {
       els.hudStageLabel.textContent = progressStageLabel;
-    }
-    if (els.levelNumber) {
-      els.levelNumber.textContent = state.mode === "arcade" ? `${arcadeWave}` : `${state.levelIndex + 1}`;
-    }
-    if (els.worldName) {
-      els.worldName.textContent = level.shortName;
-      els.worldName.setAttribute("aria-label", level.name);
-    }
-    if (els.modeLabel) {
-      els.modeLabel.textContent = mode.shortLabel;
-    }
-    if (els.difficultyLabel) {
-      els.difficultyLabel.textContent = difficulty.label;
     }
     els.score.textContent = numberFormat.format(state.score);
     els.combo.textContent = state.comboState.multiplierPct > 100

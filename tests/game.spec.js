@@ -106,6 +106,34 @@ test("start button enters a running game and visible blur does not pause it", as
   expect(errors).toEqual([]);
 });
 
+test("gameplay HUD stays streamlined and uses SVG lives", async ({ page }, testInfo) => {
+  const errors = collectRuntimeErrors(page);
+  await startGame(page);
+
+  const hudMetrics = await page.locator(".hud [data-hud-metric]").evaluateAll((nodes) =>
+    nodes.map((node) => node.getAttribute("data-hud-metric"))
+  );
+  expect(hudMetrics).toEqual(["score", "combo", "lives", "progress", "mission"]);
+  await expect(page.locator(".hud [data-hud-secondary]")).toHaveCount(0);
+  await expect(page.locator("#level-number")).toHaveCount(0);
+  await expect(page.locator("#world-name")).toHaveCount(0);
+  await expect(page.locator("#mode-label")).toHaveCount(0);
+  await expect(page.locator("#difficulty-label")).toHaveCount(0);
+  await expect(page.locator("#lives .hud-life-icon svg use")).toHaveCount(3);
+
+  const lifeIcons = await page.locator("#lives .hud-life-icon svg use").evaluateAll((nodes) =>
+    nodes.map((node) => node.getAttribute("href"))
+  );
+  expect(lifeIcons).toEqual(["ui/icons.svg#lives", "ui/icons.svg#lives", "ui/icons.svg#lives"]);
+  if (!testInfo.project.name.includes("mobile")) {
+    await page.locator("#pause-button").evaluate((button) => button.click());
+    await expect(page.locator("#pause-screen")).toBeVisible();
+    await expect(page.locator("#pause-summary")).toContainText("ארקייד");
+    await expect(page.locator("#pause-summary")).toContainText("רגיל");
+  }
+  expect(errors).toEqual([]);
+});
+
 test("mobile uses one native numeric input and starts without a stale overlay", async ({ page }, testInfo) => {
   test.skip(!testInfo.project.name.includes("mobile"), "Mobile-only assertion");
   const errors = collectRuntimeErrors(page);

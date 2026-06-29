@@ -206,6 +206,10 @@
   border-block: 1px solid rgba(183, 239, 53, 0.24);
 }
 
+.publish-score-panel.is-disabled {
+  border-block-color: rgba(145, 162, 186, 0.28);
+}
+
 .publish-score-panel[hidden] {
   display: none;
 }
@@ -221,6 +225,17 @@
   margin: 0 0 13px;
   color: #91a2ba;
   line-height: 1.4;
+}
+
+.publish-score-panel.is-disabled > strong {
+  color: #d7e4f5;
+}
+
+.publish-score-panel.is-disabled .secondary-button {
+  border-color: rgba(145, 162, 186, 0.32);
+  background: rgba(145, 162, 186, 0.12);
+  color: #d7e4f5;
+  cursor: not-allowed;
 }
 
 .secondary-button {

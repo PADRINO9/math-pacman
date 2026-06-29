@@ -481,8 +481,12 @@
     leaderboardRefresh: document.getElementById("leaderboard-refresh"),
     leaderboardModeFilter: document.getElementById("leaderboard-mode-filter"),
     leaderboardDifficultyFilter: document.getElementById("leaderboard-difficulty-filter"),
+    leaderboardCopy: document.getElementById("leaderboard-copy"),
+    leaderboardPublicChip: document.getElementById("leaderboard-public-chip"),
     endLeaderboardButton: document.getElementById("end-leaderboard-button"),
     publishScorePanel: document.getElementById("publish-score-panel"),
+    publishScoreTitle: document.getElementById("publish-score-title"),
+    publishScoreCopy: document.getElementById("publish-score-copy"),
     publishScoreButton: document.getElementById("publish-score-button"),
     publishScoreStatus: document.getElementById("publish-score-status")
   };
@@ -721,6 +725,11 @@
     fireworkTimer: 0,
     leaderboardLoading: false,
     scorePublishing: false,
+    publicLeaderboard: {
+      status: "localOnly",
+      promise: null,
+      checked: false
+    },
     sessionStartedAt: null,
     hitsTaken: 0,
     finalResult: null,
@@ -2090,6 +2099,79 @@
     }
   }
 
+  function getPublicLeaderboardUi(eligible = false) {
+    return SYSTEMS.getPublicLeaderboardUiState(state.publicLeaderboard.status, eligible);
+  }
+
+  function syncPublicLeaderboardUi(eligible = false) {
+    const uiState = getPublicLeaderboardUi(eligible);
+
+    if (els.leaderboardCopy) {
+      els.leaderboardCopy.textContent = uiState.leaderboardCopy;
+    }
+    if (els.leaderboardPublicChip) {
+      els.leaderboardPublicChip.textContent = uiState.publicChipText;
+      els.leaderboardPublicChip.classList.toggle("is-unavailable", !uiState.publicAvailable);
+    }
+
+    if (els.publishScoreTitle) {
+      els.publishScoreTitle.textContent = uiState.title;
+    }
+    if (els.publishScoreCopy) {
+      els.publishScoreCopy.textContent = uiState.copy;
+    }
+    if (els.publishScoreButton) {
+      els.publishScoreButton.disabled = uiState.buttonDisabled;
+      els.publishScoreButton.textContent = uiState.buttonText;
+    }
+    if (els.publishScoreStatus) {
+      els.publishScoreStatus.textContent = uiState.statusText;
+      els.publishScoreStatus.style.color = uiState.publicAvailable ? "" : "var(--phase5-muted, #91a2ba)";
+    }
+    if (els.publishScorePanel) {
+      els.publishScorePanel.hidden = uiState.panelHidden;
+      els.publishScorePanel.classList.toggle("is-disabled", !uiState.publicAvailable);
+    }
+  }
+
+  function setPublicLeaderboardStatus(status) {
+    state.publicLeaderboard.status = status === "available" || status === "checking" ? status : "localOnly";
+    state.publicLeaderboard.checked = state.publicLeaderboard.status !== "checking";
+    syncPublicLeaderboardUi(state.phase === "ended" && state.correctAnswers >= CONFIG.leaderboard.minimumCorrectAnswers);
+  }
+
+  function checkPublicLeaderboardCapability() {
+    if (state.publicLeaderboard.status === "available") {
+      return Promise.resolve(true);
+    }
+    if (state.publicLeaderboard.checked && state.publicLeaderboard.status === "localOnly") {
+      return Promise.resolve(false);
+    }
+    if (state.publicLeaderboard.promise) {
+      return state.publicLeaderboard.promise;
+    }
+
+    setPublicLeaderboardStatus("checking");
+    state.publicLeaderboard.promise = leaderboardRequest({
+      method: "GET",
+      endpoint: `${CONFIG.leaderboard.endpoint}?capability=1`
+    })
+      .then((payload) => {
+        const isAvailable = payload?.publicAvailable === true || Array.isArray(payload?.scores);
+        setPublicLeaderboardStatus(isAvailable ? "available" : "localOnly");
+        return isAvailable;
+      })
+      .catch(() => {
+        setPublicLeaderboardStatus("localOnly");
+        return false;
+      })
+      .finally(() => {
+        state.publicLeaderboard.promise = null;
+      });
+
+    return state.publicLeaderboard.promise;
+  }
+
   function modeLabel(modeId) {
     return SYSTEMS.GAME_MODES[SYSTEMS.normalizeGameMode(modeId)]?.shortLabel || "ארקייד";
   }
@@ -2177,13 +2259,15 @@
   async function leaderboardRequest(options = {}) {
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), CONFIG.leaderboard.requestTimeoutMs);
+    const endpoint = options.endpoint || CONFIG.leaderboard.endpoint;
+    const { endpoint: _endpoint, ...requestOptions } = options;
 
     try {
-      const response = await fetch(CONFIG.leaderboard.endpoint, {
-        ...options,
+      const response = await fetch(endpoint, {
+        ...requestOptions,
         headers: {
           Accept: "application/json",
-          ...(options.headers || {})
+          ...(requestOptions.headers || {})
         },
         signal: controller.signal
       });
@@ -2248,11 +2332,10 @@
     }
 
     const eligible = state.correctAnswers >= CONFIG.leaderboard.minimumCorrectAnswers;
-    els.publishScorePanel.hidden = !eligible;
-    els.publishScoreButton.disabled = false;
-    els.publishScoreButton.textContent = "פרסם את השיא";
-    els.publishScoreStatus.textContent = "";
-    els.publishScoreStatus.style.color = "";
+    syncPublicLeaderboardUi(eligible);
+    if (eligible && state.publicLeaderboard.status === "localOnly") {
+      checkPublicLeaderboardCapability();
+    }
   }
 
   async function publishScore() {
@@ -2261,6 +2344,10 @@
       || state.phase !== "ended"
       || state.correctAnswers < CONFIG.leaderboard.minimumCorrectAnswers
     ) {
+      return;
+    }
+    if (state.publicLeaderboard.status !== "available") {
+      syncPublicLeaderboardUi(true);
       return;
     }
 
@@ -2297,7 +2384,8 @@
       els.publishScoreButton.disabled = false;
       els.publishScoreButton.textContent = "נסה לפרסם שוב";
       if (error?.code === "leaderboard_not_configured") {
-        els.publishScoreStatus.textContent = "מסד הנתונים עדיין לא הוגדר ב־Vercel.";
+        setPublicLeaderboardStatus("localOnly");
+        els.publishScoreStatus.textContent = SYSTEMS.PUBLIC_LEADERBOARD_LOCAL_ONLY_MESSAGE;
       } else if (error?.code === "rate_limited") {
         els.publishScoreStatus.textContent = "כבר ניסית לפרסם עכשיו. חכה כמה שניות ונסה שוב.";
       } else {
@@ -5104,6 +5192,7 @@
   syncTimeLimitToggle();
   els.playerNameInput.value = state.playerName;
   syncMenuSummary();
+  syncPublicLeaderboardUi(false);
   setupGame();
   updateSoundButton();
   focusPlayerNameWhenUseful();

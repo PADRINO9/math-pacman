@@ -470,6 +470,11 @@
   color: var(--kf-color-gold);
 }
 
+.leaderboard-scope-chip.is-unavailable {
+  border-color: rgba(145, 162, 186, 0.3);
+  color: #9fb0c8;
+}
+
 .leaderboard-state-card {
   display: grid;
   gap: 4px;

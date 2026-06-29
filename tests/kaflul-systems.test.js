@@ -2,6 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 
 const systems = require("../kaflul-systems");
+const championsHandler = require("../api/champions");
 
 function memoryStorage(initial = {}) {
   const store = new Map(Object.entries(initial));
@@ -16,6 +17,48 @@ function memoryStorage(initial = {}) {
       store.delete(key);
     }
   };
+}
+
+function createMockResponse() {
+  return {
+    statusCode: 200,
+    headers: {},
+    body: "",
+    status(code) {
+      this.statusCode = code;
+      return this;
+    },
+    setHeader(name, value) {
+      this.headers[String(name).toLowerCase()] = value;
+    },
+    end(body = "") {
+      this.body = body;
+    }
+  };
+}
+
+function withLeaderboardEnv(env, callback) {
+  const keys = ["SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"];
+  const previous = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
+  keys.forEach((key) => {
+    if (Object.prototype.hasOwnProperty.call(env, key)) {
+      process.env[key] = env[key];
+    } else {
+      delete process.env[key];
+    }
+  });
+
+  return Promise.resolve()
+    .then(callback)
+    .finally(() => {
+      keys.forEach((key) => {
+        if (previous[key] === undefined) {
+          delete process.env[key];
+        } else {
+          process.env[key] = previous[key];
+        }
+      });
+    });
 }
 
 test("difficulty configuration exposes five stable Hebrew difficulties", () => {
@@ -137,6 +180,64 @@ test("leaderboard entries sort and filter by mode and difficulty", () => {
   const adventureOnly = systems.getLeaderboardEntries(save, { mode: "adventure" });
   assert.equal(adventureOnly.length, 1);
   assert.equal(adventureOnly[0].mode, "adventure");
+});
+
+test("public leaderboard UI stays local-only when public backend is unavailable", () => {
+  const localOnly = systems.getPublicLeaderboardUiState("localOnly", true);
+  assert.equal(localOnly.panelHidden, false);
+  assert.equal(localOnly.buttonDisabled, true);
+  assert.equal(localOnly.buttonText, "פרסום לא זמין");
+  assert.equal(localOnly.title, "השיא נשמר במכשיר הזה");
+  assert.equal(localOnly.copy, systems.PUBLIC_LEADERBOARD_LOCAL_ONLY_MESSAGE);
+  assert.equal(localOnly.statusText, systems.PUBLIC_LEADERBOARD_LOCAL_ONLY_MESSAGE);
+  assert.equal(localOnly.publicChipText, "ציבורי לא פעיל");
+  assert.equal(localOnly.publicAvailable, false);
+
+  const ineligible = systems.getPublicLeaderboardUiState("localOnly", false);
+  assert.equal(ineligible.panelHidden, true);
+  assert.equal(ineligible.buttonDisabled, true);
+
+  const available = systems.getPublicLeaderboardUiState("available", true);
+  assert.equal(available.panelHidden, false);
+  assert.equal(available.buttonDisabled, false);
+  assert.equal(available.publicAvailable, true);
+});
+
+test("champions API returns explicit unconfigured status without throwing", async () => {
+  await withLeaderboardEnv({}, async () => {
+    const response = createMockResponse();
+    await championsHandler({
+      method: "GET",
+      headers: { host: "127.0.0.1:4173" },
+      socket: { remoteAddress: "127.0.0.1" }
+    }, response);
+
+    assert.equal(response.statusCode, 503);
+    assert.equal(response.headers["content-type"], "application/json; charset=utf-8");
+    assert.deepEqual(JSON.parse(response.body), {
+      code: "leaderboard_not_configured",
+      message: "טבלת השיאים עדיין לא הוגדרה."
+    });
+  });
+});
+
+test("champions API capability check stays HTTP 200 when backend is unconfigured", async () => {
+  await withLeaderboardEnv({}, async () => {
+    const response = createMockResponse();
+    await championsHandler({
+      method: "GET",
+      url: "/api/champions?capability=1",
+      headers: { host: "127.0.0.1:4173" },
+      socket: { remoteAddress: "127.0.0.1" }
+    }, response);
+
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(JSON.parse(response.body), {
+      publicAvailable: false,
+      code: "leaderboard_not_configured",
+      message: "טבלת השיאים עדיין לא הוגדרה."
+    });
+  });
 });
 
 test("nickname validation rejects empty and dangerous input", () => {

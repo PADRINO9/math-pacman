@@ -29,6 +29,50 @@ async function setNickname(page, playerName) {
   await expect(page.locator("#settings-panel")).toBeHidden();
 }
 
+async function seedLocalLeaderboard(page) {
+  await page.addInitScript(() => {
+    localStorage.setItem("kaflulArcadeSave", JSON.stringify({
+      schemaVersion: 2,
+      gameVersion: "test",
+      player: {
+        nickname: "שיא מקומי"
+      },
+      settings: {
+        selectedCharacter: "bifly",
+        selectedDifficulty: "normal",
+        selectedMode: "arcade",
+        soundEnabled: true,
+        musicEnabled: true,
+        timeLimitEnabled: false,
+        accessibility: {
+          reducedMotion: false
+        }
+      },
+      unlockedDifficulties: ["beginner", "normal", "advanced", "expert"],
+      personalBests: {},
+      leaderboardEntries: [
+        {
+          id: "local-best",
+          nickname: "שיא מקומי",
+          score: 12345,
+          mode: "arcade",
+          difficulty: "normal",
+          reachedStage: 2,
+          selectedCharacter: "bifly",
+          maxCombo: 7,
+          accuracy: 88,
+          date: "2026-06-29T00:00:00.000Z",
+          gameVersion: "test"
+        }
+      ],
+      completedLevels: {},
+      achievementProgress: {},
+      recovery: null,
+      updatedAt: "2026-06-29T00:00:00.000Z"
+    }));
+  });
+}
+
 test("empty player name in settings stays on the start screen", async ({ page }) => {
   const errors = collectRuntimeErrors(page);
   await page.goto("/", { waitUntil: "domcontentloaded" });
@@ -127,6 +171,44 @@ test("phase 2 home summary and bottom navigation stay interactive", async ({ pag
   await page.locator("#leaderboard-close").click();
   await expect(page.locator("#leaderboard-dialog")).toBeHidden();
 
+  expect(errors).toEqual([]);
+});
+
+test("leaderboard remains local-only when public backend is unavailable", async ({ page }) => {
+  const errors = collectRuntimeErrors(page);
+  let getCount = 0;
+  let postCount = 0;
+  await seedLocalLeaderboard(page);
+  await page.route("**/api/champions**", async (route) => {
+    if (route.request().method() === "POST") {
+      postCount += 1;
+    } else {
+      getCount += 1;
+    }
+    await route.fulfill({
+      status: 503,
+      contentType: "application/json",
+      body: JSON.stringify({
+        code: "leaderboard_not_configured",
+        message: "טבלת השיאים עדיין לא הוגדרה."
+      })
+    });
+  });
+
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#start-screen")).toBeVisible();
+  await expect(page.locator("#leaderboard-copy")).toContainText("טבלת השיאים הציבורית עדיין לא פעילה");
+
+  await page.locator("#home-nav-champions").click();
+  await expect(page.locator("#leaderboard-dialog")).toBeVisible();
+  await expect(page.locator("#leaderboard-public-chip")).toContainText("ציבורי לא פעיל");
+  await expect(page.locator("#leaderboard-list")).toContainText("שיא מקומי");
+  await expect(page.locator("#leaderboard-status")).toContainText("הטבלה המקומית");
+
+  await page.locator("#leaderboard-refresh").click();
+  await expect(page.locator("#leaderboard-list")).toContainText("12,345");
+  expect(postCount).toBe(0);
+  expect(getCount).toBe(0);
   expect(errors).toEqual([]);
 });
 

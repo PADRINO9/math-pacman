@@ -113,6 +113,8 @@
     expertArcadeScore: 75000
   };
 
+  const PUBLIC_LEADERBOARD_LOCAL_ONLY_MESSAGE = "טבלת השיאים הציבורית עדיין לא פעילה. השיא נשמר במכשיר הזה.";
+
   const LEGACY_DIFFICULTY_MAP = {
     easy: "beginner",
     medium: "normal",
@@ -783,6 +785,60 @@
       : (dy > 0 ? "down" : "up");
   }
 
+  function getPublicLeaderboardUiState(status, eligible) {
+    const normalizedStatus = status === "available" || status === "checking" ? status : "localOnly";
+    const isAvailable = normalizedStatus === "available";
+    const isChecking = normalizedStatus === "checking";
+    const publicChipText = isAvailable ? "ציבורי זמין לפרסום" : (isChecking ? "בודק ציבורי" : "ציבורי לא פעיל");
+    const leaderboardCopy = isAvailable
+      ? "השיאים נשמרים במכשיר הזה. אפשר לפרסם שיא ציבורי אחרי מעבר השלב הראשון."
+      : (isChecking
+        ? "השיאים המקומיים זמינים עכשיו. בדיקת הטבלה הציבורית רצה ברקע."
+        : "השיאים נשמרים במכשיר הזה. טבלת השיאים הציבורית עדיין לא פעילה.");
+
+    if (!eligible) {
+      return {
+        panelHidden: true,
+        buttonDisabled: true,
+        buttonText: "פרסם את השיא",
+        title: "השיא נשמר במכשיר הזה",
+        copy: PUBLIC_LEADERBOARD_LOCAL_ONLY_MESSAGE,
+        statusText: "",
+        publicChipText,
+        leaderboardCopy,
+        publicAvailable: isAvailable
+      };
+    }
+
+    if (isAvailable) {
+      return {
+        panelHidden: false,
+        buttonDisabled: false,
+        buttonText: "פרסם את השיא",
+        title: "מקום בטבלת אלוף האלופים מחכה לך",
+        copy: "עברת את השלב הראשון, ולכן אפשר לפרסם את השיא הזה לכל השחקנים.",
+        statusText: "",
+        publicChipText,
+        leaderboardCopy,
+        publicAvailable: true
+      };
+    }
+
+    return {
+      panelHidden: false,
+      buttonDisabled: true,
+      buttonText: isChecking ? "בודק זמינות" : "פרסום לא זמין",
+      title: "השיא נשמר במכשיר הזה",
+      copy: isChecking
+        ? "בודקים אם טבלת השיאים הציבורית זמינה. השיא נשמר במכשיר הזה בכל מקרה."
+        : PUBLIC_LEADERBOARD_LOCAL_ONLY_MESSAGE,
+      statusText: isChecking ? "בודקים זמינות ציבורית..." : PUBLIC_LEADERBOARD_LOCAL_ONLY_MESSAGE,
+      publicChipText,
+      leaderboardCopy,
+      publicAvailable: false
+    };
+  }
+
   return {
     GAME_VERSION,
     SAVE_KEY,
@@ -792,6 +848,7 @@
     GAME_MODES,
     DIFFICULTIES,
     LEGENDARY_UNLOCK_RULE,
+    PUBLIC_LEADERBOARD_LOCAL_ONLY_MESSAGE,
     SCORE_CONFIG,
     GAME_STATES,
     STATE_TRANSITIONS,
@@ -828,6 +885,7 @@
     createSessionChecksum,
     canTransition,
     transitionState,
-    detectSwipeDirection
+    detectSwipeDirection,
+    getPublicLeaderboardUiState
   };
 });

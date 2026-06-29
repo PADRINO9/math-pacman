@@ -626,8 +626,8 @@
             <button id="end-leaderboard-button" class="secondary-button" type="button">היכל אלופי כפלול</button>
           </div>
           <div id="publish-score-panel" class="publish-score-panel" hidden>
-            <strong>מקום בטבלת אלוף האלופים מחכה לך</strong>
-            <p>עברת את השלב הראשון, ולכן אפשר לפרסם את השיא הזה לכל השחקנים.</p>
+            <strong id="publish-score-title">השיא נשמר במכשיר הזה</strong>
+            <p id="publish-score-copy">טבלת השיאים הציבורית עדיין לא פעילה. השיא נשמר במכשיר הזה.</p>
             <button id="publish-score-button" class="secondary-button" type="button">פרסם את השיא</button>
             <p id="publish-score-status" class="publish-score-status" aria-live="polite"></p>
           </div>
@@ -664,9 +664,9 @@
           </div>
           <div class="leaderboard-scope" aria-label="מקור הטבלה">
             <span class="leaderboard-scope-chip is-active">מקומי</span>
-            <span class="leaderboard-scope-chip">ציבורי דרך פרסום שיא</span>
+            <span id="leaderboard-public-chip" class="leaderboard-scope-chip is-unavailable">ציבורי לא פעיל</span>
           </div>
-          <p class="leaderboard-copy">שיאים שנשמרו על המכשיר הזה. פרסום שיא משתמש בחיבור הציבורי הקיים כששרת הטבלה מוגדר.</p>
+          <p id="leaderboard-copy" class="leaderboard-copy">השיאים נשמרים במכשיר הזה. טבלת השיאים הציבורית עדיין לא פעילה.</p>
           <div class="leaderboard-filters" aria-label="סינון טבלת שיאים">
             <label>
               <span>מצב</span>

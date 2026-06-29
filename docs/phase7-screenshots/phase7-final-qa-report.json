@@ -1,8 +1,8 @@
 {
   "phase": 7,
-  "capturedAt": "2026-06-29T02:49:14.806Z",
+  "capturedAt": "2026-06-29T03:15:23.869Z",
   "chrome": "Chrome/149.0.7827.197",
-  "localPreviewUrl": "http://127.0.0.1:62328/",
+  "localPreviewUrl": "http://127.0.0.1:63997/",
   "ok": true,
   "failures": [],
   "warnings": [
@@ -390,25 +390,25 @@
       },
       "firstPerf": {
         "navigation": {
-          "domContentLoadedMs": 165.29999999701977,
-          "loadMs": 169.3999999910593,
+          "domContentLoadedMs": 160.20000000298023,
+          "loadMs": 191.90000000596046,
           "transferSize": 43082,
           "decodedBodySize": 42782
         },
         "resourceCount": 45,
-        "totalTransferSize": 5912368,
-        "totalDecodedBodySize": 5898868,
+        "totalTransferSize": 5912140,
+        "totalDecodedBodySize": 5898640,
         "duplicateResources": [
           [
             "assets/bifly-player.png",
             2
           ],
           [
-            "assets/nabatick-eat-prepare-reference.png",
+            "assets/nabatick-eat-reference.png",
             2
           ],
           [
-            "assets/nabatick-eat-reference.png",
+            "assets/nabatick-eat-prepare-reference.png",
             2
           ]
         ],
@@ -419,7 +419,7 @@
             "transferSize": 1849824,
             "encodedBodySize": 1849524,
             "decodedBodySize": 1849524,
-            "duration": 14.100000008940697
+            "duration": 12.799999997019768
           },
           {
             "name": "assets/kaflul-logo-official.png",
@@ -427,7 +427,7 @@
             "transferSize": 893998,
             "encodedBodySize": 893698,
             "decodedBodySize": 893698,
-            "duration": 2.0999999940395355
+            "duration": 2
           },
           {
             "name": "assets/bifly-player.png",
@@ -435,7 +435,7 @@
             "transferSize": 245639,
             "encodedBodySize": 245339,
             "decodedBodySize": 245339,
-            "duration": 11.199999988079071
+            "duration": 10.400000005960464
           },
           {
             "name": "assets/bifly-player.png",
@@ -443,7 +443,7 @@
             "transferSize": 245639,
             "encodedBodySize": 245339,
             "decodedBodySize": 245339,
-            "duration": 1.4000000059604645
+            "duration": 1
           },
           {
             "name": "assets/bifly-eat.png",
@@ -451,7 +451,7 @@
             "transferSize": 239805,
             "encodedBodySize": 239505,
             "decodedBodySize": 239505,
-            "duration": 11.799999997019768
+            "duration": 10.699999988079071
           },
           {
             "name": "assets/bifly-eat-prepare.png",
@@ -459,7 +459,7 @@
             "transferSize": 234251,
             "encodedBodySize": 233951,
             "decodedBodySize": 233951,
-            "duration": 11.299999997019768
+            "duration": 10.400000005960464
           },
           {
             "name": "assets/bifly-menu.png",
@@ -467,7 +467,7 @@
             "transferSize": 219418,
             "encodedBodySize": 219118,
             "decodedBodySize": 219118,
-            "duration": 1.699999988079071
+            "duration": 1.7999999970197678
           },
           {
             "name": "assets/nabatick-idle-reference.png",
@@ -475,18 +475,18 @@
             "transferSize": 206112,
             "encodedBodySize": 205812,
             "decodedBodySize": 205812,
-            "duration": 13.199999988079071
+            "duration": 11.299999997019768
           }
         ],
         "memory": {
-          "usedJSHeapSize": 3293845,
-          "totalJSHeapSize": 6542057
+          "usedJSHeapSize": 3254836,
+          "totalJSHeapSize": 6017764
         }
       },
       "homeFps": {
         "frames": 108,
-        "avgFrameMs": 8.335185185185184,
-        "avgFps": 119.9733392579427,
+        "avgFrameMs": 8.329629629629629,
+        "avgFps": 120.05335704757671,
         "longFramesOver50ms": 0
       },
       "orientation": {
@@ -924,14 +924,14 @@
       },
       "firstPerf": {
         "navigation": {
-          "domContentLoadedMs": 159.30000001192093,
-          "loadMs": 200.30000001192093,
+          "domContentLoadedMs": 161.29999999701977,
+          "loadMs": 193.59999999403954,
           "transferSize": 43082,
           "decodedBodySize": 42782
         },
         "resourceCount": 45,
-        "totalTransferSize": 5912368,
-        "totalDecodedBodySize": 5898868,
+        "totalTransferSize": 5912140,
+        "totalDecodedBodySize": 5898640,
         "duplicateResources": [
           [
             "assets/bifly-player.png",
@@ -953,7 +953,7 @@
             "transferSize": 1849824,
             "encodedBodySize": 1849524,
             "decodedBodySize": 1849524,
-            "duration": 13.700000002980232
+            "duration": 12.899999991059303
           },
           {
             "name": "assets/kaflul-logo-official.png",
@@ -961,7 +961,7 @@
             "transferSize": 893998,
             "encodedBodySize": 893698,
             "decodedBodySize": 893698,
-            "duration": 2.2999999970197678
+            "duration": 2.1000000089406967
           },
           {
             "name": "assets/bifly-player.png",
@@ -969,7 +969,7 @@
             "transferSize": 245639,
             "encodedBodySize": 245339,
             "decodedBodySize": 245339,
-            "duration": 10.900000005960464
+            "duration": 10.799999997019768
           },
           {
             "name": "assets/bifly-player.png",
@@ -977,7 +977,7 @@
             "transferSize": 245639,
             "encodedBodySize": 245339,
             "decodedBodySize": 245339,
-            "duration": 1
+            "duration": 1.2000000029802322
           },
           {
             "name": "assets/bifly-eat.png",
@@ -985,7 +985,7 @@
             "transferSize": 239805,
             "encodedBodySize": 239505,
             "decodedBodySize": 239505,
-            "duration": 11.400000005960464
+            "duration": 11.200000002980232
           },
           {
             "name": "assets/bifly-eat-prepare.png",
@@ -993,7 +993,7 @@
             "transferSize": 234251,
             "encodedBodySize": 233951,
             "decodedBodySize": 233951,
-            "duration": 11.300000011920929
+            "duration": 11.299999997019768
           },
           {
             "name": "assets/bifly-menu.png",
@@ -1001,7 +1001,7 @@
             "transferSize": 219418,
             "encodedBodySize": 219118,
             "decodedBodySize": 219118,
-            "duration": 1.6000000089406967
+            "duration": 1.2999999970197678
           },
           {
             "name": "assets/nabatick-idle-reference.png",
@@ -1009,18 +1009,18 @@
             "transferSize": 206112,
             "encodedBodySize": 205812,
             "decodedBodySize": 205812,
-            "duration": 12.300000011920929
+            "duration": 11.299999997019768
           }
         ],
         "memory": {
-          "usedJSHeapSize": 3277155,
-          "totalJSHeapSize": 6018999
+          "usedJSHeapSize": 3343989,
+          "totalJSHeapSize": 6018957
         }
       },
       "homeFps": {
         "frames": 108,
-        "avgFrameMs": 8.333333333333334,
-        "avgFps": 119.99999999999999,
+        "avgFrameMs": 8.333333333333336,
+        "avgFps": 119.99999999999997,
         "longFramesOver50ms": 0
       },
       "orientation": {
@@ -1458,14 +1458,14 @@
       },
       "firstPerf": {
         "navigation": {
-          "domContentLoadedMs": 139,
-          "loadMs": 143.8999999910593,
+          "domContentLoadedMs": 161.5,
+          "loadMs": 199.79999999701977,
           "transferSize": 43082,
           "decodedBodySize": 42782
         },
         "resourceCount": 45,
-        "totalTransferSize": 5912368,
-        "totalDecodedBodySize": 5898868,
+        "totalTransferSize": 5912140,
+        "totalDecodedBodySize": 5898640,
         "duplicateResources": [
           [
             "assets/bifly-player.png",
@@ -1487,7 +1487,7 @@
             "transferSize": 1849824,
             "encodedBodySize": 1849524,
             "decodedBodySize": 1849524,
-            "duration": 14.5
+            "duration": 12.200000002980232
           },
           {
             "name": "assets/kaflul-logo-official.png",
@@ -1495,7 +1495,7 @@
             "transferSize": 893998,
             "encodedBodySize": 893698,
             "decodedBodySize": 893698,
-            "duration": 3.699999988079071
+            "duration": 1.8999999910593033
           },
           {
             "name": "assets/bifly-player.png",
@@ -1511,7 +1511,7 @@
             "transferSize": 245639,
             "encodedBodySize": 245339,
             "decodedBodySize": 245339,
-            "duration": 1.2999999970197678
+            "duration": 1.0999999940395355
           },
           {
             "name": "assets/bifly-eat.png",
@@ -1519,7 +1519,7 @@
             "transferSize": 239805,
             "encodedBodySize": 239505,
             "decodedBodySize": 239505,
-            "duration": 12.299999997019768
+            "duration": 10.5
           },
           {
             "name": "assets/bifly-eat-prepare.png",
@@ -1527,7 +1527,7 @@
             "transferSize": 234251,
             "encodedBodySize": 233951,
             "decodedBodySize": 233951,
-            "duration": 11.799999997019768
+            "duration": 10.5
           },
           {
             "name": "assets/bifly-menu.png",
@@ -1535,7 +1535,7 @@
             "transferSize": 219418,
             "encodedBodySize": 219118,
             "decodedBodySize": 219118,
-            "duration": 2.7000000029802322
+            "duration": 1.199999988079071
           },
           {
             "name": "assets/nabatick-idle-reference.png",
@@ -1543,18 +1543,18 @@
             "transferSize": 206112,
             "encodedBodySize": 205812,
             "decodedBodySize": 205812,
-            "duration": 12.300000011920929
+            "duration": 11.299999997019768
           }
         ],
         "memory": {
-          "usedJSHeapSize": 3330547,
-          "totalJSHeapSize": 5756767
+          "usedJSHeapSize": 3482095,
+          "totalJSHeapSize": 6281059
         }
       },
       "homeFps": {
         "frames": 108,
-        "avgFrameMs": 8.333333333333336,
-        "avgFps": 119.99999999999997,
+        "avgFrameMs": 8.333333333333334,
+        "avgFps": 119.99999999999999,
         "longFramesOver50ms": 0
       },
       "orientation": {
@@ -1992,14 +1992,14 @@
       },
       "firstPerf": {
         "navigation": {
-          "domContentLoadedMs": 151.20000000298023,
-          "loadMs": 156.5,
+          "domContentLoadedMs": 140.20000000298023,
+          "loadMs": 201.5,
           "transferSize": 43082,
           "decodedBodySize": 42782
         },
         "resourceCount": 46,
-        "totalTransferSize": 6131786,
-        "totalDecodedBodySize": 6117986,
+        "totalTransferSize": 6131558,
+        "totalDecodedBodySize": 6117758,
         "duplicateResources": [
           [
             "assets/bifly-menu.png",
@@ -2010,11 +2010,11 @@
             2
           ],
           [
-            "assets/nabatick-eat-reference.png",
+            "assets/nabatick-eat-prepare-reference.png",
             2
           ],
           [
-            "assets/nabatick-eat-prepare-reference.png",
+            "assets/nabatick-eat-reference.png",
             2
           ]
         ],
@@ -2025,7 +2025,7 @@
             "transferSize": 1849824,
             "encodedBodySize": 1849524,
             "decodedBodySize": 1849524,
-            "duration": 13.899999991059303
+            "duration": 13
           },
           {
             "name": "assets/kaflul-logo-official.png",
@@ -2033,7 +2033,7 @@
             "transferSize": 893998,
             "encodedBodySize": 893698,
             "decodedBodySize": 893698,
-            "duration": 2.4000000059604645
+            "duration": 2.2000000029802322
           },
           {
             "name": "assets/bifly-player.png",
@@ -2041,7 +2041,7 @@
             "transferSize": 245639,
             "encodedBodySize": 245339,
             "decodedBodySize": 245339,
-            "duration": 10.799999997019768
+            "duration": 10.900000005960464
           },
           {
             "name": "assets/bifly-player.png",
@@ -2049,7 +2049,7 @@
             "transferSize": 245639,
             "encodedBodySize": 245339,
             "decodedBodySize": 245339,
-            "duration": 1.5999999940395355
+            "duration": 1.199999988079071
           },
           {
             "name": "assets/bifly-eat.png",
@@ -2057,7 +2057,7 @@
             "transferSize": 239805,
             "encodedBodySize": 239505,
             "decodedBodySize": 239505,
-            "duration": 12.200000002980232
+            "duration": 11.900000005960464
           },
           {
             "name": "assets/bifly-eat-prepare.png",
@@ -2065,7 +2065,7 @@
             "transferSize": 234251,
             "encodedBodySize": 233951,
             "decodedBodySize": 233951,
-            "duration": 11.599999994039536
+            "duration": 10.799999997019768
           },
           {
             "name": "assets/bifly-menu.png",
@@ -2081,18 +2081,18 @@
             "transferSize": 219418,
             "encodedBodySize": 219118,
             "decodedBodySize": 219118,
-            "duration": 10.100000008940697
+            "duration": 9.199999988079071
           }
         ],
         "memory": {
-          "usedJSHeapSize": 3369595,
-          "totalJSHeapSize": 6281107
+          "usedJSHeapSize": 3358449,
+          "totalJSHeapSize": 5756837
         }
       },
       "homeFps": {
-        "frames": 69,
-        "avgFrameMs": 13.169565217391305,
-        "avgFps": 75.93265103994717,
+        "frames": 75,
+        "avgFrameMs": 12.110666666666663,
+        "avgFps": 82.57183749862382,
         "longFramesOver50ms": 0
       },
       "orientation": null
@@ -2395,15 +2395,19 @@
       },
       "firstPerf": {
         "navigation": {
-          "domContentLoadedMs": 148,
-          "loadMs": 206.3999999910593,
+          "domContentLoadedMs": 138.09999999403954,
+          "loadMs": 143.09999999403954,
           "transferSize": 43082,
           "decodedBodySize": 42782
         },
-        "resourceCount": 45,
-        "totalTransferSize": 5912368,
-        "totalDecodedBodySize": 5898868,
+        "resourceCount": 46,
+        "totalTransferSize": 6131558,
+        "totalDecodedBodySize": 6117758,
         "duplicateResources": [
+          [
+            "assets/bifly-menu.png",
+            2
+          ],
           [
             "assets/bifly-player.png",
             2
@@ -2424,7 +2428,7 @@
             "transferSize": 1849824,
             "encodedBodySize": 1849524,
             "decodedBodySize": 1849524,
-            "duration": 16.400000005960464
+            "duration": 14.5
           },
           {
             "name": "assets/kaflul-logo-official.png",
@@ -2432,7 +2436,7 @@
             "transferSize": 893998,
             "encodedBodySize": 893698,
             "decodedBodySize": 893698,
-            "duration": 3.4000000059604645
+            "duration": 2.2999999970197678
           },
           {
             "name": "assets/bifly-player.png",
@@ -2440,7 +2444,7 @@
             "transferSize": 245639,
             "encodedBodySize": 245339,
             "decodedBodySize": 245339,
-            "duration": 13.799999997019768
+            "duration": 11.899999991059303
           },
           {
             "name": "assets/bifly-player.png",
@@ -2448,7 +2452,7 @@
             "transferSize": 245639,
             "encodedBodySize": 245339,
             "decodedBodySize": 245339,
-            "duration": 1.6000000089406967
+            "duration": 1.5
           },
           {
             "name": "assets/bifly-eat.png",
@@ -2456,7 +2460,7 @@
             "transferSize": 239805,
             "encodedBodySize": 239505,
             "decodedBodySize": 239505,
-            "duration": 14.799999997019768
+            "duration": 12.399999991059303
           },
           {
             "name": "assets/bifly-eat-prepare.png",
@@ -2464,7 +2468,7 @@
             "transferSize": 234251,
             "encodedBodySize": 233951,
             "decodedBodySize": 233951,
-            "duration": 14.799999997019768
+            "duration": 12
           },
           {
             "name": "assets/bifly-menu.png",
@@ -2472,26 +2476,26 @@
             "transferSize": 219418,
             "encodedBodySize": 219118,
             "decodedBodySize": 219118,
-            "duration": 2.7000000029802322
+            "duration": 1.0999999940395355
           },
           {
-            "name": "assets/nabatick-idle-reference.png",
-            "initiatorType": "link",
-            "transferSize": 206112,
-            "encodedBodySize": 205812,
-            "decodedBodySize": 205812,
-            "duration": 14.700000002980232
+            "name": "assets/bifly-menu.png",
+            "initiatorType": "img",
+            "transferSize": 219418,
+            "encodedBodySize": 219118,
+            "decodedBodySize": 219118,
+            "duration": 11
           }
         ],
         "memory": {
-          "usedJSHeapSize": 3368854,
-          "totalJSHeapSize": 6018978
+          "usedJSHeapSize": 3319526,
+          "totalJSHeapSize": 6281114
         }
       },
       "homeFps": {
-        "frames": 69,
-        "avgFrameMs": 13.28550724637681,
-        "avgFps": 75.2699901821752,
+        "frames": 76,
+        "avgFrameMs": 11.963157894736845,
+        "avgFps": 83.58996920369553,
         "longFramesOver50ms": 0
       },
       "orientation": null
@@ -2505,9 +2509,9 @@
       "gameOverShot": "docs/phase7-screenshots/phase7-gameover-430x932-portrait.png"
     },
     "gameplayFps": {
-      "frames": 75,
-      "avgFrameMs": 12.233333333333333,
-      "avgFps": 81.74386920980928,
+      "frames": 85,
+      "avgFrameMs": 10.782352941176471,
+      "avgFps": 92.74413529732678,
       "longFramesOver50ms": 0
     },
     "checks": {
@@ -2649,9 +2653,9 @@
       "primaryActionDominant": true,
       "runtimeErrors": [],
       "motion": {
-        "played": 78,
+        "played": 67,
         "skippedHidden": 0,
-        "particlesCreated": 10,
+        "particlesCreated": 18,
         "activeParticles": 0,
         "lastEvent": "modalOpen",
         "reducedMotion": false,
@@ -2715,11 +2719,11 @@
     "events": [],
     "before": {
       "nodes": 581,
-      "heap": 2656735
+      "heap": 2658931
     },
     "after": {
       "nodes": 585,
-      "heap": 2871679,
+      "heap": 2872479,
       "particles": 0,
       "hiddenAnimations": 0
     }

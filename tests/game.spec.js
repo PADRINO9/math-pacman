@@ -111,10 +111,16 @@ test("phase 2 home summary and bottom navigation stay interactive", async ({ pag
   await expect(page.locator("#difficulty-panel")).toBeHidden();
 
   await page.locator("#home-nav-progress").click();
-  expect(await page.evaluate(() => document.activeElement?.classList.contains("home-progress-card"))).toBe(true);
+  await expect(page.locator("#progress-panel")).toBeVisible();
+  await expect(page.locator("#progress-panel [data-close-panel]")).toBeFocused();
+  await page.locator("#progress-panel [data-close-panel]").click();
+  await expect(page.locator("#progress-panel")).toBeHidden();
 
   await page.locator("#home-nav-game").click();
-  expect(await page.evaluate(() => document.activeElement?.id)).toBe("start-button");
+  await expect(page.locator("#pregame-panel")).toBeVisible();
+  await expect(page.locator("#pregame-panel [data-close-panel]")).toBeFocused();
+  await page.locator("#pregame-panel [data-close-panel]").click();
+  await expect(page.locator("#pregame-panel")).toBeHidden();
 
   await page.locator("#home-nav-champions").click();
   await expect(page.locator("#leaderboard-dialog")).toBeVisible();

@@ -131,6 +131,33 @@ When the system preference is `prefers-reduced-motion: reduce`, or when `html.kf
 - The gameplay canvas render loop may skip update/render work while the start menu fully covers the canvas. This is a performance optimization only and must not change gameplay once the game starts.
 - Coarse-pointer profiles may disable decorative menu particle loops while retaining static state communication.
 
+## Phase 8.9 Stabilization Notes
+
+Phase 8.9 does not turn the existing UI motion layer into a full final motion art system. It stabilizes the current hooks, verifies event names, and keeps the implementation honest about missing character-animation assets.
+
+Verified motion events:
+
+- `buttonPress`
+- `modalOpen`
+- `modalClose`
+- `sheetOpen`
+- `sheetClose`
+- `tabChange`
+- `characterSelect`
+- `lockedFeedback`
+- `scoreCountUp`
+- `comboMilestone`
+- `missionComplete`
+- `lifeLost`
+- `newRecord`
+
+Implementation guardrails verified in Phase 8.9:
+
+- Event names used by production UI controls must exist in the relevant controller.
+- Reduced motion collapses event duration and blocks DOM particle emission.
+- HUD feedback events are defined as shared motion events rather than one-off layout animations.
+- Character tap/selection may use UI-level feedback only. It must not be represented as a real character animation state unless an approved asset exists.
+
 ## Acceptance Checks
 
 Phase 6 verification must confirm:

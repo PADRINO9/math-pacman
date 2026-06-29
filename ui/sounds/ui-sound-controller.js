@@ -6,6 +6,13 @@
       gain: 0.012,
       notes: [{ frequency: 360, duration: 0.035, type: "triangle" }]
     },
+    "primary-play": {
+      gain: 0.021,
+      notes: [
+        { frequency: 440, duration: 0.05, type: "triangle" },
+        { frequency: 660, start: 0.045, duration: 0.065, type: "triangle" }
+      ]
+    },
     panelOpen: {
       gain: 0.018,
       notes: [

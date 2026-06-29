@@ -284,6 +284,7 @@
       externalAudioAssets: [],
       events: [
         "buttonPress",
+        "primary-play",
         "panelOpen",
         "panelClose",
         "tabChange",

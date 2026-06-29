@@ -435,6 +435,136 @@ test("phase 8.8 hero gallery, home navigation and real progress data are complet
   expect(errors).toEqual([]);
 });
 
+test("phase 8.9 motion and UI audio hooks are stable", async ({ page }) => {
+  const errors = collectRuntimeErrors(page);
+  await page.goto("/", { waitUntil: "domcontentloaded" });
+  await expect(page.locator("#start-screen")).toBeVisible();
+
+  const hookInventory = await page.evaluate(() => {
+    const motionEvents = new Set(window.KaflulMotionSystem?.events || []);
+    const soundEvents = new Set(window.KaflulUiSound?.events || []);
+    const declaredSoundHooks = Array.from(document.querySelectorAll("[data-ui-sound]"))
+      .map((element) => element.getAttribute("data-ui-sound"))
+      .filter((value) => value && value !== "none");
+    const requiredMotion = [
+      "buttonPress",
+      "modalOpen",
+      "modalClose",
+      "tabChange",
+      "characterSelect",
+      "lockedFeedback",
+      "scoreCountUp",
+      "comboMilestone",
+      "missionComplete",
+      "lifeLost",
+      "newRecord"
+    ];
+    const requiredSounds = [
+      "buttonPress",
+      "primary-play",
+      "panelOpen",
+      "panelClose",
+      "tabChange",
+      "characterSelected",
+      "modeSelected",
+      "difficultySelected",
+      "lockedAction",
+      "reward",
+      "newRecord"
+    ];
+    return {
+      missingMotion: requiredMotion.filter((eventName) => !motionEvents.has(eventName)),
+      missingSounds: requiredSounds.filter((eventName) => !soundEvents.has(eventName)),
+      missingDeclaredSounds: declaredSoundHooks.filter((eventName) => !soundEvents.has(eventName))
+    };
+  });
+  expect(hookInventory).toEqual({
+    missingMotion: [],
+    missingSounds: [],
+    missingDeclaredSounds: []
+  });
+
+  const autoplayBeforeGesture = await page.evaluate(() => window.KaflulUiSound.play("buttonPress"));
+  expect(autoplayBeforeGesture.reason).toBe("not-unlocked");
+
+  await page.locator("#pregame-open-button").click();
+  await expect(page.locator("#pregame-panel")).toBeVisible();
+  await expect
+    .poll(() => page.evaluate(() => window.KaflulMotionSystem.getDiagnostics().lastEvent))
+    .toBe("sheetOpen");
+  await expect
+    .poll(() => page.evaluate(() => window.KaflulUiSound.getDiagnostics().lastEvent))
+    .toBe("panelOpen");
+
+  await page.locator("#pregame-panel [data-close-panel]").click();
+  await expect(page.locator("#pregame-panel")).toBeHidden();
+  await expect
+    .poll(() => page.evaluate(() => window.KaflulMotionSystem.getDiagnostics().lastEvent))
+    .toBe("sheetClose");
+  await expect
+    .poll(() => page.evaluate(() => window.KaflulUiSound.getDiagnostics().lastEvent))
+    .toBe("panelClose");
+
+  await page.locator("#mode-control-button").click();
+  await expect(page.locator("#mode-panel")).toBeVisible();
+  await page.locator("#mode-panel label", { hasText: "הרפתקה" }).click();
+  await expect(page.locator("input[name='game-mode'][value='adventure']")).toBeChecked();
+  await expect(page.locator("#mode-panel")).toBeHidden();
+
+  await page.locator(".menu-character-nabatick").click();
+  await expect(page.locator("input[name='character'][value='nabatick']")).toBeChecked();
+  const characterDiagnostics = await page.evaluate(() => ({
+    motion: window.KaflulMotionSystem.getDiagnostics().lastEvent,
+    sound: window.KaflulUiSound.getDiagnostics().lastEvent
+  }));
+  expect(characterDiagnostics).toEqual({ motion: "characterSelect", sound: "characterSelected" });
+
+  const feedbackEvents = await page.evaluate(() => {
+    const motion = window.KaflulMotionSystem;
+    const target = document.getElementById("start-button");
+    return ["scoreCountUp", "comboMilestone", "missionComplete", "lifeLost", "newRecord"].map((eventName) => {
+      const result = motion.play(target, eventName);
+      return result.event;
+    });
+  });
+  expect(feedbackEvents).toEqual(["scoreCountUp", "comboMilestone", "missionComplete", "lifeLost", "newRecord"]);
+
+  await page.evaluate(() => window.KaflulUiSound.setEnabled(false));
+  const mutedPlay = await page.evaluate(() => window.KaflulUiSound.play("primary-play", { fromGesture: true }));
+  expect(mutedPlay.reason).toBe("muted");
+  await page.evaluate(() => window.KaflulUiSound.setEnabled(true));
+
+  const reducedMotion = await page.evaluate(() => {
+    const motion = window.KaflulMotionSystem;
+    const target = document.getElementById("start-button");
+    motion.setReducedMotionForTest(true);
+    const before = motion.getDiagnostics().particlesCreated;
+    const emitted = motion.emitParticles(target, { count: 12 });
+    const playResult = motion.play(target, "reward", { particles: { count: 12 } });
+    const after = motion.getDiagnostics().particlesCreated;
+    const state = {
+      classPresent: document.documentElement.classList.contains("kf-reduced-motion"),
+      reduced: motion.isReducedMotion(),
+      emitted,
+      particleDelta: after - before,
+      duration: playResult.duration,
+      reducedFlag: playResult.reducedMotion
+    };
+    motion.setReducedMotionForTest(null);
+    return state;
+  });
+  expect(reducedMotion).toEqual({
+    classPresent: true,
+    reduced: true,
+    emitted: 0,
+    particleDelta: 0,
+    duration: 1,
+    reducedFlag: true
+  });
+
+  expect(errors).toEqual([]);
+});
+
 test("menu selections, nickname and sound state persist across reloads", async ({ page }) => {
   const errors = collectRuntimeErrors(page);
   await page.goto("/", { waitUntil: "domcontentloaded" });

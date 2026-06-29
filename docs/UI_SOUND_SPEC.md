@@ -35,6 +35,7 @@ This is intentional because no approved branded audio pack exists yet. The contr
 | Event | Current implementation | Purpose |
 | --- | --- | --- |
 | `buttonPress` | Short triangle tick | Generic control press. |
+| `primary-play` | Two-note generated rise | Main `שחק עכשיו` action. Temporary generated UI tone, not final branded audio. |
 | `panelOpen` | Two-note soft rise | Modal or sheet opens. |
 | `panelClose` | Short low sine | Modal or sheet closes. |
 | `tabChange` | Short triangle tick | Bottom nav, filters, and tab-like option changes. |
@@ -53,6 +54,26 @@ This is intentional because no approved branded audio pack exists yet. The contr
 - Muted calls return `{ ok: false, reason: "muted" }`.
 - Muted calls must not create new audible output.
 - Toggling sound back on may play a quiet notification only from the user gesture that enabled sound.
+
+## Phase 8.9 Stabilization Notes
+
+Phase 8.9 keeps the generated WebAudio approach and makes the existing production hooks explicit. The `data-ui-sound="primary-play"` hook used by the main play button now maps to a named generated event instead of falling through to a generic notification.
+
+Verified UI sound events:
+
+- `buttonPress`
+- `primary-play`
+- `panelOpen`
+- `panelClose`
+- `tabChange`
+- `characterSelected`
+- `modeSelected`
+- `difficultySelected`
+- `lockedAction`
+- `reward`
+- `newRecord`
+
+These remain temporary generated tones. They must not be described as final branded Kaflul audio assets.
 
 ## Autoplay Contract
 
@@ -87,6 +108,7 @@ No approved external UI sound files exist yet.
 Recommended future asset pack:
 
 - button press
+- primary play
 - panel open
 - panel close
 - tab change

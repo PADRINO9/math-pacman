@@ -1,6 +1,6 @@
 {
   "phase": 6,
-  "capturedAt": "2026-06-28T22:27:33.580Z",
+  "capturedAt": "2026-06-29T18:15:20.895Z",
   "chrome": "Chrome/149.0.7827.197",
   "ok": true,
   "failures": [],
@@ -120,7 +120,7 @@
           "adapter": true
         },
         "hiddenAnimations": 0,
-        "runningAnimations": 3,
+        "runningAnimations": 2,
         "documentOverflow": {
           "x": false,
           "y": false
@@ -169,9 +169,9 @@
         "runtimeErrors": []
       },
       "profile": {
-        "frames": 106,
-        "avgFrameMs": 8.49056603773585,
-        "avgFps": 117.77777777777777,
+        "frames": 103,
+        "avgFrameMs": 8.742718446601941,
+        "avgFps": 114.38089950027764,
         "longFramesOver50ms": 0,
         "motion": {
           "played": 37,
@@ -352,7 +352,7 @@
           "adapter": true
         },
         "hiddenAnimations": 0,
-        "runningAnimations": 2,
+        "runningAnimations": 3,
         "documentOverflow": {
           "x": false,
           "y": false
@@ -401,9 +401,9 @@
         "runtimeErrors": []
       },
       "profile": {
-        "frames": 106,
-        "avgFrameMs": 8.49056603773585,
-        "avgFps": 117.77777777777777,
+        "frames": 101,
+        "avgFrameMs": 8.907920792079207,
+        "avgFps": 112.25964210292321,
         "longFramesOver50ms": 0,
         "motion": {
           "played": 37,
@@ -584,7 +584,7 @@
           "adapter": true
         },
         "hiddenAnimations": 0,
-        "runningAnimations": 1,
+        "runningAnimations": 2,
         "documentOverflow": {
           "x": false,
           "y": false
@@ -633,10 +633,10 @@
         "runtimeErrors": []
       },
       "profile": {
-        "frames": 33,
-        "avgFrameMs": 28.278787878787874,
-        "avgFps": 35.36219459922847,
-        "longFramesOver50ms": 6,
+        "frames": 35,
+        "avgFrameMs": 27.145714285714295,
+        "avgFps": 36.8382275549942,
+        "longFramesOver50ms": 3,
         "motion": {
           "played": 37,
           "skippedHidden": 0,
@@ -742,7 +742,7 @@
           "adapter": true
         },
         "hiddenAnimations": 0,
-        "runningAnimations": 14,
+        "runningAnimations": 17,
         "documentOverflow": {
           "x": false,
           "y": false
@@ -865,9 +865,9 @@
         "runtimeErrors": []
       },
       "profile": {
-        "frames": 72,
-        "avgFrameMs": 12.825000000000001,
-        "avgFps": 77.97270955165692,
+        "frames": 65,
+        "avgFrameMs": 13.97384615384615,
+        "avgFps": 71.56225916547398,
         "longFramesOver50ms": 0,
         "motion": {
           "played": 37,
@@ -1097,9 +1097,9 @@
         "runtimeErrors": []
       },
       "profile": {
-        "frames": 73,
-        "avgFrameMs": 12.443835616438358,
-        "avgFps": 80.36107441655658,
+        "frames": 67,
+        "avgFrameMs": 13.682089552238804,
+        "avgFps": 73.08825133631505,
         "longFramesOver50ms": 0,
         "motion": {
           "played": 37,

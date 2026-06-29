@@ -345,6 +345,32 @@ test("production UI uses the Kaflul SVG icon system instead of Unicode icon text
   assert.equal(readRepoFile("game.js").includes("×"), true, "math multiplication sign should remain available");
 });
 
+test("mobile CSS override layer is self contained", () => {
+  const mobileOverrides = readRepoFile("ui/mobile-overrides.css");
+  const legacyImports = [
+    "mobile-enhancements.css",
+    "mobile-phone-refinement.css",
+    "mobile-start-hotfix.css",
+    "mobile-resolution-hotfix.css",
+    "mobile-native-answer.css",
+    "mobile-final-layout.css"
+  ];
+
+  assert.equal(/@import\s+url/.test(mobileOverrides), false);
+  for (const file of legacyImports) {
+    assert.equal(
+      mobileOverrides.includes(`@import url("../${file}`),
+      false,
+      `ui/mobile-overrides.css should not import ${file}`
+    );
+    assert.match(
+      mobileOverrides,
+      new RegExp(`Legacy source: ${file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`),
+      `ui/mobile-overrides.css should preserve a section marker for ${file}`
+    );
+  }
+});
+
 test("nickname validation rejects empty and dangerous input", () => {
   assert.equal(systems.validateNickname("").ok, false);
   assert.equal(systems.validateNickname("<script>").ok, false);

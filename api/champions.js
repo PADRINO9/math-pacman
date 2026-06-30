@@ -38,6 +38,16 @@ function isSameOriginRequest(request) {
   }
 }
 
+function isCapabilityRequest(request) {
+  try {
+    const host = getRequestOriginHost(request) || "localhost";
+    const url = new URL(request.url || "/api/champions", `https://${host}`);
+    return request.method === "GET" && url.searchParams.get("capability") === "1";
+  } catch {
+    return false;
+  }
+}
+
 function parseBody(request) {
   if (request.body && typeof request.body === "object") {
     return request.body;
@@ -207,6 +217,32 @@ module.exports = async function championsHandler(request, response) {
   }
 
   const config = getSupabaseConfig();
+  if (isCapabilityRequest(request)) {
+    response.setHeader("Cache-Control", "no-store");
+    if (!config.url || !config.serviceRoleKey) {
+      sendJson(response, 200, {
+        publicAvailable: false,
+        code: "leaderboard_not_configured",
+        message: "טבלת השיאים עדיין לא הוגדרה."
+      });
+      return;
+    }
+
+    try {
+      await getScores(config);
+      sendJson(response, 200, {
+        publicAvailable: true
+      });
+    } catch {
+      sendJson(response, 200, {
+        publicAvailable: false,
+        code: "leaderboard_unavailable",
+        message: "טבלת השיאים הציבורית לא זמינה כרגע."
+      });
+    }
+    return;
+  }
+
   if (!config.url || !config.serviceRoleKey) {
     sendJson(response, 503, {
       code: "leaderboard_not_configured",

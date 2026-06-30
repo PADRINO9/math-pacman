@@ -1,7 +1,12 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const path = require("node:path");
 
 const systems = require("../kaflul-systems");
+const championsHandler = require("../api/champions");
+
+const REPO_ROOT = path.resolve(__dirname, "..");
 
 function memoryStorage(initial = {}) {
   const store = new Map(Object.entries(initial));
@@ -16,6 +21,52 @@ function memoryStorage(initial = {}) {
       store.delete(key);
     }
   };
+}
+
+function createMockResponse() {
+  return {
+    statusCode: 200,
+    headers: {},
+    body: "",
+    status(code) {
+      this.statusCode = code;
+      return this;
+    },
+    setHeader(name, value) {
+      this.headers[String(name).toLowerCase()] = value;
+    },
+    end(body = "") {
+      this.body = body;
+    }
+  };
+}
+
+function withLeaderboardEnv(env, callback) {
+  const keys = ["SUPABASE_URL", "NEXT_PUBLIC_SUPABASE_URL", "SUPABASE_SERVICE_ROLE_KEY"];
+  const previous = Object.fromEntries(keys.map((key) => [key, process.env[key]]));
+  keys.forEach((key) => {
+    if (Object.prototype.hasOwnProperty.call(env, key)) {
+      process.env[key] = env[key];
+    } else {
+      delete process.env[key];
+    }
+  });
+
+  return Promise.resolve()
+    .then(callback)
+    .finally(() => {
+      keys.forEach((key) => {
+        if (previous[key] === undefined) {
+          delete process.env[key];
+        } else {
+          process.env[key] = previous[key];
+        }
+      });
+    });
+}
+
+function readRepoFile(file) {
+  return fs.readFileSync(path.join(REPO_ROOT, file), "utf8");
 }
 
 test("difficulty configuration exposes five stable Hebrew difficulties", () => {
@@ -137,6 +188,225 @@ test("leaderboard entries sort and filter by mode and difficulty", () => {
   const adventureOnly = systems.getLeaderboardEntries(save, { mode: "adventure" });
   assert.equal(adventureOnly.length, 1);
   assert.equal(adventureOnly[0].mode, "adventure");
+});
+
+test("public leaderboard UI stays local-only when public backend is unavailable", () => {
+  const localOnly = systems.getPublicLeaderboardUiState("localOnly", true);
+  assert.equal(localOnly.panelHidden, false);
+  assert.equal(localOnly.buttonDisabled, true);
+  assert.equal(localOnly.buttonText, "פרסום לא זמין");
+  assert.equal(localOnly.title, "השיא נשמר במכשיר הזה");
+  assert.equal(localOnly.copy, systems.PUBLIC_LEADERBOARD_LOCAL_ONLY_MESSAGE);
+  assert.equal(localOnly.statusText, systems.PUBLIC_LEADERBOARD_LOCAL_ONLY_MESSAGE);
+  assert.equal(localOnly.publicChipText, "ציבורי לא פעיל");
+  assert.equal(localOnly.publicAvailable, false);
+
+  const ineligible = systems.getPublicLeaderboardUiState("localOnly", false);
+  assert.equal(ineligible.panelHidden, true);
+  assert.equal(ineligible.buttonDisabled, true);
+
+  const available = systems.getPublicLeaderboardUiState("available", true);
+  assert.equal(available.panelHidden, false);
+  assert.equal(available.buttonDisabled, false);
+  assert.equal(available.publicAvailable, true);
+});
+
+test("champions API returns explicit unconfigured status without throwing", async () => {
+  await withLeaderboardEnv({}, async () => {
+    const response = createMockResponse();
+    await championsHandler({
+      method: "GET",
+      headers: { host: "127.0.0.1:4173" },
+      socket: { remoteAddress: "127.0.0.1" }
+    }, response);
+
+    assert.equal(response.statusCode, 503);
+    assert.equal(response.headers["content-type"], "application/json; charset=utf-8");
+    assert.deepEqual(JSON.parse(response.body), {
+      code: "leaderboard_not_configured",
+      message: "טבלת השיאים עדיין לא הוגדרה."
+    });
+  });
+});
+
+test("champions API capability check stays HTTP 200 when backend is unconfigured", async () => {
+  await withLeaderboardEnv({}, async () => {
+    const response = createMockResponse();
+    await championsHandler({
+      method: "GET",
+      url: "/api/champions?capability=1",
+      headers: { host: "127.0.0.1:4173" },
+      socket: { remoteAddress: "127.0.0.1" }
+    }, response);
+
+    assert.equal(response.statusCode, 200);
+    assert.deepEqual(JSON.parse(response.body), {
+      publicAvailable: false,
+      code: "leaderboard_not_configured",
+      message: "טבלת השיאים עדיין לא הוגדרה."
+    });
+  });
+});
+
+test("production UI uses the Kaflul SVG icon system instead of Unicode icon text", () => {
+  const requiredSymbols = [
+    "play",
+    "pause",
+    "sound-on",
+    "sound-off",
+    "settings",
+    "leaderboard",
+    "profile",
+    "mode",
+    "difficulty",
+    "close",
+    "refresh",
+    "check",
+    "lock",
+    "lives",
+    "score",
+    "combo",
+    "mission",
+    "trophy",
+    "crown",
+    "rank",
+    "back",
+    "progress"
+  ];
+  const icons = readRepoFile("ui/icons.svg");
+  for (const symbolId of requiredSymbols) {
+    assert.match(icons, new RegExp(`<symbol\\s+id="${symbolId}"(?:\\s|>)`), `missing ui/icons.svg#${symbolId}`);
+  }
+
+  const productionFiles = [
+    "index.html",
+    "styles.css",
+    "leaderboard.css",
+    "arcade-foundation.css",
+    "main-menu.css",
+    "mobile-phone-refinement.css",
+    "mobile-enhancements.css",
+    "mobile-start-hotfix.css",
+    "mobile-resolution-hotfix.css",
+    "mobile-final-layout.css",
+    "mobile-native-answer.css",
+    "kaflul-systems.js",
+    "ui/foundation.css",
+    "ui/mobile-overrides.css",
+    "ui/secondary-screens.css",
+    "ui/motion/motion.css",
+    "ui/character-animation-adapter.js",
+    "ui/assets/asset-manifest.js",
+    "ui/sounds/ui-sound-controller.js",
+    "ui/motion/motion-system.js",
+    "poster-loader.js",
+    "mobile-enhancements.js",
+    "mobile-question-state.js",
+    "nabatick-directional.js",
+    "mobile-native-answer.js",
+    "mobile-screen-state.js",
+    "game.js",
+    "maze-enhancements.js"
+  ];
+  const forbiddenIconChars = [
+    0x2713,
+    0x2605,
+    0x2665,
+    0x2655,
+    0x265b,
+    0x266a,
+    0x2699,
+    0x25a3,
+    0x25a5,
+    0x25cf,
+    0x21bb,
+    0x2161,
+    0x25b6,
+    0x1f3c6
+  ].map((codePoint) => String.fromCodePoint(codePoint));
+  const forbiddenEntityPattern = /&(?:#x?2713|#10003|#x?2605|#9733|#x?2665|#9829|#x?2655|#9813|#x?265b|#9819|#x?266a|#9834|#x?2699|#9881|#x?25a3|#9635|#x?25a5|#9637|#x?25cf|#9679|#x?21bb|#8635|#x?2161|#8545|#x?25b6|#9654|#x?1f3c6|#127942);/i;
+  const violations = [];
+
+  for (const file of productionFiles) {
+    const text = readRepoFile(file);
+    text.split(/\n/).forEach((line, index) => {
+      for (const character of forbiddenIconChars) {
+        if (line.includes(character)) {
+          violations.push(`${file}:${index + 1}: forbidden icon character U+${character.codePointAt(0).toString(16).toUpperCase()}`);
+        }
+      }
+      if (forbiddenEntityPattern.test(line)) {
+        violations.push(`${file}:${index + 1}: forbidden icon HTML entity`);
+      }
+    });
+  }
+
+  assert.deepEqual(violations, []);
+  assert.equal(readRepoFile("game.js").includes("×"), true, "math multiplication sign should remain available");
+});
+
+test("mobile CSS override layer is self contained", () => {
+  const mobileOverrides = readRepoFile("ui/mobile-overrides.css");
+  const legacyImports = [
+    "mobile-enhancements.css",
+    "mobile-phone-refinement.css",
+    "mobile-start-hotfix.css",
+    "mobile-resolution-hotfix.css",
+    "mobile-native-answer.css",
+    "mobile-final-layout.css"
+  ];
+
+  assert.equal(/@import\s+url/.test(mobileOverrides), false);
+  for (const file of legacyImports) {
+    assert.equal(
+      mobileOverrides.includes(`@import url("../${file}`),
+      false,
+      `ui/mobile-overrides.css should not import ${file}`
+    );
+    assert.match(
+      mobileOverrides,
+      new RegExp(`Legacy source: ${file.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}`),
+      `ui/mobile-overrides.css should preserve a section marker for ${file}`
+    );
+  }
+});
+
+test("permanent gameplay HUD contains only approved metrics", () => {
+  const html = readRepoFile("index.html");
+  const hudMatch = html.match(/<div class="hud"[\s\S]*?<section class="stage"/);
+  assert.ok(hudMatch, "index.html should contain the gameplay HUD before the stage");
+  const hudMarkup = hudMatch[0];
+  const metrics = [...hudMarkup.matchAll(/data-hud-metric="([^"]+)"/g)].map((match) => match[1]);
+
+  assert.deepEqual(metrics, ["score", "combo", "lives", "progress", "mission"]);
+  assert.equal(hudMarkup.includes("data-hud-secondary"), false);
+  assert.equal(hudMarkup.includes('id="level-number"'), false);
+  assert.equal(hudMarkup.includes('id="world-name"'), false);
+  assert.equal(hudMarkup.includes('id="mode-label"'), false);
+  assert.equal(hudMarkup.includes('id="difficulty-label"'), false);
+  assert.match(hudMarkup, /ui\/icons\.svg#lives/);
+  assert.match(hudMarkup, /ui\/icons\.svg#score/);
+  assert.match(hudMarkup, /ui\/icons\.svg#combo/);
+  assert.match(hudMarkup, /ui\/icons\.svg#progress/);
+  assert.match(hudMarkup, /ui\/icons\.svg#mission/);
+});
+
+test("mobile HUD overrides do not hide approved permanent metrics", () => {
+  const mobileOverrides = readRepoFile("ui/mobile-overrides.css");
+  const hiddenApprovedMetricRules = [];
+
+  for (const block of mobileOverrides.matchAll(/([^{}]+)\{([^{}]+)\}/g)) {
+    const selector = block[1];
+    const declarations = block[2];
+    if (
+      /\.(?:metric-combo|metric-mission)\b/.test(selector)
+      && /display\s*:\s*none\b/.test(declarations)
+    ) {
+      hiddenApprovedMetricRules.push(selector.trim().replace(/\s+/g, " "));
+    }
+  }
+
+  assert.deepEqual(hiddenApprovedMetricRules, []);
 });
 
 test("nickname validation rejects empty and dangerous input", () => {

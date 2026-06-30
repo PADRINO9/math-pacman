@@ -1,0 +1,2737 @@
+{
+  "phase": 7,
+  "capturedAt": "2026-06-29T19:36:28.669Z",
+  "chrome": "Chrome/149.0.7827.197",
+  "localPreviewUrl": "http://127.0.0.1:49525/",
+  "ok": true,
+  "failures": [],
+  "warnings": [
+    "390x844-portrait: duplicate resource entries observed",
+    "430x932-portrait: duplicate resource entries observed",
+    "844x390-landscape: duplicate resource entries observed",
+    "1280x720-desktop: duplicate resource entries observed",
+    "1440x900-desktop: duplicate resource entries observed"
+  ],
+  "assets": {
+    "files": [
+      {
+        "asset": "assets/kaflul-logo-official.png",
+        "size": 893698
+      },
+      {
+        "asset": "assets/bifly-menu.png",
+        "size": 219118
+      },
+      {
+        "asset": "assets/bifly-player.png",
+        "size": 245339
+      },
+      {
+        "asset": "assets/bifly-eat-prepare.png",
+        "size": 233951
+      },
+      {
+        "asset": "assets/bifly-eat.png",
+        "size": 239505
+      },
+      {
+        "asset": "assets/nabatick-idle-reference.png",
+        "size": 205812
+      },
+      {
+        "asset": "assets/nabatick-eat-prepare-reference.png",
+        "size": 170357
+      },
+      {
+        "asset": "assets/nabatick-eat-reference.png",
+        "size": 180983
+      },
+      {
+        "asset": "assets/dark-enemy.png",
+        "size": 161699
+      },
+      {
+        "asset": "assets/dark-enemy-angry.png",
+        "size": 154538
+      },
+      {
+        "asset": "assets/dark-enemy-surprised.png",
+        "size": 161277
+      },
+      {
+        "asset": "assets/dark-enemy-sad.png",
+        "size": 163143
+      },
+      {
+        "asset": "assets/math-maze-poster.png",
+        "size": 1849524
+      }
+    ],
+    "totalBytes": 4878944,
+    "largest": [
+      {
+        "asset": "assets/math-maze-poster.png",
+        "size": 1849524
+      },
+      {
+        "asset": "assets/kaflul-logo-official.png",
+        "size": 893698
+      },
+      {
+        "asset": "assets/bifly-player.png",
+        "size": 245339
+      },
+      {
+        "asset": "assets/bifly-eat.png",
+        "size": 239505
+      },
+      {
+        "asset": "assets/bifly-eat-prepare.png",
+        "size": 233951
+      }
+    ]
+  },
+  "viewportResults": [
+    {
+      "name": "390x844-portrait",
+      "width": 390,
+      "height": 844,
+      "mobile": true,
+      "events": [],
+      "screenshots": {
+        "before": "docs/phase7-screenshots/phase7-before-home-390x844-portrait.png",
+        "after": "docs/phase7-screenshots/phase7-after-pregame-390x844-portrait.png"
+      },
+      "firstLoad": {
+        "lang": "he",
+        "dir": "rtl",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "rects": {
+          "#start-screen": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 390,
+            "height": 844
+          },
+          ".home-player-bar": {
+            "visible": true,
+            "x": 15,
+            "y": 14,
+            "width": 360,
+            "height": 56
+          },
+          ".menu-logo": {
+            "visible": true,
+            "x": 15,
+            "y": 69,
+            "width": 360,
+            "height": 106
+          },
+          ".home-hero-scene": {
+            "visible": true,
+            "x": 15,
+            "y": 174,
+            "width": 360,
+            "height": 376
+          },
+          "#start-button": {
+            "visible": true,
+            "x": 15,
+            "y": 589,
+            "width": 360,
+            "height": 48
+          },
+          ".home-bottom-nav": {
+            "visible": true,
+            "x": 15,
+            "y": 767,
+            "width": 360,
+            "height": 61
+          },
+          "#pregame-panel": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#hero-gallery": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#leaderboard-dialog": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#pause-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#end-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          ".hud": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#game-canvas": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 390,
+            "height": 844
+          }
+        },
+        "outOfBounds": [],
+        "overflowingText": [],
+        "missingNames": [],
+        "smallTargets": [],
+        "distortedImages": [],
+        "iconIssues": [],
+        "hiddenAnimations": 0,
+        "runningAnimations": 0,
+        "documentOverflow": {
+          "x": false,
+          "y": false
+        },
+        "primaryActionDominant": true,
+        "runtimeErrors": [],
+        "motion": {
+          "played": 0,
+          "skippedHidden": 0,
+          "particlesCreated": 0,
+          "activeParticles": 0,
+          "lastEvent": "",
+          "reducedMotion": false,
+          "maxParticleLimit": 10
+        },
+        "sound": {
+          "enabled": true,
+          "unlocked": false,
+          "contextState": "none",
+          "played": 0,
+          "mutedSkips": 0,
+          "autoplayBlocks": 0,
+          "unavailableSkips": 0,
+          "throttledSkips": 0,
+          "lastEvent": "",
+          "lastReason": ""
+        }
+      },
+      "returning": {
+        "nickname": "בודק שלב 7",
+        "character": "nabatick",
+        "mode": "adventure",
+        "difficulty": "advanced",
+        "soundIcon": "sound-off",
+        "startVisible": true
+      },
+      "lockedDifficulty": {
+        "legendaryDisabled": true,
+        "copy": "נעול: סיימו הרפתקה במומחה או הגיעו ל-75,000 נקודות בארקייד מומחה"
+      },
+      "pregameFocus": true,
+      "pregameClosed": true,
+      "afterInspection": {
+        "lang": "he",
+        "dir": "rtl",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "rects": {
+          "#start-screen": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 390,
+            "height": 844
+          },
+          ".home-player-bar": {
+            "visible": true,
+            "x": 15,
+            "y": 14,
+            "width": 360,
+            "height": 56
+          },
+          ".menu-logo": {
+            "visible": true,
+            "x": 15,
+            "y": 69,
+            "width": 360,
+            "height": 106
+          },
+          ".home-hero-scene": {
+            "visible": true,
+            "x": 15,
+            "y": 174,
+            "width": 360,
+            "height": 376
+          },
+          "#start-button": {
+            "visible": true,
+            "x": 15,
+            "y": 589,
+            "width": 360,
+            "height": 48
+          },
+          ".home-bottom-nav": {
+            "visible": true,
+            "x": 15,
+            "y": 767,
+            "width": 360,
+            "height": 61
+          },
+          "#pregame-panel": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 390,
+            "height": 844
+          },
+          "#hero-gallery": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#leaderboard-dialog": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#pause-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#end-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          ".hud": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#game-canvas": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 390,
+            "height": 844
+          }
+        },
+        "outOfBounds": [],
+        "overflowingText": [],
+        "missingNames": [],
+        "smallTargets": [],
+        "distortedImages": [],
+        "iconIssues": [],
+        "hiddenAnimations": 0,
+        "runningAnimations": 0,
+        "documentOverflow": {
+          "x": false,
+          "y": false
+        },
+        "primaryActionDominant": true,
+        "runtimeErrors": [],
+        "motion": {
+          "played": 7,
+          "skippedHidden": 0,
+          "particlesCreated": 0,
+          "activeParticles": 0,
+          "lastEvent": "sheetOpen",
+          "reducedMotion": false,
+          "maxParticleLimit": 10
+        },
+        "sound": {
+          "enabled": false,
+          "unlocked": false,
+          "contextState": "none",
+          "played": 0,
+          "mutedSkips": 7,
+          "autoplayBlocks": 0,
+          "unavailableSkips": 0,
+          "throttledSkips": 0,
+          "lastEvent": "panelOpen",
+          "lastReason": "muted"
+        }
+      },
+      "firstPerf": {
+        "navigation": {
+          "domContentLoadedMs": 186.70000000298023,
+          "loadMs": 191.09999999403954,
+          "transferSize": 42595,
+          "decodedBodySize": 42295
+        },
+        "resourceCount": 39,
+        "totalTransferSize": 5915383,
+        "totalDecodedBodySize": 5903683,
+        "duplicateResources": [
+          [
+            "assets/bifly-player.png",
+            2
+          ],
+          [
+            "assets/nabatick-eat-prepare-reference.png",
+            2
+          ],
+          [
+            "assets/nabatick-eat-reference.png",
+            2
+          ]
+        ],
+        "largestResources": [
+          {
+            "name": "assets/math-maze-poster.png",
+            "initiatorType": "link",
+            "transferSize": 1849824,
+            "encodedBodySize": 1849524,
+            "decodedBodySize": 1849524,
+            "duration": 12.800000011920929
+          },
+          {
+            "name": "assets/kaflul-logo-official.png",
+            "initiatorType": "link",
+            "transferSize": 893998,
+            "encodedBodySize": 893698,
+            "decodedBodySize": 893698,
+            "duration": 2.2000000029802322
+          },
+          {
+            "name": "assets/bifly-player.png",
+            "initiatorType": "link",
+            "transferSize": 245639,
+            "encodedBodySize": 245339,
+            "decodedBodySize": 245339,
+            "duration": 10.099999994039536
+          },
+          {
+            "name": "assets/bifly-player.png",
+            "initiatorType": "other",
+            "transferSize": 245639,
+            "encodedBodySize": 245339,
+            "decodedBodySize": 245339,
+            "duration": 1.5
+          },
+          {
+            "name": "assets/bifly-eat.png",
+            "initiatorType": "link",
+            "transferSize": 239805,
+            "encodedBodySize": 239505,
+            "decodedBodySize": 239505,
+            "duration": 11.099999994039536
+          },
+          {
+            "name": "assets/bifly-eat-prepare.png",
+            "initiatorType": "link",
+            "transferSize": 234251,
+            "encodedBodySize": 233951,
+            "decodedBodySize": 233951,
+            "duration": 11.099999994039536
+          },
+          {
+            "name": "assets/bifly-menu.png",
+            "initiatorType": "link",
+            "transferSize": 219418,
+            "encodedBodySize": 219118,
+            "decodedBodySize": 219118,
+            "duration": 1.5999999940395355
+          },
+          {
+            "name": "assets/nabatick-idle-reference.png",
+            "initiatorType": "link",
+            "transferSize": 206112,
+            "encodedBodySize": 205812,
+            "decodedBodySize": 205812,
+            "duration": 11.900000005960464
+          }
+        ],
+        "memory": {
+          "usedJSHeapSize": 2773245,
+          "totalJSHeapSize": 6813877
+        }
+      },
+      "homeFps": {
+        "frames": 108,
+        "avgFrameMs": 8.33425925925926,
+        "avgFps": 119.98666814798354,
+        "longFramesOver50ms": 0
+      },
+      "orientation": {
+        "lang": "he",
+        "dir": "rtl",
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "rects": {
+          "#start-screen": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 844,
+            "height": 390
+          },
+          ".home-player-bar": {
+            "visible": true,
+            "x": 248,
+            "y": 13,
+            "width": 580,
+            "height": 48
+          },
+          ".menu-logo": {
+            "visible": true,
+            "x": 248,
+            "y": 71,
+            "width": 371,
+            "height": 56
+          },
+          ".home-hero-scene": {
+            "visible": true,
+            "x": 248,
+            "y": 137,
+            "width": 371,
+            "height": 150
+          },
+          "#start-button": {
+            "visible": true,
+            "x": 248,
+            "y": 258,
+            "width": 371,
+            "height": 61
+          },
+          ".home-bottom-nav": {
+            "visible": true,
+            "x": 16,
+            "y": 13,
+            "width": 226,
+            "height": 58
+          },
+          "#pregame-panel": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#hero-gallery": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#leaderboard-dialog": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#pause-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#end-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          ".hud": {
+            "visible": false,
+            "x": 7,
+            "y": 5,
+            "width": 830,
+            "height": 54
+          },
+          "#game-canvas": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 844,
+            "height": 390
+          }
+        },
+        "outOfBounds": [],
+        "overflowingText": [],
+        "missingNames": [],
+        "smallTargets": [],
+        "distortedImages": [],
+        "iconIssues": [],
+        "hiddenAnimations": 0,
+        "runningAnimations": 0,
+        "documentOverflow": {
+          "x": false,
+          "y": false
+        },
+        "primaryActionDominant": true,
+        "runtimeErrors": [],
+        "motion": {
+          "played": 8,
+          "skippedHidden": 0,
+          "particlesCreated": 0,
+          "activeParticles": 0,
+          "lastEvent": "sheetClose",
+          "reducedMotion": false,
+          "maxParticleLimit": 10
+        },
+        "sound": {
+          "enabled": false,
+          "unlocked": false,
+          "contextState": "none",
+          "played": 0,
+          "mutedSkips": 8,
+          "autoplayBlocks": 0,
+          "unavailableSkips": 0,
+          "throttledSkips": 0,
+          "lastEvent": "panelClose",
+          "lastReason": "muted"
+        }
+      }
+    },
+    {
+      "name": "430x932-portrait",
+      "width": 430,
+      "height": 932,
+      "mobile": true,
+      "events": [],
+      "screenshots": {
+        "before": "docs/phase7-screenshots/phase7-before-home-430x932-portrait.png",
+        "after": "docs/phase7-screenshots/phase7-after-pregame-430x932-portrait.png"
+      },
+      "firstLoad": {
+        "lang": "he",
+        "dir": "rtl",
+        "viewport": {
+          "width": 430,
+          "height": 932
+        },
+        "rects": {
+          "#start-screen": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 430,
+            "height": 932
+          },
+          ".home-player-bar": {
+            "visible": true,
+            "x": 15,
+            "y": 14,
+            "width": 400,
+            "height": 58
+          },
+          ".menu-logo": {
+            "visible": true,
+            "x": 15,
+            "y": 71,
+            "width": 400,
+            "height": 113
+          },
+          ".home-hero-scene": {
+            "visible": true,
+            "x": 15,
+            "y": 184,
+            "width": 400,
+            "height": 437
+          },
+          "#start-button": {
+            "visible": true,
+            "x": 15,
+            "y": 666,
+            "width": 400,
+            "height": 48
+          },
+          ".home-bottom-nav": {
+            "visible": true,
+            "x": 15,
+            "y": 854,
+            "width": 400,
+            "height": 62
+          },
+          "#pregame-panel": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#hero-gallery": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#leaderboard-dialog": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#pause-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#end-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          ".hud": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#game-canvas": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 430,
+            "height": 932
+          }
+        },
+        "outOfBounds": [],
+        "overflowingText": [],
+        "missingNames": [],
+        "smallTargets": [],
+        "distortedImages": [],
+        "iconIssues": [],
+        "hiddenAnimations": 0,
+        "runningAnimations": 0,
+        "documentOverflow": {
+          "x": false,
+          "y": false
+        },
+        "primaryActionDominant": true,
+        "runtimeErrors": [],
+        "motion": {
+          "played": 0,
+          "skippedHidden": 0,
+          "particlesCreated": 0,
+          "activeParticles": 0,
+          "lastEvent": "",
+          "reducedMotion": false,
+          "maxParticleLimit": 10
+        },
+        "sound": {
+          "enabled": true,
+          "unlocked": false,
+          "contextState": "none",
+          "played": 0,
+          "mutedSkips": 0,
+          "autoplayBlocks": 0,
+          "unavailableSkips": 0,
+          "throttledSkips": 0,
+          "lastEvent": "",
+          "lastReason": ""
+        }
+      },
+      "returning": {
+        "nickname": "בודק שלב 7",
+        "character": "nabatick",
+        "mode": "adventure",
+        "difficulty": "advanced",
+        "soundIcon": "sound-off",
+        "startVisible": true
+      },
+      "lockedDifficulty": {
+        "legendaryDisabled": true,
+        "copy": "נעול: סיימו הרפתקה במומחה או הגיעו ל-75,000 נקודות בארקייד מומחה"
+      },
+      "pregameFocus": true,
+      "pregameClosed": true,
+      "afterInspection": {
+        "lang": "he",
+        "dir": "rtl",
+        "viewport": {
+          "width": 430,
+          "height": 932
+        },
+        "rects": {
+          "#start-screen": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 430,
+            "height": 932
+          },
+          ".home-player-bar": {
+            "visible": true,
+            "x": 15,
+            "y": 14,
+            "width": 400,
+            "height": 58
+          },
+          ".menu-logo": {
+            "visible": true,
+            "x": 15,
+            "y": 71,
+            "width": 400,
+            "height": 113
+          },
+          ".home-hero-scene": {
+            "visible": true,
+            "x": 15,
+            "y": 184,
+            "width": 400,
+            "height": 437
+          },
+          "#start-button": {
+            "visible": true,
+            "x": 15,
+            "y": 666,
+            "width": 400,
+            "height": 48
+          },
+          ".home-bottom-nav": {
+            "visible": true,
+            "x": 15,
+            "y": 854,
+            "width": 400,
+            "height": 62
+          },
+          "#pregame-panel": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 430,
+            "height": 932
+          },
+          "#hero-gallery": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#leaderboard-dialog": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#pause-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#end-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          ".hud": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#game-canvas": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 430,
+            "height": 932
+          }
+        },
+        "outOfBounds": [],
+        "overflowingText": [],
+        "missingNames": [],
+        "smallTargets": [],
+        "distortedImages": [],
+        "iconIssues": [],
+        "hiddenAnimations": 0,
+        "runningAnimations": 0,
+        "documentOverflow": {
+          "x": false,
+          "y": false
+        },
+        "primaryActionDominant": true,
+        "runtimeErrors": [],
+        "motion": {
+          "played": 7,
+          "skippedHidden": 0,
+          "particlesCreated": 0,
+          "activeParticles": 0,
+          "lastEvent": "sheetOpen",
+          "reducedMotion": false,
+          "maxParticleLimit": 10
+        },
+        "sound": {
+          "enabled": false,
+          "unlocked": false,
+          "contextState": "none",
+          "played": 0,
+          "mutedSkips": 7,
+          "autoplayBlocks": 0,
+          "unavailableSkips": 0,
+          "throttledSkips": 0,
+          "lastEvent": "panelOpen",
+          "lastReason": "muted"
+        }
+      },
+      "firstPerf": {
+        "navigation": {
+          "domContentLoadedMs": 176.40000000596046,
+          "loadMs": 207.40000000596046,
+          "transferSize": 42595,
+          "decodedBodySize": 42295
+        },
+        "resourceCount": 39,
+        "totalTransferSize": 5915383,
+        "totalDecodedBodySize": 5903683,
+        "duplicateResources": [
+          [
+            "assets/bifly-player.png",
+            2
+          ],
+          [
+            "assets/nabatick-eat-prepare-reference.png",
+            2
+          ],
+          [
+            "assets/nabatick-eat-reference.png",
+            2
+          ]
+        ],
+        "largestResources": [
+          {
+            "name": "assets/math-maze-poster.png",
+            "initiatorType": "link",
+            "transferSize": 1849824,
+            "encodedBodySize": 1849524,
+            "decodedBodySize": 1849524,
+            "duration": 12.5
+          },
+          {
+            "name": "assets/kaflul-logo-official.png",
+            "initiatorType": "link",
+            "transferSize": 893998,
+            "encodedBodySize": 893698,
+            "decodedBodySize": 893698,
+            "duration": 2.7999999970197678
+          },
+          {
+            "name": "assets/bifly-player.png",
+            "initiatorType": "link",
+            "transferSize": 245639,
+            "encodedBodySize": 245339,
+            "decodedBodySize": 245339,
+            "duration": 10.200000002980232
+          },
+          {
+            "name": "assets/bifly-player.png",
+            "initiatorType": "other",
+            "transferSize": 245639,
+            "encodedBodySize": 245339,
+            "decodedBodySize": 245339,
+            "duration": 1.2000000029802322
+          },
+          {
+            "name": "assets/bifly-eat.png",
+            "initiatorType": "link",
+            "transferSize": 239805,
+            "encodedBodySize": 239505,
+            "decodedBodySize": 239505,
+            "duration": 10.400000005960464
+          },
+          {
+            "name": "assets/bifly-eat-prepare.png",
+            "initiatorType": "link",
+            "transferSize": 234251,
+            "encodedBodySize": 233951,
+            "decodedBodySize": 233951,
+            "duration": 10.300000011920929
+          },
+          {
+            "name": "assets/bifly-menu.png",
+            "initiatorType": "link",
+            "transferSize": 219418,
+            "encodedBodySize": 219118,
+            "decodedBodySize": 219118,
+            "duration": 1.9000000059604645
+          },
+          {
+            "name": "assets/nabatick-idle-reference.png",
+            "initiatorType": "link",
+            "transferSize": 206112,
+            "encodedBodySize": 205812,
+            "decodedBodySize": 205812,
+            "duration": 10.700000002980232
+          }
+        ],
+        "memory": {
+          "usedJSHeapSize": 2814084,
+          "totalJSHeapSize": 6028572
+        }
+      },
+      "homeFps": {
+        "frames": 108,
+        "avgFrameMs": 8.332407407407405,
+        "avgFps": 120.01333481497947,
+        "longFramesOver50ms": 0
+      },
+      "orientation": {
+        "lang": "he",
+        "dir": "rtl",
+        "viewport": {
+          "width": 932,
+          "height": 430
+        },
+        "rects": {
+          "#start-screen": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 932,
+            "height": 430
+          },
+          ".home-player-bar": {
+            "visible": true,
+            "x": 273,
+            "y": 13,
+            "width": 643,
+            "height": 48
+          },
+          ".menu-logo": {
+            "visible": true,
+            "x": 273,
+            "y": 92,
+            "width": 412,
+            "height": 56
+          },
+          ".home-hero-scene": {
+            "visible": true,
+            "x": 273,
+            "y": 180,
+            "width": 412,
+            "height": 172
+          },
+          "#start-button": {
+            "visible": true,
+            "x": 273,
+            "y": 323,
+            "width": 412,
+            "height": 61
+          },
+          ".home-bottom-nav": {
+            "visible": true,
+            "x": 16,
+            "y": 13,
+            "width": 251,
+            "height": 58
+          },
+          "#pregame-panel": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#hero-gallery": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#leaderboard-dialog": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#pause-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#end-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          ".hud": {
+            "visible": false,
+            "x": 7,
+            "y": 5,
+            "width": 918,
+            "height": 54
+          },
+          "#game-canvas": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 932,
+            "height": 430
+          }
+        },
+        "outOfBounds": [],
+        "overflowingText": [],
+        "missingNames": [],
+        "smallTargets": [],
+        "distortedImages": [],
+        "iconIssues": [],
+        "hiddenAnimations": 0,
+        "runningAnimations": 0,
+        "documentOverflow": {
+          "x": false,
+          "y": false
+        },
+        "primaryActionDominant": true,
+        "runtimeErrors": [],
+        "motion": {
+          "played": 8,
+          "skippedHidden": 0,
+          "particlesCreated": 0,
+          "activeParticles": 0,
+          "lastEvent": "sheetClose",
+          "reducedMotion": false,
+          "maxParticleLimit": 10
+        },
+        "sound": {
+          "enabled": false,
+          "unlocked": false,
+          "contextState": "none",
+          "played": 0,
+          "mutedSkips": 8,
+          "autoplayBlocks": 0,
+          "unavailableSkips": 0,
+          "throttledSkips": 0,
+          "lastEvent": "panelClose",
+          "lastReason": "muted"
+        }
+      }
+    },
+    {
+      "name": "844x390-landscape",
+      "width": 844,
+      "height": 390,
+      "mobile": true,
+      "events": [],
+      "screenshots": {
+        "before": "docs/phase7-screenshots/phase7-before-home-844x390-landscape.png",
+        "after": "docs/phase7-screenshots/phase7-after-pregame-844x390-landscape.png"
+      },
+      "firstLoad": {
+        "lang": "he",
+        "dir": "rtl",
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "rects": {
+          "#start-screen": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 844,
+            "height": 390
+          },
+          ".home-player-bar": {
+            "visible": true,
+            "x": 248,
+            "y": 13,
+            "width": 580,
+            "height": 48
+          },
+          ".menu-logo": {
+            "visible": true,
+            "x": 248,
+            "y": 71,
+            "width": 371,
+            "height": 56
+          },
+          ".home-hero-scene": {
+            "visible": true,
+            "x": 248,
+            "y": 137,
+            "width": 371,
+            "height": 150
+          },
+          "#start-button": {
+            "visible": true,
+            "x": 248,
+            "y": 258,
+            "width": 371,
+            "height": 61
+          },
+          ".home-bottom-nav": {
+            "visible": true,
+            "x": 16,
+            "y": 13,
+            "width": 226,
+            "height": 58
+          },
+          "#pregame-panel": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#hero-gallery": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#leaderboard-dialog": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#pause-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#end-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          ".hud": {
+            "visible": false,
+            "x": 7,
+            "y": 5,
+            "width": 830,
+            "height": 54
+          },
+          "#game-canvas": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 844,
+            "height": 390
+          }
+        },
+        "outOfBounds": [],
+        "overflowingText": [],
+        "missingNames": [],
+        "smallTargets": [],
+        "distortedImages": [],
+        "iconIssues": [],
+        "hiddenAnimations": 0,
+        "runningAnimations": 0,
+        "documentOverflow": {
+          "x": false,
+          "y": false
+        },
+        "primaryActionDominant": true,
+        "runtimeErrors": [],
+        "motion": {
+          "played": 0,
+          "skippedHidden": 0,
+          "particlesCreated": 0,
+          "activeParticles": 0,
+          "lastEvent": "",
+          "reducedMotion": false,
+          "maxParticleLimit": 10
+        },
+        "sound": {
+          "enabled": true,
+          "unlocked": false,
+          "contextState": "none",
+          "played": 0,
+          "mutedSkips": 0,
+          "autoplayBlocks": 0,
+          "unavailableSkips": 0,
+          "throttledSkips": 0,
+          "lastEvent": "",
+          "lastReason": ""
+        }
+      },
+      "returning": {
+        "nickname": "בודק שלב 7",
+        "character": "nabatick",
+        "mode": "adventure",
+        "difficulty": "advanced",
+        "soundIcon": "sound-off",
+        "startVisible": true
+      },
+      "lockedDifficulty": {
+        "legendaryDisabled": true,
+        "copy": "נעול: סיימו הרפתקה במומחה או הגיעו ל-75,000 נקודות בארקייד מומחה"
+      },
+      "pregameFocus": true,
+      "pregameClosed": true,
+      "afterInspection": {
+        "lang": "he",
+        "dir": "rtl",
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "rects": {
+          "#start-screen": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 844,
+            "height": 390
+          },
+          ".home-player-bar": {
+            "visible": true,
+            "x": 248,
+            "y": 13,
+            "width": 580,
+            "height": 48
+          },
+          ".menu-logo": {
+            "visible": true,
+            "x": 248,
+            "y": 71,
+            "width": 371,
+            "height": 56
+          },
+          ".home-hero-scene": {
+            "visible": true,
+            "x": 248,
+            "y": 137,
+            "width": 371,
+            "height": 150
+          },
+          "#start-button": {
+            "visible": true,
+            "x": 248,
+            "y": 258,
+            "width": 371,
+            "height": 61
+          },
+          ".home-bottom-nav": {
+            "visible": true,
+            "x": 16,
+            "y": 13,
+            "width": 226,
+            "height": 58
+          },
+          "#pregame-panel": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 844,
+            "height": 390
+          },
+          "#hero-gallery": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#leaderboard-dialog": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#pause-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#end-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          ".hud": {
+            "visible": false,
+            "x": 7,
+            "y": 5,
+            "width": 830,
+            "height": 54
+          },
+          "#game-canvas": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 844,
+            "height": 390
+          }
+        },
+        "outOfBounds": [],
+        "overflowingText": [],
+        "missingNames": [],
+        "smallTargets": [],
+        "distortedImages": [],
+        "iconIssues": [],
+        "hiddenAnimations": 0,
+        "runningAnimations": 0,
+        "documentOverflow": {
+          "x": false,
+          "y": false
+        },
+        "primaryActionDominant": true,
+        "runtimeErrors": [],
+        "motion": {
+          "played": 7,
+          "skippedHidden": 0,
+          "particlesCreated": 0,
+          "activeParticles": 0,
+          "lastEvent": "sheetOpen",
+          "reducedMotion": false,
+          "maxParticleLimit": 10
+        },
+        "sound": {
+          "enabled": false,
+          "unlocked": false,
+          "contextState": "none",
+          "played": 0,
+          "mutedSkips": 7,
+          "autoplayBlocks": 0,
+          "unavailableSkips": 0,
+          "throttledSkips": 0,
+          "lastEvent": "panelOpen",
+          "lastReason": "muted"
+        }
+      },
+      "firstPerf": {
+        "navigation": {
+          "domContentLoadedMs": 173.5,
+          "loadMs": 297,
+          "transferSize": 42595,
+          "decodedBodySize": 42295
+        },
+        "resourceCount": 39,
+        "totalTransferSize": 5915383,
+        "totalDecodedBodySize": 5903683,
+        "duplicateResources": [
+          [
+            "assets/bifly-player.png",
+            2
+          ],
+          [
+            "assets/nabatick-eat-prepare-reference.png",
+            2
+          ],
+          [
+            "assets/nabatick-eat-reference.png",
+            2
+          ]
+        ],
+        "largestResources": [
+          {
+            "name": "assets/math-maze-poster.png",
+            "initiatorType": "link",
+            "transferSize": 1849824,
+            "encodedBodySize": 1849524,
+            "decodedBodySize": 1849524,
+            "duration": 13
+          },
+          {
+            "name": "assets/kaflul-logo-official.png",
+            "initiatorType": "link",
+            "transferSize": 893998,
+            "encodedBodySize": 893698,
+            "decodedBodySize": 893698,
+            "duration": 2.7999999970197678
+          },
+          {
+            "name": "assets/bifly-player.png",
+            "initiatorType": "link",
+            "transferSize": 245639,
+            "encodedBodySize": 245339,
+            "decodedBodySize": 245339,
+            "duration": 11.099999994039536
+          },
+          {
+            "name": "assets/bifly-player.png",
+            "initiatorType": "other",
+            "transferSize": 245639,
+            "encodedBodySize": 245339,
+            "decodedBodySize": 245339,
+            "duration": 1.6000000089406967
+          },
+          {
+            "name": "assets/bifly-eat.png",
+            "initiatorType": "link",
+            "transferSize": 239805,
+            "encodedBodySize": 239505,
+            "decodedBodySize": 239505,
+            "duration": 11.100000008940697
+          },
+          {
+            "name": "assets/bifly-eat-prepare.png",
+            "initiatorType": "link",
+            "transferSize": 234251,
+            "encodedBodySize": 233951,
+            "decodedBodySize": 233951,
+            "duration": 10.5
+          },
+          {
+            "name": "assets/bifly-menu.png",
+            "initiatorType": "link",
+            "transferSize": 219418,
+            "encodedBodySize": 219118,
+            "decodedBodySize": 219118,
+            "duration": 2
+          },
+          {
+            "name": "assets/nabatick-idle-reference.png",
+            "initiatorType": "link",
+            "transferSize": 206112,
+            "encodedBodySize": 205812,
+            "decodedBodySize": 205812,
+            "duration": 11.5
+          }
+        ],
+        "memory": {
+          "usedJSHeapSize": 2796936,
+          "totalJSHeapSize": 6290748
+        }
+      },
+      "homeFps": {
+        "frames": 108,
+        "avgFrameMs": 8.34814814814815,
+        "avgFps": 119.78704525288374,
+        "longFramesOver50ms": 0
+      },
+      "orientation": {
+        "lang": "he",
+        "dir": "rtl",
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "rects": {
+          "#start-screen": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 390,
+            "height": 844
+          },
+          ".home-player-bar": {
+            "visible": true,
+            "x": 15,
+            "y": 14,
+            "width": 360,
+            "height": 56
+          },
+          ".menu-logo": {
+            "visible": true,
+            "x": 15,
+            "y": 69,
+            "width": 360,
+            "height": 106
+          },
+          ".home-hero-scene": {
+            "visible": true,
+            "x": 15,
+            "y": 174,
+            "width": 360,
+            "height": 376
+          },
+          "#start-button": {
+            "visible": true,
+            "x": 15,
+            "y": 589,
+            "width": 360,
+            "height": 48
+          },
+          ".home-bottom-nav": {
+            "visible": true,
+            "x": 15,
+            "y": 767,
+            "width": 360,
+            "height": 61
+          },
+          "#pregame-panel": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#hero-gallery": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#leaderboard-dialog": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#pause-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#end-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          ".hud": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#game-canvas": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 390,
+            "height": 844
+          }
+        },
+        "outOfBounds": [],
+        "overflowingText": [],
+        "missingNames": [],
+        "smallTargets": [],
+        "distortedImages": [],
+        "iconIssues": [],
+        "hiddenAnimations": 0,
+        "runningAnimations": 0,
+        "documentOverflow": {
+          "x": false,
+          "y": false
+        },
+        "primaryActionDominant": true,
+        "runtimeErrors": [],
+        "motion": {
+          "played": 8,
+          "skippedHidden": 0,
+          "particlesCreated": 0,
+          "activeParticles": 0,
+          "lastEvent": "sheetClose",
+          "reducedMotion": false,
+          "maxParticleLimit": 10
+        },
+        "sound": {
+          "enabled": false,
+          "unlocked": false,
+          "contextState": "none",
+          "played": 0,
+          "mutedSkips": 8,
+          "autoplayBlocks": 0,
+          "unavailableSkips": 0,
+          "throttledSkips": 0,
+          "lastEvent": "panelClose",
+          "lastReason": "muted"
+        }
+      }
+    },
+    {
+      "name": "1280x720-desktop",
+      "width": 1280,
+      "height": 720,
+      "mobile": false,
+      "events": [],
+      "screenshots": {
+        "before": "docs/phase7-screenshots/phase7-before-home-1280x720-desktop.png",
+        "after": "docs/phase7-screenshots/phase7-after-pregame-1280x720-desktop.png"
+      },
+      "firstLoad": {
+        "lang": "he",
+        "dir": "rtl",
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "rects": {
+          "#start-screen": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 1280,
+            "height": 720
+          },
+          ".home-player-bar": {
+            "visible": true,
+            "x": 22,
+            "y": 22,
+            "width": 1236,
+            "height": 58
+          },
+          ".menu-logo": {
+            "visible": true,
+            "x": 338,
+            "y": 91,
+            "width": 619,
+            "height": 101
+          },
+          ".home-hero-scene": {
+            "visible": true,
+            "x": 338,
+            "y": 203,
+            "width": 619,
+            "height": 308
+          },
+          "#start-button": {
+            "visible": true,
+            "x": 338,
+            "y": 478,
+            "width": 619,
+            "height": 89
+          },
+          ".home-bottom-nav": {
+            "visible": true,
+            "x": 260,
+            "y": 640,
+            "width": 760,
+            "height": 58
+          },
+          "#pregame-panel": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#hero-gallery": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#leaderboard-dialog": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#pause-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#end-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          ".hud": {
+            "visible": false,
+            "x": 352,
+            "y": 8,
+            "width": 920,
+            "height": 94
+          },
+          "#game-canvas": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 1280,
+            "height": 720
+          }
+        },
+        "outOfBounds": [],
+        "overflowingText": [],
+        "missingNames": [],
+        "smallTargets": [],
+        "distortedImages": [],
+        "iconIssues": [],
+        "hiddenAnimations": 0,
+        "runningAnimations": 11,
+        "documentOverflow": {
+          "x": false,
+          "y": false
+        },
+        "primaryActionDominant": true,
+        "runtimeErrors": [],
+        "motion": {
+          "played": 0,
+          "skippedHidden": 0,
+          "particlesCreated": 0,
+          "activeParticles": 0,
+          "lastEvent": "",
+          "reducedMotion": false,
+          "maxParticleLimit": 10
+        },
+        "sound": {
+          "enabled": true,
+          "unlocked": false,
+          "contextState": "none",
+          "played": 0,
+          "mutedSkips": 0,
+          "autoplayBlocks": 0,
+          "unavailableSkips": 0,
+          "throttledSkips": 0,
+          "lastEvent": "",
+          "lastReason": ""
+        }
+      },
+      "returning": {
+        "nickname": "בודק שלב 7",
+        "character": "nabatick",
+        "mode": "adventure",
+        "difficulty": "advanced",
+        "soundIcon": "sound-off",
+        "startVisible": true
+      },
+      "lockedDifficulty": {
+        "legendaryDisabled": true,
+        "copy": "נעול: סיימו הרפתקה במומחה או הגיעו ל-75,000 נקודות בארקייד מומחה"
+      },
+      "pregameFocus": true,
+      "pregameClosed": true,
+      "afterInspection": {
+        "lang": "he",
+        "dir": "rtl",
+        "viewport": {
+          "width": 1280,
+          "height": 720
+        },
+        "rects": {
+          "#start-screen": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 1280,
+            "height": 720
+          },
+          ".home-player-bar": {
+            "visible": true,
+            "x": 22,
+            "y": 22,
+            "width": 1236,
+            "height": 58
+          },
+          ".menu-logo": {
+            "visible": true,
+            "x": 338,
+            "y": 91,
+            "width": 619,
+            "height": 101
+          },
+          ".home-hero-scene": {
+            "visible": true,
+            "x": 338,
+            "y": 203,
+            "width": 619,
+            "height": 308
+          },
+          "#start-button": {
+            "visible": true,
+            "x": 338,
+            "y": 481,
+            "width": 619,
+            "height": 89
+          },
+          ".home-bottom-nav": {
+            "visible": true,
+            "x": 260,
+            "y": 640,
+            "width": 760,
+            "height": 58
+          },
+          "#pregame-panel": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 1280,
+            "height": 720
+          },
+          "#hero-gallery": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#leaderboard-dialog": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#pause-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#end-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          ".hud": {
+            "visible": false,
+            "x": 352,
+            "y": 8,
+            "width": 920,
+            "height": 94
+          },
+          "#game-canvas": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 1280,
+            "height": 720
+          }
+        },
+        "outOfBounds": [],
+        "overflowingText": [],
+        "missingNames": [],
+        "smallTargets": [],
+        "distortedImages": [],
+        "iconIssues": [],
+        "hiddenAnimations": 0,
+        "runningAnimations": 11,
+        "documentOverflow": {
+          "x": false,
+          "y": false
+        },
+        "primaryActionDominant": true,
+        "runtimeErrors": [],
+        "motion": {
+          "played": 7,
+          "skippedHidden": 0,
+          "particlesCreated": 0,
+          "activeParticles": 0,
+          "lastEvent": "sheetOpen",
+          "reducedMotion": false,
+          "maxParticleLimit": 10
+        },
+        "sound": {
+          "enabled": false,
+          "unlocked": false,
+          "contextState": "none",
+          "played": 0,
+          "mutedSkips": 7,
+          "autoplayBlocks": 0,
+          "unavailableSkips": 0,
+          "throttledSkips": 0,
+          "lastEvent": "panelOpen",
+          "lastReason": "muted"
+        }
+      },
+      "firstPerf": {
+        "navigation": {
+          "domContentLoadedMs": 152.3999999910593,
+          "loadMs": 155.5,
+          "transferSize": 42595,
+          "decodedBodySize": 42295
+        },
+        "resourceCount": 40,
+        "totalTransferSize": 6134801,
+        "totalDecodedBodySize": 6122801,
+        "duplicateResources": [
+          [
+            "assets/bifly-menu.png",
+            2
+          ],
+          [
+            "assets/bifly-player.png",
+            2
+          ],
+          [
+            "assets/nabatick-eat-prepare-reference.png",
+            2
+          ],
+          [
+            "assets/nabatick-eat-reference.png",
+            2
+          ]
+        ],
+        "largestResources": [
+          {
+            "name": "assets/math-maze-poster.png",
+            "initiatorType": "link",
+            "transferSize": 1849824,
+            "encodedBodySize": 1849524,
+            "decodedBodySize": 1849524,
+            "duration": 13
+          },
+          {
+            "name": "assets/kaflul-logo-official.png",
+            "initiatorType": "link",
+            "transferSize": 893998,
+            "encodedBodySize": 893698,
+            "decodedBodySize": 893698,
+            "duration": 2
+          },
+          {
+            "name": "assets/bifly-player.png",
+            "initiatorType": "link",
+            "transferSize": 245639,
+            "encodedBodySize": 245339,
+            "decodedBodySize": 245339,
+            "duration": 9.600000008940697
+          },
+          {
+            "name": "assets/bifly-player.png",
+            "initiatorType": "other",
+            "transferSize": 245639,
+            "encodedBodySize": 245339,
+            "decodedBodySize": 245339,
+            "duration": 1.5999999940395355
+          },
+          {
+            "name": "assets/bifly-eat.png",
+            "initiatorType": "link",
+            "transferSize": 239805,
+            "encodedBodySize": 239505,
+            "decodedBodySize": 239505,
+            "duration": 10.600000008940697
+          },
+          {
+            "name": "assets/bifly-eat-prepare.png",
+            "initiatorType": "link",
+            "transferSize": 234251,
+            "encodedBodySize": 233951,
+            "decodedBodySize": 233951,
+            "duration": 10.5
+          },
+          {
+            "name": "assets/bifly-menu.png",
+            "initiatorType": "link",
+            "transferSize": 219418,
+            "encodedBodySize": 219118,
+            "decodedBodySize": 219118,
+            "duration": 1.2999999970197678
+          },
+          {
+            "name": "assets/bifly-menu.png",
+            "initiatorType": "img",
+            "transferSize": 219418,
+            "encodedBodySize": 219118,
+            "decodedBodySize": 219118,
+            "duration": 8.599999994039536
+          }
+        ],
+        "memory": {
+          "usedJSHeapSize": 2838249,
+          "totalJSHeapSize": 5766529
+        }
+      },
+      "homeFps": {
+        "frames": 68,
+        "avgFrameMs": 13.370588235294115,
+        "avgFps": 74.79102507699078,
+        "longFramesOver50ms": 0
+      },
+      "orientation": null
+    },
+    {
+      "name": "1440x900-desktop",
+      "width": 1440,
+      "height": 900,
+      "mobile": false,
+      "events": [],
+      "screenshots": {
+        "before": "docs/phase7-screenshots/phase7-before-home-1440x900-desktop.png",
+        "after": "docs/phase7-screenshots/phase7-after-pregame-1440x900-desktop.png"
+      },
+      "firstLoad": {
+        "lang": "he",
+        "dir": "rtl",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "rects": {
+          "#start-screen": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 900
+          },
+          ".home-player-bar": {
+            "visible": true,
+            "x": 28,
+            "y": 28,
+            "width": 1384,
+            "height": 63
+          },
+          ".menu-logo": {
+            "visible": true,
+            "x": 382,
+            "y": 105,
+            "width": 693,
+            "height": 122
+          },
+          ".home-hero-scene": {
+            "visible": true,
+            "x": 382,
+            "y": 241,
+            "width": 693,
+            "height": 418
+          },
+          "#start-button": {
+            "visible": true,
+            "x": 409,
+            "y": 631,
+            "width": 640,
+            "height": 92
+          },
+          ".home-bottom-nav": {
+            "visible": true,
+            "x": 340,
+            "y": 814,
+            "width": 760,
+            "height": 58
+          },
+          "#pregame-panel": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#hero-gallery": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#leaderboard-dialog": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#pause-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#end-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          ".hud": {
+            "visible": false,
+            "x": 512,
+            "y": 8,
+            "width": 920,
+            "height": 94
+          },
+          "#game-canvas": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 900
+          }
+        },
+        "outOfBounds": [],
+        "overflowingText": [],
+        "missingNames": [],
+        "smallTargets": [],
+        "distortedImages": [],
+        "iconIssues": [],
+        "hiddenAnimations": 0,
+        "runningAnimations": 11,
+        "documentOverflow": {
+          "x": false,
+          "y": false
+        },
+        "primaryActionDominant": true,
+        "runtimeErrors": [],
+        "motion": {
+          "played": 0,
+          "skippedHidden": 0,
+          "particlesCreated": 0,
+          "activeParticles": 0,
+          "lastEvent": "",
+          "reducedMotion": false,
+          "maxParticleLimit": 10
+        },
+        "sound": {
+          "enabled": true,
+          "unlocked": false,
+          "contextState": "none",
+          "played": 0,
+          "mutedSkips": 0,
+          "autoplayBlocks": 0,
+          "unavailableSkips": 0,
+          "throttledSkips": 0,
+          "lastEvent": "",
+          "lastReason": ""
+        }
+      },
+      "returning": {
+        "nickname": "בודק שלב 7",
+        "character": "nabatick",
+        "mode": "adventure",
+        "difficulty": "advanced",
+        "soundIcon": "sound-off",
+        "startVisible": true
+      },
+      "lockedDifficulty": {
+        "legendaryDisabled": true,
+        "copy": "נעול: סיימו הרפתקה במומחה או הגיעו ל-75,000 נקודות בארקייד מומחה"
+      },
+      "pregameFocus": true,
+      "pregameClosed": true,
+      "afterInspection": {
+        "lang": "he",
+        "dir": "rtl",
+        "viewport": {
+          "width": 1440,
+          "height": 900
+        },
+        "rects": {
+          "#start-screen": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 900
+          },
+          ".home-player-bar": {
+            "visible": true,
+            "x": 28,
+            "y": 28,
+            "width": 1384,
+            "height": 63
+          },
+          ".menu-logo": {
+            "visible": true,
+            "x": 382,
+            "y": 105,
+            "width": 693,
+            "height": 122
+          },
+          ".home-hero-scene": {
+            "visible": true,
+            "x": 382,
+            "y": 241,
+            "width": 693,
+            "height": 418
+          },
+          "#start-button": {
+            "visible": true,
+            "x": 409,
+            "y": 634,
+            "width": 640,
+            "height": 92
+          },
+          ".home-bottom-nav": {
+            "visible": true,
+            "x": 340,
+            "y": 814,
+            "width": 760,
+            "height": 58
+          },
+          "#pregame-panel": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 900
+          },
+          "#hero-gallery": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#leaderboard-dialog": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#pause-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          "#end-screen": {
+            "visible": false,
+            "x": 0,
+            "y": 0,
+            "width": 0,
+            "height": 0
+          },
+          ".hud": {
+            "visible": false,
+            "x": 512,
+            "y": 8,
+            "width": 920,
+            "height": 94
+          },
+          "#game-canvas": {
+            "visible": true,
+            "x": 0,
+            "y": 0,
+            "width": 1440,
+            "height": 900
+          }
+        },
+        "outOfBounds": [],
+        "overflowingText": [],
+        "missingNames": [],
+        "smallTargets": [],
+        "distortedImages": [],
+        "iconIssues": [],
+        "hiddenAnimations": 0,
+        "runningAnimations": 11,
+        "documentOverflow": {
+          "x": false,
+          "y": false
+        },
+        "primaryActionDominant": true,
+        "runtimeErrors": [],
+        "motion": {
+          "played": 7,
+          "skippedHidden": 0,
+          "particlesCreated": 0,
+          "activeParticles": 0,
+          "lastEvent": "sheetOpen",
+          "reducedMotion": false,
+          "maxParticleLimit": 10
+        },
+        "sound": {
+          "enabled": false,
+          "unlocked": false,
+          "contextState": "none",
+          "played": 0,
+          "mutedSkips": 7,
+          "autoplayBlocks": 0,
+          "unavailableSkips": 0,
+          "throttledSkips": 0,
+          "lastEvent": "panelOpen",
+          "lastReason": "muted"
+        }
+      },
+      "firstPerf": {
+        "navigation": {
+          "domContentLoadedMs": 158.5,
+          "loadMs": 164,
+          "transferSize": 42595,
+          "decodedBodySize": 42295
+        },
+        "resourceCount": 40,
+        "totalTransferSize": 6134801,
+        "totalDecodedBodySize": 6122801,
+        "duplicateResources": [
+          [
+            "assets/bifly-menu.png",
+            2
+          ],
+          [
+            "assets/bifly-player.png",
+            2
+          ],
+          [
+            "assets/nabatick-eat-prepare-reference.png",
+            2
+          ],
+          [
+            "assets/nabatick-eat-reference.png",
+            2
+          ]
+        ],
+        "largestResources": [
+          {
+            "name": "assets/math-maze-poster.png",
+            "initiatorType": "link",
+            "transferSize": 1849824,
+            "encodedBodySize": 1849524,
+            "decodedBodySize": 1849524,
+            "duration": 14.5
+          },
+          {
+            "name": "assets/kaflul-logo-official.png",
+            "initiatorType": "link",
+            "transferSize": 893998,
+            "encodedBodySize": 893698,
+            "decodedBodySize": 893698,
+            "duration": 2.2999999970197678
+          },
+          {
+            "name": "assets/bifly-player.png",
+            "initiatorType": "link",
+            "transferSize": 245639,
+            "encodedBodySize": 245339,
+            "decodedBodySize": 245339,
+            "duration": 12
+          },
+          {
+            "name": "assets/bifly-player.png",
+            "initiatorType": "other",
+            "transferSize": 245639,
+            "encodedBodySize": 245339,
+            "decodedBodySize": 245339,
+            "duration": 1.5
+          },
+          {
+            "name": "assets/bifly-eat.png",
+            "initiatorType": "link",
+            "transferSize": 239805,
+            "encodedBodySize": 239505,
+            "decodedBodySize": 239505,
+            "duration": 12.700000002980232
+          },
+          {
+            "name": "assets/bifly-eat-prepare.png",
+            "initiatorType": "link",
+            "transferSize": 234251,
+            "encodedBodySize": 233951,
+            "decodedBodySize": 233951,
+            "duration": 12.700000002980232
+          },
+          {
+            "name": "assets/bifly-menu.png",
+            "initiatorType": "link",
+            "transferSize": 219418,
+            "encodedBodySize": 219118,
+            "decodedBodySize": 219118,
+            "duration": 1.6000000089406967
+          },
+          {
+            "name": "assets/bifly-menu.png",
+            "initiatorType": "img",
+            "transferSize": 219418,
+            "encodedBodySize": 219118,
+            "decodedBodySize": 219118,
+            "duration": 10.100000008940697
+          }
+        ],
+        "memory": {
+          "usedJSHeapSize": 3070227,
+          "totalJSHeapSize": 6290795
+        }
+      },
+      "homeFps": {
+        "frames": 68,
+        "avgFrameMs": 13.235294117647058,
+        "avgFps": 75.55555555555556,
+        "longFramesOver50ms": 0
+      },
+      "orientation": null
+    }
+  ],
+  "functional": {
+    "events": [],
+    "screenshots": {
+      "gameplayShot": "docs/phase7-screenshots/phase7-gameplay-430x932-portrait.png",
+      "questionShot": "docs/phase7-screenshots/phase7-question-430x932-portrait.png",
+      "gameOverShot": "docs/phase7-screenshots/phase7-gameover-430x932-portrait.png"
+    },
+    "gameplayFps": {
+      "frames": 76,
+      "avgFrameMs": 12.06052631578948,
+      "avgFps": 82.9151210997163,
+      "longFramesOver50ms": 0
+    },
+    "checks": {
+      "started": true,
+      "paused": true,
+      "resumed": true,
+      "questionSeen": true,
+      "correctAnswer": true,
+      "wrongAnswer": true,
+      "timeoutObserved": true,
+      "gameOver": true,
+      "retryStarted": true,
+      "returnedMenu": true,
+      "leaderboard": true
+    },
+    "postRun": {
+      "lang": "he",
+      "dir": "rtl",
+      "viewport": {
+        "width": 430,
+        "height": 932
+      },
+      "rects": {
+        "#start-screen": {
+          "visible": true,
+          "x": 0,
+          "y": 0,
+          "width": 430,
+          "height": 932
+        },
+        ".home-player-bar": {
+          "visible": true,
+          "x": 15,
+          "y": 14,
+          "width": 400,
+          "height": 58
+        },
+        ".menu-logo": {
+          "visible": true,
+          "x": 15,
+          "y": 71,
+          "width": 400,
+          "height": 113
+        },
+        ".home-hero-scene": {
+          "visible": true,
+          "x": 15,
+          "y": 184,
+          "width": 400,
+          "height": 437
+        },
+        "#start-button": {
+          "visible": true,
+          "x": 15,
+          "y": 666,
+          "width": 400,
+          "height": 48
+        },
+        ".home-bottom-nav": {
+          "visible": true,
+          "x": 15,
+          "y": 854,
+          "width": 400,
+          "height": 62
+        },
+        "#pregame-panel": {
+          "visible": false,
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "#hero-gallery": {
+          "visible": false,
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "#leaderboard-dialog": {
+          "visible": true,
+          "x": -1,
+          "y": -4,
+          "width": 433,
+          "height": 938
+        },
+        "#pause-screen": {
+          "visible": false,
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "#end-screen": {
+          "visible": false,
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        ".hud": {
+          "visible": false,
+          "x": 0,
+          "y": 0,
+          "width": 0,
+          "height": 0
+        },
+        "#game-canvas": {
+          "visible": true,
+          "x": 0,
+          "y": 0,
+          "width": 430,
+          "height": 932
+        }
+      },
+      "outOfBounds": [
+        {
+          "selector": "#leaderboard-dialog",
+          "rect": {
+            "visible": true,
+            "x": -1,
+            "y": -4,
+            "width": 433,
+            "height": 938
+          }
+        }
+      ],
+      "overflowingText": [],
+      "missingNames": [],
+      "smallTargets": [],
+      "distortedImages": [],
+      "iconIssues": [],
+      "hiddenAnimations": 0,
+      "runningAnimations": 2,
+      "documentOverflow": {
+        "x": false,
+        "y": false
+      },
+      "primaryActionDominant": true,
+      "runtimeErrors": [],
+      "motion": {
+        "played": 62,
+        "skippedHidden": 0,
+        "particlesCreated": 10,
+        "activeParticles": 0,
+        "lastEvent": "modalOpen",
+        "reducedMotion": false,
+        "maxParticleLimit": 10
+      },
+      "sound": {
+        "enabled": true,
+        "unlocked": true,
+        "contextState": "running",
+        "played": 14,
+        "mutedSkips": 0,
+        "autoplayBlocks": 0,
+        "unavailableSkips": 0,
+        "throttledSkips": 0,
+        "lastEvent": "panelOpen",
+        "lastReason": "played"
+      }
+    }
+  },
+  "victory": {
+    "events": [],
+    "question": true,
+    "victory": {
+      "visible": true,
+      "title": "אלוף כפלול ניצח!",
+      "mode": "הרפתקה"
+    },
+    "screenshot": "docs/phase7-screenshots/phase7-victory-430x932-portrait.png"
+  },
+  "reducedMotion": {
+    "events": [],
+    "reduced": {
+      "mediaMatches": true,
+      "classPresent": true,
+      "reduced": true,
+      "emitted": 0,
+      "particleDelta": 0,
+      "runningAnimations": 0,
+      "hiddenAnimations": 0
+    }
+  },
+  "assetFallback": {
+    "events": [],
+    "result": {
+      "startVisible": true,
+      "startButtonVisible": true,
+      "runtimeErrors": [],
+      "brokenImages": [
+        "assets/bifly-menu.png",
+        "assets/nabatick-idle-reference.png",
+        "assets/bifly-menu.png"
+      ],
+      "overflow": {
+        "x": false,
+        "y": false
+      }
+    },
+    "screenshot": "docs/phase7-screenshots/phase7-asset-fallback-390x844-portrait.png"
+  },
+  "memory": {
+    "events": [],
+    "before": {
+      "nodes": 572,
+      "heap": 1731072
+    },
+    "after": {
+      "nodes": 576,
+      "heap": 1947764,
+      "particles": 0,
+      "hiddenAnimations": 0
+    }
+  },
+  "leaderboardApiRequests": [
+    {
+      "method": "GET",
+      "capability": true
+    }
+  ]
+}

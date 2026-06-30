@@ -108,7 +108,7 @@
   // return because the player may expect the game to remain safely paused.
   document.addEventListener("visibilitychange", () => {
     const gameIsOpen = Boolean(startScreen?.hidden && (!endScreen || endScreen.hidden));
-    const isRunning = pauseButton?.textContent.trim() === "Ⅱ";
+    const isRunning = pauseButton?.dataset.icon !== "play";
     if (document.hidden && gameIsOpen && isRunning) {
       pauseButton.click();
     }

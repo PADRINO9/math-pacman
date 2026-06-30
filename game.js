@@ -11,6 +11,7 @@
   const TILE = 24;
   const COLS = WIDTH / TILE;
   const ROWS = HEIGHT / TILE;
+  const SVG_NS = "http://www.w3.org/2000/svg";
   const MOBILE_RUNTIME = {
     coarse: false,
     mode: "desktop",
@@ -57,6 +58,20 @@
       detailColor: "#fff8cf",
       trailColor: "173, 230, 44",
       glowColor: "rgba(171, 240, 35, 0.62)"
+    }
+  };
+
+  const HERO_GALLERY_ORDER = ["bifly", "nabatick"];
+  const HERO_GALLERY_COPY = {
+    bifly: {
+      description: "דמות זריזה ושמחה שמרגישה בבית בתוך מסלולי מבוך מהירים.",
+      style: "זריז במבוך",
+      assetNote: "תצוגת PNG סטטית. מצבי idle ו-eat קיימים כנכסים מאושרים."
+    },
+    nabatick: {
+      description: "נבטיק רגוע וחד, קורא את המסלול ומחכה לרגע הנכון לברוח מיריבים.",
+      style: "חד מול יריבים",
+      assetNote: "תצוגת PNG סטטית מנכס reference מאושר. מצבי idle ו-eat קיימים."
     }
   };
 
@@ -155,6 +170,7 @@
       timeLimit: "mathPacmanTimeLimit",
       factStats: "mathPacmanFactStats"
     },
+    iconSprite: "ui/icons.svg",
     difficulty: SYSTEMS.DIFFICULTIES,
     levels: [
       {
@@ -322,11 +338,8 @@
   const els = {
     correct: document.getElementById("correct-answers"),
     targetCorrect: document.getElementById("target-correct"),
-    levelNumber: document.getElementById("level-number"),
-    worldName: document.getElementById("world-name"),
+    hudStageLabel: document.getElementById("hud-progress-stage"),
     score: document.getElementById("score"),
-    modeLabel: document.getElementById("mode-label"),
-    difficultyLabel: document.getElementById("difficulty-label"),
     combo: document.getElementById("combo"),
     lives: document.getElementById("lives"),
     progress: document.getElementById("progress-fill"),
@@ -350,6 +363,7 @@
     bestScore: document.getElementById("best-score"),
     selectedModeLabel: document.getElementById("selected-mode-label"),
     selectedDifficultyLabel: document.getElementById("selected-difficulty-label"),
+    selectedCharacterLabel: document.getElementById("selected-character-label"),
     menuSelectionSummary: document.getElementById("menu-selection-summary"),
     menuRankValue: document.getElementById("menu-rank-value"),
     menuPersonalBest: document.getElementById("menu-personal-best"),
@@ -357,15 +371,68 @@
     playerGreeting: document.getElementById("player-greeting"),
     modeControlButton: document.getElementById("mode-control-button"),
     difficultyControlButton: document.getElementById("difficulty-control-button"),
+    characterControlButton: document.getElementById("character-control-button"),
     profileControlButton: document.getElementById("profile-control-button"),
+    pregameOpenButton: document.getElementById("pregame-open-button"),
     menuSettingsButton: document.getElementById("menu-settings-button"),
     menuLeaderboardLink: document.getElementById("menu-leaderboard-link"),
+    homeProgressCard: document.querySelector(".home-progress-card"),
+    homeNavButtons: Array.from(document.querySelectorAll(".home-nav-button")),
+    homeNavGame: document.getElementById("home-nav-game"),
+    homeNavCharacters: document.getElementById("home-nav-characters"),
+    homeNavProgress: document.getElementById("home-nav-progress"),
+    homeNavChampions: document.getElementById("home-nav-champions"),
+    heroGallery: document.getElementById("hero-gallery"),
+    heroGalleryBack: document.getElementById("hero-gallery-back"),
+    heroGalleryHome: document.getElementById("hero-gallery-home"),
+    heroGalleryPrev: document.getElementById("hero-gallery-prev"),
+    heroGalleryNext: document.getElementById("hero-gallery-next"),
+    heroGalleryStage: document.getElementById("hero-gallery-stage"),
+    heroGalleryCard: document.querySelector(".hero-gallery-card"),
+    heroGalleryArtButton: document.getElementById("hero-gallery-art-button"),
+    heroAnimationMount: document.getElementById("hero-animation-mount"),
+    heroGalleryName: document.getElementById("hero-gallery-name"),
+    heroGalleryDescription: document.getElementById("hero-gallery-description"),
+    heroGalleryStyle: document.getElementById("hero-gallery-style"),
+    heroGalleryBest: document.getElementById("hero-gallery-best"),
+    heroGalleryStatus: document.getElementById("hero-gallery-status"),
+    heroGalleryAssetNote: document.getElementById("hero-gallery-asset-note"),
+    heroGallerySelect: document.getElementById("hero-gallery-select"),
+    heroGallerySelectLabel: document.getElementById("hero-gallery-select-label"),
+    pregamePanel: document.getElementById("pregame-panel"),
+    pregameCharacterButton: document.getElementById("pregame-character-button"),
+    pregameModeButton: document.getElementById("pregame-mode-button"),
+    pregameDifficultyButton: document.getElementById("pregame-difficulty-button"),
+    pregameStartButton: document.getElementById("pregame-start-button"),
+    pregameCharacterLabel: document.getElementById("pregame-character-label"),
+    pregameModeLabel: document.getElementById("pregame-mode-label"),
+    pregameDifficultyLabel: document.getElementById("pregame-difficulty-label"),
+    pregameMultiplierLabel: document.getElementById("pregame-multiplier-label"),
+    pregameRuleCopy: document.getElementById("pregame-rule-copy"),
+    pregameImportantRule: document.getElementById("pregame-important-rule"),
     modePanel: document.getElementById("mode-panel"),
     difficultyPanel: document.getElementById("difficulty-panel"),
     settingsPanel: document.getElementById("settings-panel"),
+    settingsSoundButton: document.getElementById("settings-sound-button"),
+    settingsSoundLabel: document.getElementById("settings-sound-label"),
     settingsSaveButton: document.getElementById("settings-save-button"),
+    progressPanel: document.getElementById("progress-panel"),
+    progressUnlockedDifficulties: document.getElementById("progress-unlocked-difficulties"),
+    progressCurrentBest: document.getElementById("progress-current-best"),
+    progressBestList: document.getElementById("progress-best-list"),
     menuSheets: Array.from(document.querySelectorAll(".menu-sheet")),
     panelCloseButtons: Array.from(document.querySelectorAll("[data-close-panel]")),
+    pauseScreen: document.getElementById("pause-screen"),
+    pauseSummary: document.getElementById("pause-summary"),
+    pauseMissionTitle: document.getElementById("pause-mission-title"),
+    pauseMissionProgress: document.getElementById("pause-mission-progress"),
+    pauseResumeButton: document.getElementById("pause-resume-button"),
+    pauseRetryButton: document.getElementById("pause-retry-button"),
+    pauseSoundButton: document.getElementById("pause-sound-button"),
+    pauseSoundLabel: document.getElementById("pause-sound-label"),
+    pauseMenuButton: document.getElementById("pause-menu-button"),
+    pauseNameInput: document.getElementById("pause-player-name-input"),
+    pauseSaveNameButton: document.getElementById("pause-save-name-button"),
     endScreen: document.getElementById("end-screen"),
     winnerTrophy: document.getElementById("winner-trophy"),
     newRecordBadge: document.getElementById("new-record-badge"),
@@ -405,11 +472,17 @@
     leaderboardClose: document.getElementById("leaderboard-close"),
     leaderboardList: document.getElementById("leaderboard-list"),
     leaderboardStatus: document.getElementById("leaderboard-status"),
+    leaderboardEmptyState: document.getElementById("leaderboard-empty-state"),
+    leaderboardErrorState: document.getElementById("leaderboard-error-state"),
     leaderboardRefresh: document.getElementById("leaderboard-refresh"),
     leaderboardModeFilter: document.getElementById("leaderboard-mode-filter"),
     leaderboardDifficultyFilter: document.getElementById("leaderboard-difficulty-filter"),
+    leaderboardCopy: document.getElementById("leaderboard-copy"),
+    leaderboardPublicChip: document.getElementById("leaderboard-public-chip"),
     endLeaderboardButton: document.getElementById("end-leaderboard-button"),
     publishScorePanel: document.getElementById("publish-score-panel"),
+    publishScoreTitle: document.getElementById("publish-score-title"),
+    publishScoreCopy: document.getElementById("publish-score-copy"),
     publishScoreButton: document.getElementById("publish-score-button"),
     publishScoreStatus: document.getElementById("publish-score-status")
   };
@@ -648,13 +721,34 @@
     fireworkTimer: 0,
     leaderboardLoading: false,
     scorePublishing: false,
+    publicLeaderboard: {
+      status: "localOnly",
+      promise: null,
+      checked: false
+    },
     sessionStartedAt: null,
     hitsTaken: 0,
     finalResult: null,
     latestLeaderboardEntryId: null,
     lastFocusBeforeLeaderboard: null,
-    lastFocusBeforeMenuSheet: null
+    lastFocusBeforePause: null,
+    lastFocusBeforeMenuSheet: null,
+    lastFocusBeforeHeroGallery: null,
+    heroGalleryCharacterId: null,
+    heroGallerySwipeStart: null,
+    heroGalleryReactionTimerId: null,
+    hudSnapshot: {
+      score: null,
+      combo: null,
+      comboMultiplierPct: null,
+      lives: null,
+      missionKey: null,
+      missionProgress: null,
+      progressPercent: null,
+      correctAnswers: null
+    }
   };
+  const hudFeedbackTimers = new WeakMap();
 
   function cellKey(x, y) {
     return `${x},${y}`;
@@ -701,6 +795,51 @@
     return copy;
   }
 
+  function motionSystem() {
+    return window.KaflulMotionSystem || null;
+  }
+
+  function playUiMotion(element, eventName, options = {}) {
+    return motionSystem()?.play?.(element, eventName, options) || { ok: false, duration: 0 };
+  }
+
+  function showWithMotion(element, eventName = "screenEnter", options = {}) {
+    if (!element) {
+      return;
+    }
+    const motion = motionSystem();
+    if (motion?.show) {
+      motion.show(element, eventName, options);
+      return;
+    }
+    element.hidden = false;
+  }
+
+  function hideWithMotion(element, eventName = "screenExit", options = {}) {
+    if (!element) {
+      return;
+    }
+    const motion = motionSystem();
+    if (motion?.hideAfter) {
+      motion.hideAfter(element, eventName, options);
+      return;
+    }
+    element.hidden = true;
+  }
+
+  function syncUiSoundController() {
+    window.KaflulUiSound?.setEnabled?.(state.soundEnabled);
+  }
+
+  function playUiSound(eventName, options = {}) {
+    const controller = window.KaflulUiSound;
+    if (!controller?.play) {
+      return { ok: false, reason: "missing-controller" };
+    }
+    controller.setEnabled?.(state.soundEnabled);
+    return controller.play(eventName, options);
+  }
+
   function resizeCanvas() {
     updateViewportProfile();
     const rect = canvas.getBoundingClientRect();
@@ -723,6 +862,7 @@
 
   function updateViewportProfile() {
     const coarse = window.matchMedia("(hover: none), (pointer: coarse)").matches;
+    const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const portrait = window.innerHeight >= window.innerWidth;
     let mode = "desktop";
     let zoom = 1;
@@ -741,7 +881,7 @@
     MOBILE_RUNTIME.coarse = coarse;
     MOBILE_RUNTIME.mode = mode;
     MOBILE_RUNTIME.zoom = zoom;
-    MOBILE_RUNTIME.reducedEffects = coarse && (window.innerWidth < 900 || window.devicePixelRatio > 2);
+    MOBILE_RUNTIME.reducedEffects = prefersReducedMotion || (coarse && (window.innerWidth < 900 || window.devicePixelRatio > 2));
     document.documentElement.dataset.gameViewport = mode;
     document.documentElement.classList.toggle("mobile-low-effects", MOBILE_RUNTIME.reducedEffects);
   }
@@ -1119,6 +1259,7 @@
     if (options.announce) {
       state.player.invulnerable = 2.4;
       showLevelBanner(options.awardedLife);
+      playUiMotion(stage, "worldTransition");
       addBurst(state.player.x, state.player.y, getCurrentLevel().accent, 42, 145);
       if (options.awardedLife) {
         addFloatingText(state.player.x, state.player.y - 28, "+חיים", "#ff5f9f");
@@ -1156,6 +1297,7 @@
     state.hitsTaken = 0;
     state.finalResult = null;
     state.latestLeaderboardEntryId = null;
+    resetHudSnapshot();
     assignMission();
     enterLevel(0);
 
@@ -1234,6 +1376,96 @@
     return `×${Number.isInteger(multiplier) ? multiplier : multiplier.toFixed(1)}`;
   }
 
+  function modeRuleText(modeId = state.mode) {
+    return normalizeGameMode(modeId) === "adventure"
+      ? "הרפתקה: מסלול של 100 תשובות דרך ארבעת העולמות."
+      : "ארקייד: הישרדות בגלים עם שיא מקומי וקצב שעולה בהדרגה.";
+  }
+
+  function difficultyRuleText(difficulty = getDifficultySettings()) {
+    return `${difficulty.answerTimeLimit} שניות לכל תרגיל · ${difficulty.initialLives} חיים`;
+  }
+
+  function getUnlockedDifficultyLabels() {
+    const unlocked = state.save.unlockedDifficulties || [];
+    return unlocked
+      .map((difficultyId) => CONFIG.difficulty[normalizeDifficulty(difficultyId)]?.label)
+      .filter(Boolean)
+      .join(", ");
+  }
+
+  function updatePregamePanel() {
+    const mode = getModeSettings();
+    const difficulty = getDifficultySettings();
+    if (els.pregameCharacterLabel) {
+      els.pregameCharacterLabel.textContent = characterLabel();
+    }
+    if (els.pregameModeLabel) {
+      els.pregameModeLabel.textContent = mode.shortLabel;
+    }
+    if (els.pregameDifficultyLabel) {
+      els.pregameDifficultyLabel.textContent = `${difficulty.label} ${scoreMultiplierLabel(difficulty)}`;
+    }
+    if (els.pregameMultiplierLabel) {
+      els.pregameMultiplierLabel.textContent = scoreMultiplierLabel(difficulty);
+    }
+    if (els.pregameRuleCopy) {
+      els.pregameRuleCopy.textContent = modeRuleText(mode.id);
+    }
+    if (els.pregameImportantRule) {
+      els.pregameImportantRule.textContent = difficultyRuleText(difficulty);
+    }
+  }
+
+  function updateProgressPanel() {
+    if (els.progressUnlockedDifficulties) {
+      els.progressUnlockedDifficulties.textContent = getUnlockedDifficultyLabels() || "רגיל";
+    }
+    if (els.progressCurrentBest) {
+      els.progressCurrentBest.textContent = numberFormat.format(getPersonalBestForSelection());
+    }
+    if (!els.progressBestList) {
+      return;
+    }
+
+    const bests = Object.values(state.save.personalBests || {})
+      .filter((entry) => entry && Number(entry.score) > 0)
+      .sort((a, b) => Number(b.score) - Number(a.score))
+      .slice(0, 8);
+
+    els.progressBestList.replaceChildren();
+    if (!bests.length) {
+      const empty = document.createElement("li");
+      empty.className = "progress-empty";
+      empty.textContent = "עוד אין שיאים שמורים.";
+      els.progressBestList.append(empty);
+      return;
+    }
+
+    bests.forEach((entry) => {
+      const item = document.createElement("li");
+      const title = document.createElement("span");
+      const score = document.createElement("strong");
+      const detail = document.createElement("small");
+      title.textContent = `${modeLabel(entry.mode)} · ${difficultyLabel(entry.difficulty)}`;
+      score.textContent = numberFormat.format(entry.score);
+      detail.textContent = `שלב/גל ${entry.reachedStage || 1} · דיוק ${entry.accuracy || 0}% · רצף ${entry.maxCombo || 0}`;
+      item.append(title, score, detail);
+      els.progressBestList.append(item);
+    });
+  }
+
+  function updateDifficultyLockCopy() {
+    const lockedLegendary = els.difficultyInputs.find((input) => input.value === "legendary");
+    const copy = lockedLegendary?.closest("label")?.querySelector(".difficulty-lock-copy");
+    if (!copy) {
+      return;
+    }
+    copy.textContent = SYSTEMS.isDifficultyUnlocked(state.save, "legendary")
+      ? "פתוח"
+      : `נעול: ${SYSTEMS.LEGENDARY_UNLOCK_RULE.label}`;
+  }
+
   function updatePlayerGreeting() {
     if (!els.playerGreeting) {
       return;
@@ -1292,6 +1524,231 @@
     els.menuNextRank.textContent = `חסרות ${numberFormat.format(needed)} נקודות למקום ${rank - 1}`;
   }
 
+  function getHeroGalleryCopy(characterId) {
+    const normalized = normalizeCharacterId(characterId);
+    return HERO_GALLERY_COPY[normalized] || HERO_GALLERY_COPY.bifly;
+  }
+
+  function getCharacterStoredBest(characterId) {
+    const normalized = normalizeCharacterId(characterId);
+    const entries = Array.isArray(state.save?.leaderboardEntries) ? state.save.leaderboardEntries : [];
+    return entries.reduce((best, entry) => {
+      if (normalizeCharacterId(entry?.selectedCharacter || entry?.characterId) !== normalized) {
+        return best;
+      }
+      return Math.max(best, Math.max(0, Math.floor(Number(entry.score) || 0)));
+    }, 0);
+  }
+
+  function heroGalleryStatusText(characterId) {
+    const name = characterLabel(characterId);
+    return characterId === state.characterId
+      ? `${name} נבחר למשחק.`
+      : `אפשר לבחור את ${name} למשחק הבא.`;
+  }
+
+  function renderHeroGalleryCharacter(renderState = "idle") {
+    if (!els.heroGallery || !els.heroAnimationMount) {
+      return;
+    }
+
+    const characterId = normalizeCharacterId(state.heroGalleryCharacterId || state.characterId);
+    const copy = getHeroGalleryCopy(characterId);
+    const name = characterLabel(characterId);
+    const adapter = window.KaflulCharacterAnimationAdapter;
+    const resolved = adapter?.render(els.heroAnimationMount, {
+      characterId,
+      state: renderState,
+      alt: ""
+    });
+    const supportedStates = adapter?.getSupportedStates(characterId, "static-png") || ["idle"];
+    const missingStates = adapter?.getMissingStates(characterId, "static-png") || [];
+    const characterBest = getCharacterStoredBest(characterId);
+    const isSelected = characterId === state.characterId;
+
+    els.heroGallery.dataset.galleryCharacter = characterId;
+    els.heroGalleryCard?.setAttribute("data-preview-character", characterId);
+    if (els.heroGalleryName) els.heroGalleryName.textContent = name;
+    if (els.heroGalleryDescription) els.heroGalleryDescription.textContent = copy.description;
+    if (els.heroGalleryStyle) els.heroGalleryStyle.textContent = copy.style;
+    if (els.heroGalleryBest) {
+      els.heroGalleryBest.textContent = characterBest > 0
+        ? `שיא שמור: ${numberFormat.format(characterBest)}`
+        : "אין עדיין שיא לדמות הזאת";
+    }
+    if (els.heroGalleryStatus) els.heroGalleryStatus.textContent = heroGalleryStatusText(characterId);
+    if (els.heroGalleryAssetNote) {
+      const renderedState = resolved?.renderedState || "idle";
+      const fallbackText = resolved?.usedFallback ? " · fallback סטטי" : "";
+      const missingCount = missingStates.length;
+      els.heroGalleryAssetNote.textContent = `${copy.assetNote} מצב מוצג: ${renderedState}. חסרים ${missingCount} מצבי אנימציה${fallbackText}`;
+    }
+    if (els.heroGallerySelect) {
+      els.heroGallerySelect.setAttribute("aria-pressed", isSelected ? "true" : "false");
+      els.heroGallerySelect.dataset.selected = isSelected ? "true" : "false";
+    }
+    if (els.heroGallerySelectLabel) {
+      els.heroGallerySelectLabel.textContent = isSelected ? `${name} נבחר` : `בחר את ${name}`;
+    }
+    if (els.heroAnimationMount) {
+      els.heroAnimationMount.dataset.supportedStates = supportedStates.join(" ");
+    }
+  }
+
+  function browseHeroGallery(offset) {
+    const current = normalizeCharacterId(state.heroGalleryCharacterId || state.characterId);
+    const currentIndex = HERO_GALLERY_ORDER.indexOf(current);
+    const nextIndex = (currentIndex + offset + HERO_GALLERY_ORDER.length) % HERO_GALLERY_ORDER.length;
+    state.heroGalleryCharacterId = HERO_GALLERY_ORDER[nextIndex];
+    renderHeroGalleryCharacter("idle");
+    playUiMotion(els.heroGalleryCard, "tabChange");
+    playUiSound("tabChange");
+    window.setTimeout(() => els.heroGallerySelect?.focus({ preventScroll: true }), 0);
+  }
+
+  function closeHeroGallery(options = {}) {
+    if (!els.heroGallery || els.heroGallery.hidden) {
+      return;
+    }
+    const { restoreFocus = true } = options;
+    hideWithMotion(els.heroGallery, "screenExit");
+    els.playerForm.classList.remove("hero-gallery-open");
+    els.characterControlButton?.setAttribute("aria-expanded", "false");
+    playUiSound("panelClose");
+    if (state.heroGalleryReactionTimerId) {
+      window.clearTimeout(state.heroGalleryReactionTimerId);
+      state.heroGalleryReactionTimerId = null;
+    }
+    state.heroGallerySwipeStart = null;
+    setHomeNavActive(els.homeNavGame);
+    if (restoreFocus && state.lastFocusBeforeHeroGallery instanceof HTMLElement) {
+      state.lastFocusBeforeHeroGallery.focus({ preventScroll: true });
+    }
+    state.lastFocusBeforeHeroGallery = null;
+  }
+
+  function openHeroGallery(characterId = state.characterId, trigger = document.activeElement) {
+    if (!els.heroGallery) {
+      focusSelectedCharacter();
+      return;
+    }
+    closeMenuSheets({ restoreFocus: false, sound: false });
+    state.lastFocusBeforeHeroGallery = trigger;
+    state.heroGalleryCharacterId = normalizeCharacterId(characterId);
+    showWithMotion(els.heroGallery, "screenEnter");
+    els.playerForm.classList.add("hero-gallery-open");
+    els.characterControlButton?.setAttribute("aria-expanded", "true");
+    setHomeNavActive(els.homeNavCharacters);
+    renderHeroGalleryCharacter("idle");
+    playUiSound("panelOpen");
+    window.setTimeout(() => els.heroGallerySelect?.focus({ preventScroll: true }), 0);
+  }
+
+  function confirmHeroGallerySelection() {
+    const characterId = normalizeCharacterId(state.heroGalleryCharacterId || state.characterId);
+    const selectedChanged = characterId !== state.characterId;
+    setCharacter(characterId);
+    els.heroGalleryCard?.classList.add("is-confirming");
+    renderHeroGalleryCharacter("selected");
+    playUiMotion(els.heroGalleryCard, "characterSelect", {
+      particles: selectedChanged ? { count: 8, color: "var(--kf-color-gold, #ffd84a)" } : false
+    });
+    playUiSound("characterSelected");
+    window.setTimeout(() => {
+      els.heroGalleryCard?.classList.remove("is-confirming");
+      renderHeroGalleryCharacter("idle");
+    }, 620);
+  }
+
+  function reactToHeroGalleryTap() {
+    if (!els.heroGalleryCard) {
+      return;
+    }
+    els.heroGalleryCard.classList.remove("is-reacting");
+    void els.heroGalleryCard.offsetWidth;
+    els.heroGalleryCard.classList.add("is-reacting");
+    renderHeroGalleryCharacter("tap");
+    playUiMotion(els.heroGalleryCard, "characterTap");
+    if (state.heroGalleryReactionTimerId) {
+      window.clearTimeout(state.heroGalleryReactionTimerId);
+    }
+    state.heroGalleryReactionTimerId = window.setTimeout(() => {
+      els.heroGalleryCard?.classList.remove("is-reacting");
+      renderHeroGalleryCharacter("idle");
+      state.heroGalleryReactionTimerId = null;
+    }, 430);
+  }
+
+  function handleHeroGalleryKeydown(event) {
+    if (!els.heroGallery || els.heroGallery.hidden) {
+      return;
+    }
+    if (event.key === "ArrowLeft") {
+      event.preventDefault();
+      browseHeroGallery(1);
+    } else if (event.key === "ArrowRight") {
+      event.preventDefault();
+      browseHeroGallery(-1);
+    } else if (event.key === "Enter" || event.key === " ") {
+      const interactiveTarget = event.target?.closest?.("button, input, select, textarea, a");
+      if (!interactiveTarget || interactiveTarget === els.heroGallerySelect) {
+        event.preventDefault();
+        confirmHeroGallerySelection();
+      }
+    } else if (event.key === "Escape") {
+      event.preventDefault();
+      closeHeroGallery();
+    }
+  }
+
+  function handleHeroGalleryPointerDown(event) {
+    if (!els.heroGallery || els.heroGallery.hidden) {
+      return;
+    }
+    state.heroGallerySwipeStart = {
+      x: event.clientX,
+      y: event.clientY,
+      time: performance.now()
+    };
+  }
+
+  function handleHeroGalleryPointerUp(event) {
+    const start = state.heroGallerySwipeStart;
+    state.heroGallerySwipeStart = null;
+    if (!start || !els.heroGallery || els.heroGallery.hidden) {
+      return;
+    }
+    const dx = event.clientX - start.x;
+    const dy = event.clientY - start.y;
+    const elapsed = performance.now() - start.time;
+    if (elapsed > 900 || Math.abs(dx) < 48 || Math.abs(dx) < Math.abs(dy) * 1.25) {
+      return;
+    }
+    browseHeroGallery(dx < 0 ? 1 : -1);
+  }
+
+  function handleHeroGalleryTouchStart(event) {
+    const touch = event.changedTouches?.[0];
+    if (!touch) {
+      return;
+    }
+    handleHeroGalleryPointerDown({
+      clientX: touch.clientX,
+      clientY: touch.clientY
+    });
+  }
+
+  function handleHeroGalleryTouchEnd(event) {
+    const touch = event.changedTouches?.[0];
+    if (!touch) {
+      return;
+    }
+    handleHeroGalleryPointerUp({
+      clientX: touch.clientX,
+      clientY: touch.clientY
+    });
+  }
+
   function syncMenuSummary() {
     const mode = getModeSettings();
     const difficulty = getDifficultySettings();
@@ -1301,12 +1758,18 @@
     if (els.selectedDifficultyLabel) {
       els.selectedDifficultyLabel.textContent = difficulty.label;
     }
+    if (els.selectedCharacterLabel) {
+      els.selectedCharacterLabel.textContent = characterLabel();
+    }
     if (els.menuSelectionSummary) {
       els.menuSelectionSummary.textContent = `${characterLabel()} · ${difficulty.label} ${scoreMultiplierLabel(difficulty)} · ${mode.shortLabel}`;
     }
     updatePlayerGreeting();
     updateBestScorePreview();
     updateMenuLeaderboardPreview();
+    updatePregamePanel();
+    updateProgressPanel();
+    updatePauseScreen();
   }
 
   function getSelectedMode() {
@@ -1347,6 +1810,10 @@
     document.documentElement.dataset.character = state.characterId;
     syncCharacterInputs();
     syncMenuSummary();
+    if (els.heroGallery && !els.heroGallery.hidden) {
+      state.heroGalleryCharacterId = state.characterId;
+      renderHeroGalleryCharacter(changed ? "selected" : "idle");
+    }
   }
 
   function syncCharacterInputs() {
@@ -1380,6 +1847,44 @@
       input.closest("label")?.setAttribute("title", isLocked ? SYSTEMS.LEGENDARY_UNLOCK_RULE.label : "");
       input.checked = input.value === state.difficulty;
     }
+    updateDifficultyLockCopy();
+  }
+
+  function setHomeNavActive(activeButton) {
+    for (const button of els.homeNavButtons) {
+      if (button === activeButton) {
+        button.setAttribute("aria-current", "page");
+      } else {
+        button.removeAttribute("aria-current");
+      }
+    }
+  }
+
+  function pulseHomeElement(element) {
+    if (!element) {
+      return;
+    }
+    element.classList.remove("home-focus-pulse");
+    // Reflow intentionally restarts the short focus pulse for repeated taps.
+    void element.offsetWidth;
+    element.classList.add("home-focus-pulse");
+    window.setTimeout(() => element.classList.remove("home-focus-pulse"), 520);
+  }
+
+  function focusSelectedCharacter() {
+    const selectedInput = els.characterInputs.find((input) => input.checked) || els.characterInputs[0];
+    const selectedLabel = selectedInput?.closest(".menu-character");
+    selectedInput?.focus({ preventScroll: true });
+    pulseHomeElement(selectedLabel);
+    setHomeNavActive(els.homeNavCharacters);
+  }
+
+  function focusHomeProgress() {
+    openProgressPanel(els.homeNavProgress || els.homeProgressCard);
+  }
+
+  function focusHomeGameAction() {
+    openPregamePanel(els.homeNavGame || els.pregameOpenButton || els.startButton);
   }
 
   function setTimeLimitEnabled(enabled, persist = true) {
@@ -1412,6 +1917,9 @@
   }
 
   function getMenuSheetTrigger(sheet) {
+    if (sheet === els.pregamePanel) {
+      return els.pregameOpenButton || els.homeNavGame || els.startButton;
+    }
     if (sheet === els.modePanel) {
       return els.modeControlButton;
     }
@@ -1421,14 +1929,70 @@
     if (sheet === els.settingsPanel) {
       return els.profileControlButton || els.menuSettingsButton;
     }
+    if (sheet === els.progressPanel) {
+      return els.homeNavProgress || els.homeProgressCard;
+    }
     return null;
   }
 
+  const FOCUSABLE_SELECTOR = [
+    "a[href]",
+    "button:not([disabled])",
+    "input:not([disabled])",
+    "select:not([disabled])",
+    "textarea:not([disabled])",
+    "[tabindex]:not([tabindex='-1'])"
+  ].join(",");
+
+  function getFocusableElements(container) {
+    return Array.from(container?.querySelectorAll?.(FOCUSABLE_SELECTOR) || [])
+      .filter((element) => {
+        if (!(element instanceof HTMLElement)) {
+          return false;
+        }
+        if (element.matches("input[type='radio']")) {
+          return true;
+        }
+        const style = window.getComputedStyle(element);
+        return style.display !== "none" && style.visibility !== "hidden" && element.getClientRects().length > 0;
+      });
+  }
+
+  function trapFocus(container, event) {
+    if (event.key !== "Tab") {
+      return;
+    }
+    const focusable = getFocusableElements(container);
+    if (!focusable.length) {
+      event.preventDefault();
+      container?.focus?.({ preventScroll: true });
+      return;
+    }
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    const currentIndex = focusable.indexOf(document.activeElement);
+    const nextIndex = event.shiftKey
+      ? (currentIndex <= 0 ? focusable.length - 1 : currentIndex - 1)
+      : (currentIndex === -1 || document.activeElement === last ? 0 : currentIndex + 1);
+    event.preventDefault();
+    focusable[nextIndex].focus({ preventScroll: true });
+  }
+
   function closeMenuSheets(options = {}) {
-    const { restoreFocus = true } = options;
+    const { restoreFocus = true, sound = true } = options;
+    let closedAnySheet = false;
     for (const sheet of els.menuSheets) {
-      sheet.hidden = true;
+      const wasOpen = !sheet.hidden;
+      if (wasOpen) {
+        closedAnySheet = true;
+        hideWithMotion(sheet, "sheetClose");
+      } else {
+        sheet.hidden = true;
+      }
       getMenuSheetTrigger(sheet)?.setAttribute("aria-expanded", "false");
+    }
+    if (closedAnySheet && sound) {
+      playUiSound("panelClose");
     }
     if (restoreFocus && state.lastFocusBeforeMenuSheet instanceof HTMLElement) {
       state.lastFocusBeforeMenuSheet.focus({ preventScroll: true });
@@ -1437,22 +2001,43 @@
   }
 
   function focusMenuSheet(sheet) {
-    const target = sheet.querySelector("input:checked:not(:disabled)")
+    const target = sheet.querySelector("[data-close-panel]")
+      || sheet.querySelector("input:checked:not(:disabled)")
       || sheet.querySelector("input:not(:disabled)")
       || sheet.querySelector("button:not([data-close-panel])")
-      || sheet.querySelector("[data-close-panel]");
-    window.setTimeout(() => target?.focus({ preventScroll: true }), 0);
+      || sheet;
+    target?.focus({ preventScroll: true });
+    window.setTimeout(() => target?.focus({ preventScroll: true }), 30);
   }
 
   function openMenuSheet(sheet, trigger) {
     if (!sheet) {
       return;
     }
+    if (sheet === els.pregamePanel) {
+      updatePregamePanel();
+    }
+    if (sheet === els.progressPanel) {
+      updateProgressPanel();
+    }
     state.lastFocusBeforeMenuSheet = trigger || document.activeElement;
-    closeMenuSheets({ restoreFocus: false });
-    sheet.hidden = false;
+    closeMenuSheets({ restoreFocus: false, sound: false });
+    showWithMotion(sheet, "sheetOpen");
     getMenuSheetTrigger(sheet)?.setAttribute("aria-expanded", "true");
+    playUiSound("panelOpen");
     focusMenuSheet(sheet);
+  }
+
+  function openPregamePanel(trigger = els.pregameOpenButton) {
+    closeHeroGallery({ restoreFocus: false });
+    setHomeNavActive(els.homeNavGame);
+    openMenuSheet(els.pregamePanel, trigger);
+  }
+
+  function openProgressPanel(trigger = els.homeNavProgress) {
+    closeHeroGallery({ restoreFocus: false });
+    setHomeNavActive(els.homeNavProgress);
+    openMenuSheet(els.progressPanel, trigger);
   }
 
   function saveNicknameFromSettings() {
@@ -1472,6 +2057,29 @@
     closeMenuSheets();
   }
 
+  function saveNicknameFromPause() {
+    if (!els.pauseNameInput) {
+      return;
+    }
+    const nickname = normalizePlayerName(els.pauseNameInput.value);
+    if (!nickname.ok) {
+      els.nameError.textContent = nickname.error;
+      els.pauseNameInput.focus({ preventScroll: true });
+      return;
+    }
+
+    state.playerName = nickname.value;
+    state.save.player.nickname = nickname.value;
+    storage.set(CONFIG.storageKeys.nickname, nickname.value);
+    persistSave();
+    els.playerNameInput.value = nickname.value;
+    els.nameError.textContent = "";
+    syncMenuSummary();
+    updatePauseScreen();
+    playUiMotion(els.pauseSaveNameButton, "badgeAppearance");
+    playUiSound("notification");
+  }
+
   function setLeaderboardStatus(message, isError = false) {
     if (!els.leaderboardStatus) {
       return;
@@ -1479,6 +2087,85 @@
 
     els.leaderboardStatus.textContent = message;
     els.leaderboardStatus.style.color = isError ? "var(--red)" : "";
+    if (els.leaderboardErrorState) {
+      els.leaderboardErrorState.hidden = !isError;
+    }
+    if (isError && els.leaderboardEmptyState) {
+      els.leaderboardEmptyState.hidden = true;
+    }
+  }
+
+  function getPublicLeaderboardUi(eligible = false) {
+    return SYSTEMS.getPublicLeaderboardUiState(state.publicLeaderboard.status, eligible);
+  }
+
+  function syncPublicLeaderboardUi(eligible = false) {
+    const uiState = getPublicLeaderboardUi(eligible);
+
+    if (els.leaderboardCopy) {
+      els.leaderboardCopy.textContent = uiState.leaderboardCopy;
+    }
+    if (els.leaderboardPublicChip) {
+      els.leaderboardPublicChip.textContent = uiState.publicChipText;
+      els.leaderboardPublicChip.classList.toggle("is-unavailable", !uiState.publicAvailable);
+    }
+
+    if (els.publishScoreTitle) {
+      els.publishScoreTitle.textContent = uiState.title;
+    }
+    if (els.publishScoreCopy) {
+      els.publishScoreCopy.textContent = uiState.copy;
+    }
+    if (els.publishScoreButton) {
+      els.publishScoreButton.disabled = uiState.buttonDisabled;
+      els.publishScoreButton.textContent = uiState.buttonText;
+    }
+    if (els.publishScoreStatus) {
+      els.publishScoreStatus.textContent = uiState.statusText;
+      els.publishScoreStatus.style.color = uiState.publicAvailable ? "" : "var(--phase5-muted, #91a2ba)";
+    }
+    if (els.publishScorePanel) {
+      els.publishScorePanel.hidden = uiState.panelHidden;
+      els.publishScorePanel.classList.toggle("is-disabled", !uiState.publicAvailable);
+    }
+  }
+
+  function setPublicLeaderboardStatus(status) {
+    state.publicLeaderboard.status = status === "available" || status === "checking" ? status : "localOnly";
+    state.publicLeaderboard.checked = state.publicLeaderboard.status !== "checking";
+    syncPublicLeaderboardUi(state.phase === "ended" && state.correctAnswers >= CONFIG.leaderboard.minimumCorrectAnswers);
+  }
+
+  function checkPublicLeaderboardCapability() {
+    if (state.publicLeaderboard.status === "available") {
+      return Promise.resolve(true);
+    }
+    if (state.publicLeaderboard.checked && state.publicLeaderboard.status === "localOnly") {
+      return Promise.resolve(false);
+    }
+    if (state.publicLeaderboard.promise) {
+      return state.publicLeaderboard.promise;
+    }
+
+    setPublicLeaderboardStatus("checking");
+    state.publicLeaderboard.promise = leaderboardRequest({
+      method: "GET",
+      endpoint: `${CONFIG.leaderboard.endpoint}?capability=1`
+    })
+      .then((payload) => {
+        const isAvailable = payload?.publicAvailable === true || Array.isArray(payload?.scores);
+        setPublicLeaderboardStatus(isAvailable ? "available" : "localOnly");
+        return isAvailable;
+      })
+      .catch(() => {
+        setPublicLeaderboardStatus("localOnly");
+        return false;
+      })
+      .finally(() => {
+        state.publicLeaderboard.promise = null;
+      });
+
+    return state.publicLeaderboard.promise;
   }
 
   function modeLabel(modeId) {
@@ -1501,17 +2188,19 @@
     if (els.leaderboardDifficultyFilter && !els.leaderboardDifficultyFilter.value) {
       els.leaderboardDifficultyFilter.value = state.difficulty;
     }
-    els.leaderboardDialog.hidden = false;
+    showWithMotion(els.leaderboardDialog, "modalOpen");
+    playUiSound("panelOpen");
     loadLeaderboard();
     window.setTimeout(() => els.leaderboardClose?.focus(), 0);
   }
 
   function closeLeaderboard() {
-    if (!els.leaderboardDialog) {
+    if (!els.leaderboardDialog || els.leaderboardDialog.hidden) {
       return;
     }
 
-    els.leaderboardDialog.hidden = true;
+    hideWithMotion(els.leaderboardDialog, "modalClose");
+    playUiSound("panelClose");
     const focusTarget = state.lastFocusBeforeLeaderboard instanceof HTMLElement
       ? state.lastFocusBeforeLeaderboard
       : els.leaderboardOpen;
@@ -1529,7 +2218,13 @@
       empty.className = "leaderboard-placeholder";
       empty.textContent = "עדיין אין שיאים. אפשר להיות הראשון בטבלה.";
       els.leaderboardList.append(empty);
+      if (els.leaderboardEmptyState) {
+        els.leaderboardEmptyState.hidden = false;
+      }
       return;
+    }
+    if (els.leaderboardEmptyState) {
+      els.leaderboardEmptyState.hidden = true;
     }
 
     scores.slice(0, CONFIG.leaderboard.limit).forEach((entry, index) => {
@@ -1560,13 +2255,15 @@
   async function leaderboardRequest(options = {}) {
     const controller = new AbortController();
     const timeoutId = window.setTimeout(() => controller.abort(), CONFIG.leaderboard.requestTimeoutMs);
+    const endpoint = options.endpoint || CONFIG.leaderboard.endpoint;
+    const { endpoint: _endpoint, ...requestOptions } = options;
 
     try {
-      const response = await fetch(CONFIG.leaderboard.endpoint, {
-        ...options,
+      const response = await fetch(endpoint, {
+        ...requestOptions,
         headers: {
           Accept: "application/json",
-          ...(options.headers || {})
+          ...(requestOptions.headers || {})
         },
         signal: controller.signal
       });
@@ -1601,17 +2298,27 @@
     if (els.leaderboardRefresh) {
       els.leaderboardRefresh.disabled = true;
     }
+    if (els.leaderboardErrorState) {
+      els.leaderboardErrorState.hidden = true;
+    }
+    setLeaderboardStatus("מרענן את הטבלה המקומית...");
 
-    const entries = SYSTEMS.getLeaderboardEntries(state.save, {
-      mode: els.leaderboardModeFilter?.value || "all",
-      difficulty: els.leaderboardDifficultyFilter?.value || "all",
-      limit: CONFIG.leaderboard.limit
-    });
-    renderLeaderboard(entries);
-    setLeaderboardStatus(entries.length ? "הטבלה המקומית מעודכנת." : "עדיין אין שיאים בקטגוריה הזאת.");
-    state.leaderboardLoading = false;
-    if (els.leaderboardRefresh) {
-      els.leaderboardRefresh.disabled = false;
+    try {
+      const entries = SYSTEMS.getLeaderboardEntries(state.save, {
+        mode: els.leaderboardModeFilter?.value || "all",
+        difficulty: els.leaderboardDifficultyFilter?.value || "all",
+        limit: CONFIG.leaderboard.limit
+      });
+      renderLeaderboard(entries);
+      setLeaderboardStatus(entries.length ? "הטבלה המקומית מעודכנת." : "עדיין אין שיאים בקטגוריה הזאת.");
+    } catch {
+      renderLeaderboard([]);
+      setLeaderboardStatus("לא הצלחנו לרענן את הטבלה כרגע.", true);
+    } finally {
+      state.leaderboardLoading = false;
+      if (els.leaderboardRefresh) {
+        els.leaderboardRefresh.disabled = false;
+      }
     }
   }
 
@@ -1621,11 +2328,10 @@
     }
 
     const eligible = state.correctAnswers >= CONFIG.leaderboard.minimumCorrectAnswers;
-    els.publishScorePanel.hidden = !eligible;
-    els.publishScoreButton.disabled = false;
-    els.publishScoreButton.textContent = "פרסם את השיא";
-    els.publishScoreStatus.textContent = "";
-    els.publishScoreStatus.style.color = "";
+    syncPublicLeaderboardUi(eligible);
+    if (eligible && state.publicLeaderboard.status === "localOnly") {
+      checkPublicLeaderboardCapability();
+    }
   }
 
   async function publishScore() {
@@ -1634,6 +2340,10 @@
       || state.phase !== "ended"
       || state.correctAnswers < CONFIG.leaderboard.minimumCorrectAnswers
     ) {
+      return;
+    }
+    if (state.publicLeaderboard.status !== "available") {
+      syncPublicLeaderboardUi(true);
       return;
     }
 
@@ -1670,7 +2380,8 @@
       els.publishScoreButton.disabled = false;
       els.publishScoreButton.textContent = "נסה לפרסם שוב";
       if (error?.code === "leaderboard_not_configured") {
-        els.publishScoreStatus.textContent = "מסד הנתונים עדיין לא הוגדר ב־Vercel.";
+        setPublicLeaderboardStatus("localOnly");
+        els.publishScoreStatus.textContent = SYSTEMS.PUBLIC_LEADERBOARD_LOCAL_ONLY_MESSAGE;
       } else if (error?.code === "rate_limited") {
         els.publishScoreStatus.textContent = "כבר ניסית לפרסם עכשיו. חכה כמה שניות ונסה שוב.";
       } else {
@@ -1721,7 +2432,8 @@
     setCharacter(getSelectedCharacterId());
     setDifficulty(getSelectedDifficulty());
     persistSave();
-    closeMenuSheets({ restoreFocus: false });
+    closeMenuSheets({ restoreFocus: false, sound: false });
+    hidePauseScreen();
     els.nameError.textContent = "";
     setupGame();
     setPhase("playing");
@@ -1732,10 +2444,11 @@
     if (els.publishScorePanel) {
       els.publishScorePanel.hidden = true;
     }
-    els.pause.textContent = "Ⅱ";
+    updatePauseButton();
     stage.focus({ preventScroll: true });
     resumeAudio();
-    playTone(420, 0.08, "triangle", 0.04);
+    playUiMotion(stage, "screenEnter");
+    playUiSound("notification");
   }
 
   function showStartScreen() {
@@ -1743,7 +2456,8 @@
     state.playerName = SYSTEMS.safeNickname(state.save.player.nickname);
     els.endScreen.hidden = true;
     els.questionDialog.hidden = true;
-    els.startScreen.hidden = false;
+    hidePauseScreen();
+    showWithMotion(els.startScreen, "screenEnter");
     els.startScreen.classList.add("screen-visible");
     els.winnerTrophy.hidden = true;
     if (els.newRecordBadge) {
@@ -1751,13 +2465,14 @@
     }
     els.playerNameInput.value = state.playerName;
     els.nameError.textContent = "";
-    els.pause.textContent = "Ⅱ";
+    updatePauseButton();
     syncModeInputs();
     syncCharacterInputs();
     syncDifficultyInputs();
     syncTimeLimitToggle();
     syncMenuSummary();
-    closeMenuSheets({ restoreFocus: false });
+    closeHeroGallery({ restoreFocus: false });
+    closeMenuSheets({ restoreFocus: false, sound: false });
     setupGame();
     focusPlayerNameWhenUseful();
   }
@@ -1768,20 +2483,72 @@
     startGame();
   }
 
+  function updatePauseScreen() {
+    if (!els.pauseScreen) {
+      return;
+    }
+    const mode = getModeSettings();
+    const difficulty = getDifficultySettings();
+    const level = getCurrentLevel();
+    const missionProgress = getMissionProgress();
+    const missionTarget = state.mission?.target || 0;
+    if (els.pauseSummary) {
+      els.pauseSummary.textContent = `${mode.shortLabel} · ${difficulty.label} ${scoreMultiplierLabel(difficulty)} · ${level.name}`;
+    }
+    if (els.pauseMissionTitle) {
+      els.pauseMissionTitle.textContent = state.mission?.label || "משימה חדשה בדרך";
+    }
+    if (els.pauseMissionProgress) {
+      els.pauseMissionProgress.textContent = missionTarget
+        ? `${Math.min(missionProgress, missionTarget)}/${missionTarget}`
+        : "-";
+    }
+    if (els.pauseNameInput && document.activeElement !== els.pauseNameInput) {
+      els.pauseNameInput.value = SYSTEMS.safeNickname(state.playerName || state.save.player.nickname);
+    }
+  }
+
+  function showPauseScreen() {
+    if (!els.pauseScreen) {
+      return;
+    }
+    state.lastFocusBeforePause = document.activeElement;
+    updatePauseScreen();
+    showWithMotion(els.pauseScreen, "modalOpen");
+    playUiSound("panelOpen");
+    window.setTimeout(() => els.pauseResumeButton?.focus({ preventScroll: true }), 0);
+  }
+
+  function hidePauseScreen(options = {}) {
+    if (!els.pauseScreen) {
+      return;
+    }
+    const { restoreFocus = false } = options;
+    const wasOpen = !els.pauseScreen.hidden;
+    hideWithMotion(els.pauseScreen, "modalClose");
+    if (wasOpen && options.sound !== false) {
+      playUiSound("panelClose");
+    }
+    if (restoreFocus && state.lastFocusBeforePause instanceof HTMLElement) {
+      state.lastFocusBeforePause.focus({ preventScroll: true });
+    }
+    state.lastFocusBeforePause = null;
+  }
+
   function togglePause() {
     if (state.phase === "playing") {
       setPhase("paused");
       resetJoystick();
-      els.pause.textContent = "▶";
-      playTone(220, 0.06, "sine", 0.035);
+      updatePauseButton();
+      showPauseScreen();
       return;
     }
 
     if (state.phase === "paused") {
       setPhase("playing");
-      els.pause.textContent = "Ⅱ";
+      updatePauseButton();
+      hidePauseScreen({ restoreFocus: true });
       state.lastTime = performance.now();
-      playTone(440, 0.06, "sine", 0.035);
     }
   }
 
@@ -1792,22 +2559,51 @@
     updateSoundButton();
     if (state.soundEnabled) {
       resumeAudio();
-      playTone(520, 0.08, "triangle", 0.04);
+      playUiSound("notification", { fromGesture: true });
     }
   }
 
   function updateSoundButton() {
     const label = state.soundEnabled ? "צלילים פועלים" : "צלילים כבויים";
-    const text = state.soundEnabled ? "♪" : "×";
-    if (els.sound) {
-      els.sound.textContent = text;
-      els.sound.setAttribute("aria-label", label);
+    const icon = state.soundEnabled ? "sound-on" : "sound-off";
+    const fallback = state.soundEnabled ? "צלילים" : "שקט";
+    setIconButton(els.sound, icon, label, fallback, state.soundEnabled ? "צלילים" : "שקט");
+    setIconButton(els.menuSound, icon, label, fallback);
+    setIconButton(els.settingsSoundButton, icon, label, fallback, label);
+    setIconButton(els.pauseSoundButton, icon, label, fallback, state.soundEnabled ? "צלילים" : "שקט");
+    syncUiSoundController();
+    if (els.settingsSoundLabel) {
+      els.settingsSoundLabel.textContent = label;
     }
-    if (els.menuSound) {
-      const icon = els.menuSound.querySelector("span") || els.menuSound;
-      icon.textContent = text;
-      els.menuSound.setAttribute("aria-label", label);
+    if (els.pauseSoundLabel) {
+      els.pauseSoundLabel.textContent = state.soundEnabled ? "צלילים" : "שקט";
     }
+  }
+
+  function updatePauseButton() {
+    const paused = state.phase === "paused";
+    setIconButton(els.pause, paused ? "play" : "pause", paused ? "המשך משחק" : "השהיה", paused ? "המשך" : "השהיה");
+  }
+
+  function setIconButton(button, icon, label, fallbackText, visibleLabel = label) {
+    if (!button) {
+      return;
+    }
+
+    button.dataset.icon = icon;
+    button.setAttribute("aria-label", label);
+    const labelSlot = button.querySelector("[data-icon-label]");
+    if (labelSlot) {
+      labelSlot.textContent = visibleLabel;
+    }
+
+    const use = button.querySelector("use");
+    if (use) {
+      use.setAttribute("href", `${CONFIG.iconSprite}#${icon}`);
+      return;
+    }
+
+    button.textContent = fallbackText;
   }
 
   function resumeAudio() {
@@ -1895,39 +2691,189 @@
     return `${(ms / 1000).toFixed(1)}ש׳`;
   }
 
+  function resetHudSnapshot() {
+    state.hudSnapshot = {
+      score: null,
+      combo: null,
+      comboMultiplierPct: null,
+      lives: null,
+      missionKey: null,
+      missionProgress: null,
+      progressPercent: null,
+      correctAnswers: null
+    };
+  }
+
+  function createHudSvgIcon(symbolId) {
+    const svg = document.createElementNS(SVG_NS, "svg");
+    svg.classList.add("ui-icon");
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+    const use = document.createElementNS(SVG_NS, "use");
+    use.setAttribute("href", `${CONFIG.iconSprite}#${symbolId}`);
+    svg.append(use);
+    return svg;
+  }
+
+  function renderLivesHud() {
+    if (!els.lives) {
+      return;
+    }
+
+    els.lives.replaceChildren();
+    els.lives.setAttribute("aria-label", `${state.lives} חיים`);
+    const count = Math.max(0, state.lives);
+    if (count === 0) {
+      els.lives.textContent = "0";
+      return;
+    }
+
+    for (let index = 0; index < count; index += 1) {
+      const icon = document.createElement("span");
+      icon.className = "hud-life-icon";
+      icon.setAttribute("aria-hidden", "true");
+      icon.append(createHudSvgIcon("lives"));
+      els.lives.append(icon);
+    }
+  }
+
+  function getHudMissionKey() {
+    if (!state.mission) {
+      return "none";
+    }
+    return `${state.mission.type}:${state.mission.label}:${state.mission.target}:${state.mission.startScore}`;
+  }
+
+  const HUD_MOTION_EVENT_BY_CLASS = {
+    "hud-score-change": "scoreCountUp",
+    "hud-combo-milestone": "comboMilestone",
+    "hud-life-loss": "lifeLost",
+    "hud-life-gain": "badgeAppearance",
+    "hud-mission-progress": "badgeAppearance",
+    "hud-mission-reset": "lockedFeedback",
+    "hud-mission-complete": "missionComplete",
+    "hud-progress-complete": "worldTransition",
+    "progress-pulse": "badgeAppearance",
+    "metric-pulse": "badgeAppearance",
+    "life-hit": "lifeLost"
+  };
+
+  function animateHudFeedback(element, className, message, duration = 920) {
+    if (!element) {
+      return;
+    }
+
+    if (message) {
+      element.dataset.hudFeedback = message;
+    }
+    element.classList.remove(className);
+    void element.offsetWidth;
+    element.classList.add(className);
+    playUiMotion(element, HUD_MOTION_EVENT_BY_CLASS[className] || "badgeAppearance");
+
+    const previousTimer = hudFeedbackTimers.get(element);
+    if (previousTimer) {
+      window.clearTimeout(previousTimer);
+    }
+
+    const timerId = window.setTimeout(() => {
+      element.classList.remove(className);
+      if (message && element.dataset.hudFeedback === message) {
+        delete element.dataset.hudFeedback;
+      }
+      hudFeedbackTimers.delete(element);
+    }, duration);
+    hudFeedbackTimers.set(element, timerId);
+  }
+
+  function syncHudFeedback(progressPercent, missionProgress) {
+    const snapshot = state.hudSnapshot || {};
+    const scoreMetric = els.score?.closest(".metric");
+    const comboMetric = els.combo?.closest(".metric");
+    const livesMetric = els.lives?.closest(".metric");
+    const missionKey = getHudMissionKey();
+    const comboMultiplierPct = state.comboState.multiplierPct || 100;
+
+    if (snapshot.score !== null && state.score !== snapshot.score) {
+      const delta = state.score - snapshot.score;
+      animateHudFeedback(scoreMetric, "hud-score-change", delta > 0 ? `+${numberFormat.format(delta)}` : numberFormat.format(delta));
+    }
+
+    if (snapshot.combo !== null && state.combo > snapshot.combo) {
+      if (state.combo >= 3 && (state.combo % 5 === 0 || comboMultiplierPct > (snapshot.comboMultiplierPct || 100))) {
+        animateHudFeedback(comboMetric, "hud-combo-milestone", `רצף ${state.combo}`);
+      } else {
+        animateHudFeedback(comboMetric, "metric-pulse", "");
+      }
+    }
+
+    if (snapshot.lives !== null && state.lives !== snapshot.lives) {
+      animateHudFeedback(
+        livesMetric,
+        state.lives < snapshot.lives ? "hud-life-loss" : "hud-life-gain",
+        state.lives < snapshot.lives ? "חיים-" : "+חיים"
+      );
+    }
+
+    if (snapshot.progressPercent !== null && progressPercent !== snapshot.progressPercent) {
+      const wrappedProgress = state.correctAnswers > (snapshot.correctAnswers || 0) && progressPercent < snapshot.progressPercent;
+      animateHudFeedback(els.progressWrap, wrappedProgress ? "hud-progress-complete" : "progress-pulse", wrappedProgress ? "גל חדש" : "");
+    }
+
+    if (
+      snapshot.missionKey === missionKey
+      && snapshot.missionProgress !== null
+      && missionProgress !== snapshot.missionProgress
+    ) {
+      const missionDelta = missionProgress - snapshot.missionProgress;
+      animateHudFeedback(
+        els.missionCard,
+        missionDelta >= 0 ? "hud-mission-progress" : "hud-mission-reset",
+        missionDelta >= 0 ? "משימה +" : "משימה אופסה"
+      );
+    }
+
+    state.hudSnapshot = {
+      score: state.score,
+      combo: state.combo,
+      comboMultiplierPct,
+      lives: state.lives,
+      missionKey,
+      missionProgress,
+      progressPercent,
+      correctAnswers: state.correctAnswers
+    };
+  }
+
   function updateHud() {
-    const level = getCurrentLevel();
-    const mode = getModeSettings();
-    const difficulty = getDifficultySettings();
     const arcadeWave = getArcadeWave();
-    els.correct.textContent = state.correctAnswers;
-    els.targetCorrect.textContent = state.mode === "arcade" ? `/גל ${arcadeWave}` : `/${CONFIG.targetCorrect}`;
-    if (els.levelNumber) {
-      els.levelNumber.textContent = state.mode === "arcade" ? `${arcadeWave}` : `${state.levelIndex + 1}`;
-    }
-    if (els.worldName) {
-      els.worldName.textContent = level.shortName;
-      els.worldName.setAttribute("aria-label", level.name);
-    }
-    if (els.modeLabel) {
-      els.modeLabel.textContent = mode.shortLabel;
-    }
-    if (els.difficultyLabel) {
-      els.difficultyLabel.textContent = difficulty.label;
+    const progressTarget = state.mode === "arcade" ? CONFIG.answersPerLevel : CONFIG.targetCorrect;
+    const progressStageLabel = state.mode === "arcade" ? `גל ${arcadeWave}` : `שלב ${state.levelIndex + 1}`;
+    const progressValue = state.mode === "arcade"
+      ? state.correctAnswers % CONFIG.answersPerLevel
+      : state.correctAnswers;
+    const progressPercent = progressTarget > 0 ? progressValue / progressTarget * 100 : 0;
+    const missionProgress = getMissionProgress();
+
+    els.correct.textContent = progressValue;
+    els.targetCorrect.textContent = `/${progressTarget}`;
+    if (els.hudStageLabel) {
+      els.hudStageLabel.textContent = progressStageLabel;
     }
     els.score.textContent = numberFormat.format(state.score);
     els.combo.textContent = state.comboState.multiplierPct > 100
       ? `${state.combo} · ×${(state.comboState.multiplierPct / 100).toFixed(1)}`
       : String(state.combo);
-    const hearts = "♥".repeat(Math.max(0, state.lives));
-    els.lives.textContent = hearts || "0";
-    els.lives.setAttribute("aria-label", `${state.lives} חיים`);
-    const progressPercent = state.mode === "arcade"
-      ? (state.correctAnswers % CONFIG.answersPerLevel) / CONFIG.answersPerLevel * 100
-      : state.correctAnswers / CONFIG.targetCorrect * 100;
-    els.progress.style.width = `${Math.min(100, progressPercent)}%`;
+    renderLivesHud();
+    const boundedProgress = Math.min(100, progressPercent);
+    els.progress.style.width = `${boundedProgress}%`;
+    if (els.progressWrap) {
+      els.progressWrap.setAttribute("aria-valuenow", String(Math.round(boundedProgress)));
+      els.progressWrap.setAttribute("aria-valuetext", `${progressStageLabel}: ${progressValue} מתוך ${progressTarget}`);
+    }
     els.bestScore.textContent = numberFormat.format(state.bestScore);
     updateMissionHud();
+    syncHudFeedback(boundedProgress, missionProgress);
   }
 
   function updateMissionHud() {
@@ -2014,6 +2960,10 @@
     const award = awardScore({ type: "mission", value: CONFIG.missionBonus });
     playMissionSound();
     pulseElement(els.missionCard, "metric-pulse");
+    animateHudFeedback(els.missionCard, "hud-mission-complete", "משימה הושלמה", 1200);
+    playUiMotion(els.missionCard, "missionComplete", {
+      particles: { count: 8, color: "var(--kf-color-green, #67f08b)" }
+    });
     pulseElement(els.progressWrap, "progress-pulse");
 
     if (state.player) {
@@ -3155,12 +4105,20 @@
     state.currentEnemyId = null;
     state.question = null;
     els.questionDialog.hidden = true;
+    hidePauseScreen();
     els.endScreen.hidden = false;
+    playUiMotion(els.endScreen, "screenEnter");
     renderResults(result);
 
     updatePublishScorePanel();
+    window.setTimeout(() => els.retryButton?.focus({ preventScroll: true }), 0);
 
     if (won || result.newRecord) {
+      playUiSound(result.newRecord ? "newRecord" : "reward");
+      const resultsMotionTarget = els.endScreen.querySelector(".results-panel") || els.endScreen;
+      playUiMotion(resultsMotionTarget, result.newRecord ? "newRecord" : "reward", {
+        particles: result.newRecord ? { count: 10, color: "var(--kf-color-gold, #ffd84a)" } : { count: 8 }
+      });
       state.fireworkTimer = 0;
       for (let i = 0; i < 7; i += 1) {
         spawnFirework(90 + i * 120, 90 + Math.random() * 210);
@@ -3169,6 +4127,9 @@
   }
 
   function updateFireworks(dt) {
+    if (MOBILE_RUNTIME.reducedEffects) {
+      return;
+    }
     state.fireworkTimer -= dt;
     if (state.fireworkTimer <= 0) {
       spawnFirework(80 + Math.random() * (WIDTH - 160), 80 + Math.random() * 260);
@@ -3177,7 +4138,8 @@
   }
 
   function addBurst(x, y, color, count, speed) {
-    const effectiveCount = MOBILE_RUNTIME.reducedEffects ? Math.max(3, Math.ceil(count * 0.45)) : count;
+    const maxBurstCount = MOBILE_RUNTIME.reducedEffects ? 12 : 42;
+    const effectiveCount = Math.min(maxBurstCount, MOBILE_RUNTIME.reducedEffects ? Math.max(3, Math.ceil(count * 0.45)) : count);
     for (let i = 0; i < effectiveCount; i += 1) {
       const angle = Math.random() * Math.PI * 2;
       const velocity = speed * (0.35 + Math.random() * 0.9);
@@ -3783,21 +4745,70 @@
     ctx.restore();
   }
 
+  function roundRect(renderContext, x, y, width, height, radius) {
+    const r = Math.min(radius, width / 2, height / 2);
+    renderContext.beginPath();
+    renderContext.moveTo(x + r, y);
+    renderContext.lineTo(x + width - r, y);
+    renderContext.quadraticCurveTo(x + width, y, x + width, y + r);
+    renderContext.lineTo(x + width, y + height - r);
+    renderContext.quadraticCurveTo(x + width, y + height, x + width - r, y + height);
+    renderContext.lineTo(x + r, y + height);
+    renderContext.quadraticCurveTo(x, y + height, x, y + height - r);
+    renderContext.lineTo(x, y + r);
+    renderContext.quadraticCurveTo(x, y, x + r, y);
+    renderContext.closePath();
+  }
+
   function drawPaused() {
+    const mode = getModeSettings();
+    const difficulty = getDifficultySettings();
+    const level = getCurrentLevel();
+    const missionProgress = getMissionProgress();
+    const missionLine = state.mission
+      ? `${state.mission.label} · ${Math.min(missionProgress, state.mission.target)}/${state.mission.target}`
+      : "משימה חדשה בדרך";
+
     ctx.save();
     ctx.fillStyle = "rgba(0, 0, 0, 0.42)";
     ctx.fillRect(0, 0, WIDTH, HEIGHT);
+    ctx.fillStyle = "rgba(2, 6, 18, 0.76)";
+    ctx.strokeStyle = "rgba(104, 231, 255, 0.34)";
+    ctx.lineWidth = 2;
+    roundRect(ctx, WIDTH / 2 - 250, HEIGHT / 2 - 92, 500, 184, 28);
+    ctx.fill();
+    ctx.stroke();
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillStyle = "#ffd84a";
     ctx.shadowColor = "rgba(255, 216, 74, 0.42)";
     ctx.shadowBlur = 18;
     ctx.font = "700 54px Arial, sans-serif";
-    ctx.fillText("השהיה", WIDTH / 2, HEIGHT / 2);
+    ctx.fillText("השהיה", WIDTH / 2, HEIGHT / 2 - 45);
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#f7fbff";
+    ctx.font = "700 24px Arial, sans-serif";
+    ctx.fillText(`${mode.shortLabel} · ${difficulty.label} · ${level.name}`, WIDTH / 2, HEIGHT / 2 + 4);
+    ctx.fillStyle = "#68e7ff";
+    ctx.font = "700 20px Arial, sans-serif";
+    ctx.fillText(missionLine, WIDTH / 2, HEIGHT / 2 + 42);
+    ctx.fillStyle = "#dce9ff";
+    ctx.font = "700 17px Arial, sans-serif";
+    ctx.fillText("לחצו רווח, Esc או על כפתור ההמשך", WIDTH / 2, HEIGHT / 2 + 72);
     ctx.restore();
   }
 
+  function shouldSkipGameplayFrame() {
+    return state.phase === "start" && !els.startScreen.hidden;
+  }
+
   function gameLoop(now) {
+    if (shouldSkipGameplayFrame()) {
+      state.lastTime = now;
+      requestAnimationFrame(gameLoop);
+      return;
+    }
+
     const dt = Math.min(0.033, Math.max(0, (now - state.lastTime) / 1000 || 0));
     state.lastTime = now;
     update(dt);
@@ -3814,6 +4825,14 @@
       if (event.key === "Escape" && els.menuSheets.some((sheet) => !sheet.hidden)) {
         event.preventDefault();
         closeMenuSheets();
+      }
+      return;
+    }
+
+    if (state.phase === "ended") {
+      if (event.key === "Escape") {
+        event.preventDefault();
+        showStartScreen();
       }
       return;
     }
@@ -3983,33 +5002,104 @@
     input.addEventListener("change", () => {
       if (input.checked) {
         setCharacter(input.value);
+        playUiMotion(input.closest(".character-card") || input.closest("label"), "characterSelect", {
+          particles: { count: 6, color: "var(--kf-color-cyan, #55edf0)" }
+        });
+        playUiSound("characterSelected");
       }
     });
   });
   els.modeInputs.forEach((input) => {
     input.addEventListener("change", () => {
       setMode(input.value);
+      playUiMotion(input.closest("label"), "tabChange");
+      playUiSound("modeSelected");
       closeMenuSheets();
     });
   });
   els.difficultyInputs.forEach((input) => {
     input.addEventListener("change", () => {
       setDifficulty(input.value);
+      playUiMotion(input.closest("label"), "tabChange");
+      playUiSound("difficultySelected");
       closeMenuSheets();
     });
   });
+  els.difficultyPanel?.addEventListener("click", (event) => {
+    const label = event.target?.closest?.(".difficulty-options label");
+    const input = label?.querySelector?.("input[name='difficulty']");
+    if (input?.disabled) {
+      event.preventDefault();
+      playUiMotion(label, "lockedFeedback");
+      playUiSound("lockedAction", { fromGesture: true });
+    }
+  });
   els.timeLimitToggle?.addEventListener("click", toggleTimeLimit);
+  els.characterControlButton?.addEventListener("click", () => openHeroGallery(state.characterId, els.characterControlButton));
+  els.pregameOpenButton?.addEventListener("click", () => openPregamePanel(els.pregameOpenButton));
+  els.pregameCharacterButton?.addEventListener("click", () => {
+    closeMenuSheets({ restoreFocus: false });
+    openHeroGallery(state.characterId, els.characterControlButton);
+  });
+  els.pregameModeButton?.addEventListener("click", () => openMenuSheet(els.modePanel, els.modeControlButton));
+  els.pregameDifficultyButton?.addEventListener("click", () => openMenuSheet(els.difficultyPanel, els.difficultyControlButton));
+  els.pregameStartButton?.addEventListener("click", startGame);
   els.modeControlButton?.addEventListener("click", () => openMenuSheet(els.modePanel, els.modeControlButton));
   els.difficultyControlButton?.addEventListener("click", () => openMenuSheet(els.difficultyPanel, els.difficultyControlButton));
   els.profileControlButton?.addEventListener("click", () => openMenuSheet(els.settingsPanel, els.profileControlButton));
   els.menuSettingsButton?.addEventListener("click", () => openMenuSheet(els.settingsPanel, els.menuSettingsButton));
+  els.homeNavGame?.addEventListener("click", () => {
+    playUiSound("tabChange");
+    focusHomeGameAction();
+  });
+  els.homeNavCharacters?.addEventListener("click", () => openHeroGallery(state.characterId, els.homeNavCharacters));
+  els.homeNavProgress?.addEventListener("click", () => {
+    playUiSound("tabChange");
+    focusHomeProgress();
+  });
+  els.homeNavChampions?.addEventListener("click", () => {
+    playUiSound("tabChange");
+    setHomeNavActive(els.homeNavChampions);
+    openLeaderboard();
+  });
+  els.heroGalleryBack?.addEventListener("click", closeHeroGallery);
+  els.heroGalleryHome?.addEventListener("click", closeHeroGallery);
+  els.heroGalleryPrev?.addEventListener("click", () => browseHeroGallery(-1));
+  els.heroGalleryNext?.addEventListener("click", () => browseHeroGallery(1));
+  els.heroGallerySelect?.addEventListener("click", confirmHeroGallerySelection);
+  els.heroGalleryArtButton?.addEventListener("click", reactToHeroGalleryTap);
+  els.heroGallery?.addEventListener("keydown", handleHeroGalleryKeydown);
+  if (window.PointerEvent) {
+    els.heroGalleryStage?.addEventListener("pointerdown", handleHeroGalleryPointerDown);
+    els.heroGalleryStage?.addEventListener("pointerup", handleHeroGalleryPointerUp);
+    els.heroGalleryStage?.addEventListener("pointercancel", () => {
+      state.heroGallerySwipeStart = null;
+    });
+  } else {
+    els.heroGalleryStage?.addEventListener("touchstart", handleHeroGalleryTouchStart, { passive: true });
+    els.heroGalleryStage?.addEventListener("touchend", handleHeroGalleryTouchEnd, { passive: true });
+  }
   els.settingsSaveButton?.addEventListener("click", saveNicknameFromSettings);
+  els.settingsSoundButton?.addEventListener("click", toggleSound);
+  els.pauseResumeButton?.addEventListener("click", togglePause);
+  els.pauseRetryButton?.addEventListener("click", retryGame);
+  els.pauseSoundButton?.addEventListener("click", toggleSound);
+  els.pauseMenuButton?.addEventListener("click", showStartScreen);
+  els.pauseSaveNameButton?.addEventListener("click", saveNicknameFromPause);
   els.panelCloseButtons.forEach((button) => {
     button.addEventListener("click", () => closeMenuSheets());
   });
   els.menuSheets.forEach((sheet) => {
     sheet.addEventListener("click", (event) => {
       if (event.target === sheet) {
+        closeMenuSheets();
+      }
+    });
+    sheet.addEventListener("keydown", (event) => {
+      trapFocus(sheet, event);
+      if (event.key === "Escape") {
+        event.preventDefault();
+        event.stopPropagation();
         closeMenuSheets();
       }
     });
@@ -4022,9 +5112,42 @@
       closeLeaderboard();
     }
   });
-  els.leaderboardRefresh?.addEventListener("click", loadLeaderboard);
-  els.leaderboardModeFilter?.addEventListener("change", loadLeaderboard);
-  els.leaderboardDifficultyFilter?.addEventListener("change", loadLeaderboard);
+  els.leaderboardDialog?.addEventListener("keydown", (event) => {
+    trapFocus(els.leaderboardDialog, event);
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      closeLeaderboard();
+    }
+  });
+  els.pauseScreen?.addEventListener("keydown", (event) => {
+    trapFocus(els.pauseScreen, event);
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      togglePause();
+    }
+  });
+  els.endScreen?.addEventListener("keydown", (event) => {
+    trapFocus(els.endScreen, event);
+    if (event.key === "Escape") {
+      event.preventDefault();
+      event.stopPropagation();
+      showStartScreen();
+    }
+  });
+  els.leaderboardRefresh?.addEventListener("click", () => {
+    playUiSound("notification");
+    loadLeaderboard();
+  });
+  els.leaderboardModeFilter?.addEventListener("change", () => {
+    playUiSound("tabChange");
+    loadLeaderboard();
+  });
+  els.leaderboardDifficultyFilter?.addEventListener("change", () => {
+    playUiSound("tabChange");
+    loadLeaderboard();
+  });
   els.publishScoreButton?.addEventListener("click", publishScore);
   els.retryButton?.addEventListener("click", retryGame);
   els.endLeaderboardButton?.addEventListener("click", openLeaderboard);
@@ -4049,6 +5172,7 @@
   syncTimeLimitToggle();
   els.playerNameInput.value = state.playerName;
   syncMenuSummary();
+  syncPublicLeaderboardUi(false);
   setupGame();
   updateSoundButton();
   focusPlayerNameWhenUseful();

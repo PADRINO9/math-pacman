@@ -153,6 +153,9 @@ async function seedHeroGalleryProgress(page) {
 
 async function swipeHeroGallery(page, direction = "next") {
   const stage = page.locator("#hero-gallery-stage");
+  const heroName = page.locator("#hero-gallery-name");
+  await expect(stage).toBeVisible();
+  const previousName = await heroName.innerText();
   const box = await stage.boundingBox();
   expect(box).not.toBeNull();
 
@@ -160,10 +163,32 @@ async function swipeHeroGallery(page, direction = "next") {
   const startX = direction === "next" ? box.x + box.width * 0.75 : box.x + box.width * 0.25;
   const endX = direction === "next" ? box.x + box.width * 0.25 : box.x + box.width * 0.75;
 
-  await page.mouse.move(startX, y);
-  await page.mouse.down();
-  await page.mouse.move(endX, y, { steps: 8 });
-  await page.mouse.up();
+  await stage.evaluate((element, points) => {
+    const common = {
+      bubbles: true,
+      cancelable: true,
+      composed: true,
+      pointerId: 1,
+      pointerType: "touch",
+      isPrimary: true,
+      clientY: points.y
+    };
+    const dispatchPointer = (type, clientX, buttons) => {
+      element.dispatchEvent(new PointerEvent(type, {
+        ...common,
+        clientX,
+        buttons,
+        button: 0
+      }));
+    };
+
+    dispatchPointer("pointerdown", points.startX, 1);
+    dispatchPointer("pointermove", (points.startX + points.endX) / 2, 1);
+    dispatchPointer("pointermove", points.endX, 1);
+    dispatchPointer("pointerup", points.endX, 0);
+  }, { startX, endX, y });
+
+  await expect(heroName).not.toHaveText(previousName, { timeout: 3000 });
 }
 
 test("empty player name in settings stays on the start screen", async ({ page }) => {
